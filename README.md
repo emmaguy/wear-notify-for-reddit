@@ -14,6 +14,8 @@ On a phone, the notification will only allow dismissing of the TILs. There's a s
 
 ![phone1](https://raw.githubusercontent.com/emmaguy/til/master/images/phone_settings.png)
 
+Available on the Play Store: https://play.google.com/store/apps/details?id=com.emmaguy.todayilearned
+
 License
 --------
 
