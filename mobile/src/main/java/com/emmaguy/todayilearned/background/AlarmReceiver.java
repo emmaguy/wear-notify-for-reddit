@@ -11,8 +11,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("TIL", "alarm receiver onRecieve");
-
         context.startService(new Intent(context, RetrieveTILService.class));
     }
 }

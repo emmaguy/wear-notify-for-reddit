@@ -15,10 +15,9 @@ public class Utils {
     public static void setRecurringAlarm(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String refreshString = prefs.getString(SettingsActivity.PREFS_REFRESH_FREQUENCY, "1");
-        Log.d("TIL", "refreshString: " + refreshString);
+
         if (!TextUtils.isEmpty(refreshString)) {
             int refreshIntervalMinutes = Integer.parseInt(refreshString);
-            Log.d("TIL", "interval: " + refreshIntervalMinutes);
             if (refreshIntervalMinutes > 0) {
                 Intent downloader = new Intent(context, AlarmReceiver.class);
                 PendingIntent refreshIntent = PendingIntent.getBroadcast(context, 0, downloader, PendingIntent.FLAG_CANCEL_CURRENT);

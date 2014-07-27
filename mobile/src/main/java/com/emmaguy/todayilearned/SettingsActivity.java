@@ -55,7 +55,6 @@ public class SettingsActivity extends Activity {
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            Log.d("TIL", "sp changed: " + key);
             updatePrefsSummary(sharedPreferences, findPreference(key));
 
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
