@@ -29,4 +29,8 @@ dependencies {
 
     compile 'com.google.android.gms:play-services-wearable:+'
     compile 'com.android.support:support-v4:20.+'
+
+    compile('de.psdev.licensesdialog:licensesdialog:1.5.0') {
+        exclude module: 'support-v4'
+    }
 }

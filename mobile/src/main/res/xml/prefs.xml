@@ -15,9 +15,14 @@
             android:title="@string/number_to_retrieve"
             android:entries="@array/pref_tils_to_request"
             android:entryValues="@array/pref_tils_to_request"
-            android:defaultValue="25"
+            android:defaultValue="5"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/special_thanks">
+        <PreferenceScreen
+            android:key="open_source"
+            android:title="@string/open_source_projects" />
     </PreferenceCategory>
 
 </PreferenceScreen>

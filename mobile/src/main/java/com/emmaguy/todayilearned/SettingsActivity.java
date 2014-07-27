@@ -7,11 +7,13 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
-import android.util.Log;
+
+import de.psdev.licensesdialog.LicensesDialog;
 
 public class SettingsActivity extends Activity {
 
-    public static String PREFS_REFRESH_FREQUENCY = "sync_frequency";
+    public static final String PREFS_REFRESH_FREQUENCY = "sync_frequency";
+    public static final String OPEN_SOURCE = "open_source";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +31,19 @@ public class SettingsActivity extends Activity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            addPreferencesFromResource(R.xml.pref_data_sync);
+            addPreferencesFromResource(R.xml.prefs);
 
             Utils.setRecurringAlarm(getActivity().getApplicationContext());
 
             initSummary();
+            initialiseClickListener(OPEN_SOURCE);
+        }
+
+        private void initialiseClickListener(String key) {
+            Preference resetPref = findPreference(key);
+            if (resetPref != null) {
+                resetPref.setOnPreferenceClickListener(this);
+            }
         }
 
         @Override
@@ -52,6 +62,10 @@ public class SettingsActivity extends Activity {
 
         @Override
         public boolean onPreferenceClick(Preference preference) {
+            if (preference.getKey().equals(OPEN_SOURCE)) {
+                new LicensesDialog(getActivity(), R.raw.open_source_notices, false, true).show();
+                return true;
+            }
             return false;
         }
 
