@@ -31,6 +31,8 @@ public class SettingsActivity extends Activity {
 
             addPreferencesFromResource(R.xml.pref_data_sync);
 
+            Utils.setRecurringAlarm(getActivity().getApplicationContext());
+
             initSummary();
         }
 

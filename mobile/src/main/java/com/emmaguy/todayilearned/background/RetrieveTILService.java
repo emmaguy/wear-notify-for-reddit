@@ -50,6 +50,10 @@ public class RetrieveTILService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        retrieveLatestTIlsFromReddit();
+    }
+
+    private void retrieveLatestTIlsFromReddit() {
         mRedditTILEndpoint.latestTILs(getNumberToRequest(), getAfterId())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
