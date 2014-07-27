@@ -50,11 +50,11 @@ public class RetrieveTILService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        retrieveLatestTIlsFromReddit();
+        retrieveLatestTILsFromReddit();
     }
 
-    private void retrieveLatestTIlsFromReddit() {
-        mRedditTILEndpoint.latestTILs(getNumberToRequest(), getAfterId())
+    private void retrieveLatestTILsFromReddit() {
+        mRedditTILEndpoint.latestTILs(getNumberToRequest(), getBeforeId())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(new Func1<Listing, Observable<TIL>>() {
@@ -133,7 +133,7 @@ public class RetrieveTILService extends IntentService {
         return Integer.parseInt(getSharedPreferences().getString(PREFS_NUMBER_TO_RETRIEVE, "5"));
     }
 
-    private String getAfterId() {
+    private String getBeforeId() {
         return getSharedPreferences().getString(PREFS_BEFORE_ID, "");
     }
 }
