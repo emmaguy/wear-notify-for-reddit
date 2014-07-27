@@ -4,5 +4,7 @@
     <string name="app_name">Today I Learned</string>
     <string name="settings">Settings</string>
     <string name="number_to_retrieve">Number to retrieve</string>
+    <string name="x_new_today_i_learned">%1$d New TILs</string>
+    <string name="dismiss_all">Dismiss All</string>
 
 </resources>

@@ -10,11 +10,11 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.emmaguy.todayilearned.SettingsActivity"
-            android:label="@string/app_name" >
+            android:name=".SettingsActivity"
+            android:label="@string/settings" >
         </activity>
         <activity
-            android:name="com.emmaguy.todayilearned.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,9 +23,19 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.emmaguy.todayilearned.background.RetrieveTILService" android:exported="false" />
-        <receiver android:name="com.emmaguy.todayilearned.background.AlarmReceiver" android:enabled="true" android:exported="false" />
+        <service
+            android:name=".background.RetrieveTILService"
+            android:exported="false" />
 
+        <receiver
+            android:name=".background.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false" />
+        <receiver
+            android:name=".background.DismissNotificationsReceiver"
+            android:enabled="true"
+            android:exported="false" >
+        </receiver>
     </application>
 
 </manifest>
