@@ -17,7 +17,7 @@ On a phone, the notification will only allow dismissing of the TILs. There's a s
 License
 --------
 
-    Copyright 201$ Emma Guy
+    Copyright 2014 Emma Guy
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
