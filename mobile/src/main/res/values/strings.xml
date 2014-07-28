@@ -4,7 +4,12 @@
     <string name="app_name">Today I Learned</string>
     <string name="settings">Settings</string>
     <string name="number_to_retrieve">Number of TILs to retrieve</string>
-    <string name="x_new_today_i_learned">%1$d New TILs</string>
+
+    <plurals name="x_new_today_i_learned">
+        <item quantity="one">1 new Today I Learned</item>
+        <item quantity="other">%d new TILs</item>
+    </plurals>
+
     <string name="dismiss_all">Dismiss All</string>
     <string name="pref_title_sync_frequency">Sync frequency</string>
     <string name="special_thanks">Special Thanks</string>
