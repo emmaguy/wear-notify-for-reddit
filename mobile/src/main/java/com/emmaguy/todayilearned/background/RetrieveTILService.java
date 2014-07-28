@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.data.Listing;
 import com.emmaguy.todayilearned.data.RedditTIL;
 import com.emmaguy.todayilearned.data.TIL;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.RestAdapter;
+import retrofit.android.AndroidLog;
 import retrofit.converter.GsonConverter;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -30,10 +32,6 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RetrieveTILService extends IntentService {
-
-    private static final String PREFS_BEFORE_ID = "before_id";
-    private static final String PREFS_NUMBER_TO_RETRIEVE = "number_to_retrieve";
-
     private static final int NOTIFICATION_ID = 1;
 
     private final RestAdapter restAdapter = new RestAdapter.Builder()
@@ -54,7 +52,7 @@ public class RetrieveTILService extends IntentService {
     }
 
     private void retrieveLatestTILsFromReddit() {
-        mRedditTILEndpoint.latestTILs(getNumberToRequest(), getBeforeId())
+        mRedditTILEndpoint.latestTILs(getSortType(), getNumberToRequest(), getBeforeId())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(new Func1<Listing, Observable<TIL>>() {
@@ -90,7 +88,7 @@ public class RetrieveTILService extends IntentService {
 
     private void storeNewBeforeId(String before) {
         if (!TextUtils.isEmpty(before)) {
-            getSharedPreferences().edit().putString(PREFS_BEFORE_ID, before).apply();
+            getSharedPreferences().edit().putString(SettingsActivity.PREFS_BEFORE_ID, before).apply();
         }
     }
 
@@ -130,10 +128,14 @@ public class RetrieveTILService extends IntentService {
     }
 
     private int getNumberToRequest() {
-        return Integer.parseInt(getSharedPreferences().getString(PREFS_NUMBER_TO_RETRIEVE, "5"));
+        return Integer.parseInt(getSharedPreferences().getString(SettingsActivity.PREFS_NUMBER_TO_RETRIEVE, "5"));
     }
 
     private String getBeforeId() {
-        return getSharedPreferences().getString(PREFS_BEFORE_ID, "");
+        return getSharedPreferences().getString(SettingsActivity.PREFS_BEFORE_ID, "");
+    }
+
+    private String getSortType() {
+        return getSharedPreferences().getString(SettingsActivity.PREFS_SORT_ORDER, "hot");
     }
 }

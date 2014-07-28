@@ -14,6 +14,7 @@
     <string name="pref_title_sync_frequency">Sync frequency</string>
     <string name="special_thanks">Special Thanks</string>
     <string name="open_source_projects">Open Source Projects</string>
+    <string name="sort_order">Sort Order</string>
 
     <string-array name="pref_sync_frequency_titles">
         <item>15 minutes</item>
@@ -39,6 +40,12 @@
         <item>10</item>
         <item>15</item>
         <item>20</item>
+    </string-array>
+
+    <string-array name="pref_sort_order">
+        <item>hot</item>
+        <item>new</item>
+        <item>controversial</item>
     </string-array>
 
 </resources>

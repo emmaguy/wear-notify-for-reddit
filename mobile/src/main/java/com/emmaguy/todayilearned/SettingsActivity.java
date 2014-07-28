@@ -13,7 +13,12 @@ import de.psdev.licensesdialog.LicensesDialog;
 public class SettingsActivity extends Activity {
 
     public static final String PREFS_REFRESH_FREQUENCY = "sync_frequency";
+    public static final String PREFS_BEFORE_ID = "before_id";
+    public static final String PREFS_NUMBER_TO_RETRIEVE = "number_to_retrieve";
+    public static final String PREFS_SORT_ORDER = "sort_order";
+
     public static final String OPEN_SOURCE = "open_source";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +80,8 @@ public class SettingsActivity extends Activity {
 
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
                 Utils.setRecurringAlarm(getActivity().getApplicationContext());
+            } else if(key.equals(PREFS_SORT_ORDER)) {
+                getPreferenceManager().getSharedPreferences().edit().putString(SettingsActivity.PREFS_BEFORE_ID, "").apply();
             }
         }
 
