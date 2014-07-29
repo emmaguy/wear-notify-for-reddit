@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Reddit for Wear</string>
+
+    <plurals name="x_new_posts">
+        <item quantity="one">1 new post</item>
+        <item quantity="other">%d new posts</item>
+    </plurals>
+
+    <string name="dismiss_all">Dismiss All</string>
+
+</resources>

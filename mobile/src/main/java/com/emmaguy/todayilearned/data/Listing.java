@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Listing {
-    private List<TIL> mTILs = new ArrayList<TIL>();
+    private List<Post> mTILs = new ArrayList<Post>();
     public String before;
 
-    public void addTIL(TIL til) {
-        mTILs.add(til);
+    public void addTIL(Post post) {
+        mTILs.add(post);
     }
 
-    public Iterable<? extends TIL> getTodayILearneds() {
+    public Iterable<? extends Post> getPosts() {
         return mTILs;
     }
 
@@ -31,7 +31,7 @@ public class Listing {
                 JsonObject data = e.getAsJsonObject().get("data").getAsJsonObject();
                 boolean stickied = data.get("stickied").getAsBoolean();
                 if (!stickied) {
-                    l.addTIL(new TIL(data.get("title").getAsString(), data.get("id").getAsString()));
+                    l.addTIL(new Post(data.get("title").getAsString(), data.get("id").getAsString()));
                 }
             }
 

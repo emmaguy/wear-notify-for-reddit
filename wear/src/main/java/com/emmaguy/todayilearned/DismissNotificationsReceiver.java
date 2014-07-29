@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned.background;
+package com.emmaguy.todayilearned;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;

@@ -1,10 +1,10 @@
 package com.emmaguy.todayilearned.data;
 
-public class TIL {
+public class Post {
     private final String mId;
     private final String mTitle;
 
-    public TIL(String title, String id) {
+    public Post(String title, String id) {
         mId = id;
         mTitle = title;
     }

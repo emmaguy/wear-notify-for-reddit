@@ -1,20 +1,22 @@
-'Today I Learned' for Wear
+Reddit for Wear
 =================================
 
-Periodically retrieves the latest top facts from the subreddit 'Today I Learned' (/r/todayilearned/hot) and creates a notification with them.
+Periodically retrieves the latest top posts from selected subreddits, e.g. /r/todayilearned and /r/worldnews
 
-Stores the id of the first TIL retrieved, so when it makes the next request it only pulls new facts.
+Stores the id of the first post retrieved, so when it makes the next request it only pulls new posts.
 
-Requires an Android wearable - the TILs are presented 1 per page, and can be scrolled through, left to right.
+Requires an Android wearable - the posts are presented in a notification, 1 post per page, and can be scrolled through, left to right. There's an action at the end of the posts to dismiss them
 
 |  ![wear1](https://raw.githubusercontent.com/emmaguy/til/master/images/wear_home.png) | ![wear2](https://raw.githubusercontent.com/emmaguy/til/master/images/wear_til_with_position.png) | ![wear3](https://raw.githubusercontent.com/emmaguy/til/master/images/wear_dismiss_all.png)  |
 |---|---|---|
 
-On a phone, the notification will only allow dismissing of the TILs. There's a small settings page where the sync refresh interval and number of TILs to retrieve can be configured.
+There's a short settings page where the subreddits, sync refresh interval, ordering and number of posts to retrieve can be configured.
 
 ![phone1](https://raw.githubusercontent.com/emmaguy/til/master/images/phone_settings.png)
 
 Available on the Play Store: https://play.google.com/store/apps/details?id=com.emmaguy.todayilearned
+
+Note: this used to just be a 'Today I Learned' thing (hence the package name), but decided to expand it to other subreddits!
 
 License
 --------

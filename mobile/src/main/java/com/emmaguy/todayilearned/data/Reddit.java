@@ -5,7 +5,7 @@ import retrofit.http.Path;
 import retrofit.http.Query;
 import rx.Observable;
 
-public interface RedditTIL {
+public interface Reddit {
     @GET("/r/{subreddit}/{sort}.json")
     Observable<Listing> latestTILs(@Path("subreddit") String subreddit,
                                    @Path("sort") String sort,

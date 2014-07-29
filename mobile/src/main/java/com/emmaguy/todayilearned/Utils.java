@@ -21,8 +21,8 @@ public class Utils {
     private static final String SELECTED_SUBREDDITS = "selectedsubreddits";
     private static final String SUBREDDITS = "subreddits";
 
-    private static Set<String> DefaultSubReddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews"));
-    private static Set<String> DefaultSelectedSubReddits = new HashSet<String>(Arrays.asList("Android"));
+    private static Set<String> DefaultSubReddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews", "britishproblems", "showerthoughts"));
+    private static Set<String> DefaultSelectedSubReddits = new HashSet<String>(Arrays.asList("todayilearned"));
 
     public static void setRecurringAlarm(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

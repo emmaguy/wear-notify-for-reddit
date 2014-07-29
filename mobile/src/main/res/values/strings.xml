@@ -5,12 +5,6 @@
     <string name="settings">Settings</string>
     <string name="number_to_retrieve">Number of posts to retrieve</string>
 
-    <plurals name="x_new_posts">
-        <item quantity="one">1 new post</item>
-        <item quantity="other">%d new posts</item>
-    </plurals>
-
-    <string name="dismiss_all">Dismiss All</string>
     <string name="pref_title_sync_frequency">Sync frequency</string>
     <string name="special_thanks">Special Thanks</string>
     <string name="open_source_projects">Open Source Projects</string>
