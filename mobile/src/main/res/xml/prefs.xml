@@ -2,6 +2,10 @@
     <PreferenceCategory
         android:title="@string/settings"
         android:key="parent">
+        <PreferenceScreen
+            android:key="subreddits"
+            android:title="@string/subreddits"
+            android:summary="@string/tap_to_modify" />
         <ListPreference
             android:key="sync_frequency"
             android:title="@string/pref_title_sync_frequency"
@@ -13,8 +17,8 @@
         <ListPreference
             android:key="number_to_retrieve"
             android:title="@string/number_to_retrieve"
-            android:entries="@array/pref_tils_to_request"
-            android:entryValues="@array/pref_tils_to_request"
+            android:entries="@array/pref_posts_to_request"
+            android:entryValues="@array/pref_posts_to_request"
             android:defaultValue="5"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />

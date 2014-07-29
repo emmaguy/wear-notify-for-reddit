@@ -6,8 +6,9 @@ import retrofit.http.Query;
 import rx.Observable;
 
 public interface RedditTIL {
-    @GET("/r/todayilearned/{sort}.json")
-    Observable<Listing> latestTILs(@Path("sort") String sort,
+    @GET("/r/{subreddit}/{sort}.json")
+    Observable<Listing> latestTILs(@Path("subreddit") String subreddit,
+                                   @Path("sort") String sort,
                                    @Query("limit") Integer limit,
                                    @Query("before") String before);
 }

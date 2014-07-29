@@ -13,6 +13,7 @@ import android.util.Log;
 
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.SettingsActivity;
+import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.Listing;
 import com.emmaguy.todayilearned.data.RedditTIL;
 import com.emmaguy.todayilearned.data.TIL;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.RestAdapter;
-import retrofit.android.AndroidLog;
 import retrofit.converter.GsonConverter;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -52,7 +52,7 @@ public class RetrieveTILService extends IntentService {
     }
 
     private void retrieveLatestTILsFromReddit() {
-        mRedditTILEndpoint.latestTILs(getSortType(), getNumberToRequest(), getBeforeId())
+        mRedditTILEndpoint.latestTILs(getSubreddit(), getSortType(), getNumberToRequest(), getBeforeId())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(new Func1<Listing, Observable<TIL>>() {
@@ -105,7 +105,7 @@ public class RetrieveTILService extends IntentService {
 
         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(this)
                 .addAction(R.drawable.ic_action_done, getString(R.string.dismiss_all), dismissPendingIntent)
-                .setContentTitle(getResources().getQuantityString(R.plurals.x_new_today_i_learned, mNotificationPages.size(), mNotificationPages.size()))
+                .setContentTitle(getResources().getQuantityString(R.plurals.x_new_posts, mNotificationPages.size(), mNotificationPages.size()))
                 .setSmallIcon(R.drawable.ic_launcher);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
@@ -137,5 +137,9 @@ public class RetrieveTILService extends IntentService {
 
     private String getSortType() {
         return getSharedPreferences().getString(SettingsActivity.PREFS_SORT_ORDER, "hot");
+    }
+
+    private String getSubreddit() {
+        return TextUtils.join("+", Utils.selectedSubReddits(getApplicationContext()));
     }
 }
