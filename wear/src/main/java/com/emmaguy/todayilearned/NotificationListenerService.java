@@ -55,11 +55,13 @@ public class NotificationListenerService extends WearableListenerService {
                 if (path.equals("/redditwear")) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                     final ArrayList<String> posts = dataMapItem.getDataMap().getStringArrayList("posts");
+                    final ArrayList<String> subredditsForEachPost = dataMapItem.getDataMap().getStringArrayList("subredditsForEachPost");
 
                     ArrayList<Notification> notifications = new ArrayList<Notification>();
                     for (int i = 0; i < posts.size(); i++) {
                         NotificationCompat.BigTextStyle extraPageStyle = new NotificationCompat.BigTextStyle();
                         extraPageStyle.bigText(posts.get(i));
+                        extraPageStyle.setBigContentTitle(subredditsForEachPost.get(i));
                         Notification extraPageNotification = new NotificationCompat.Builder(this)
                                 .setStyle(extraPageStyle)
                                 .build();

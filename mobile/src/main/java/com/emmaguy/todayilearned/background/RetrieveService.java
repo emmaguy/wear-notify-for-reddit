@@ -40,6 +40,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private final Reddit mRedditEndpoint = restAdapter.create(Reddit.class);
     private final ArrayList<String> mRedditPosts = new ArrayList<String>();
+    private final ArrayList<String> mRedditPostSubreddits = new ArrayList<String>();
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -81,6 +82,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     @Override
                     public void call(Post post) {
                         mRedditPosts.add(post.getTitle());
+                        mRedditPostSubreddits.add(post.getSubreddit());
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -110,6 +112,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             PutDataMapRequest mapRequest = PutDataMapRequest.create("/redditwear");
             mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis()); // debug, ensure it sends, even if content is the same
             mapRequest.getDataMap().putStringArrayList("posts", mRedditPosts);
+            mapRequest.getDataMap().putStringArrayList("subredditsForEachPost", mRedditPostSubreddits);
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, mapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
