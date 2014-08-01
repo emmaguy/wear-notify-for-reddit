@@ -9,7 +9,11 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
+import android.util.Log;
 import android.widget.EditText;
+
+import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.background.AppListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +29,6 @@ public class SettingsActivity extends Activity {
     public static final String PREFS_SUBREDDITS = "subreddits";
 
     public static final String OPEN_SOURCE = "open_source";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +48,7 @@ public class SettingsActivity extends Activity {
 
             addPreferencesFromResource(R.xml.prefs);
 
-            Utils.setRecurringAlarm(getActivity().getApplicationContext());
+            WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
 
             initSummary();
 
@@ -91,7 +94,7 @@ public class SettingsActivity extends Activity {
             updatePrefsSummary(findPreference(key));
 
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
-                Utils.setRecurringAlarm(getActivity().getApplicationContext());
+                WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
             } else if (key.equals(PREFS_SORT_ORDER) || key.equals(PREFS_SUBREDDITS)) {
                 clearSavedPosition();
             }

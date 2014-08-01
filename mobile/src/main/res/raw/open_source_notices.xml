@@ -14,4 +14,11 @@
         <license>Apache Software License 2.0</license>
     </notice>
 
+    <notice>
+        <name>cwac-wakeful</name>
+        <url>https://github.com/commonsguy/cwac-wakeful</url>
+        <copyright>Copyright © 2014 CommonsWare, LLC — All Rights Reserved</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+
 </notices>

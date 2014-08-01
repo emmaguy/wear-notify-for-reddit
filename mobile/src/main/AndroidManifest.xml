@@ -3,6 +3,8 @@
     package="com.emmaguy.todayilearned">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -18,13 +20,18 @@
             </intent-filter>
         </activity>
 
+        <receiver android:name="com.commonsware.cwac.wakeful.AlarmReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+
+            <meta-data
+                android:name="com.commonsware.cwac.wakeful"
+                android:resource="@xml/wakeful"/>
+        </receiver>
+
         <service
             android:name=".background.RetrieveService"
-            android:exported="false" />
-
-        <receiver
-            android:name=".background.AlarmReceiver"
-            android:enabled="true"
             android:exported="false" />
 
         <meta-data

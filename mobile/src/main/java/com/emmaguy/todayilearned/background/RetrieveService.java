@@ -1,6 +1,5 @@
 package com.emmaguy.todayilearned.background;
 
-import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.Listing;
@@ -32,7 +32,7 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class RetrieveService extends IntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private final RestAdapter restAdapter = new RestAdapter.Builder()
             .setEndpoint("http://www.reddit.com/")
             .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Listing.class, new Listing.ListingJsonDeserializer()).create()))
@@ -48,7 +48,7 @@ public class RetrieveService extends IntentService implements GoogleApiClient.Co
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    protected void doWakefulWork(Intent intent) {
         connectToWearable();
         retrieveLatestTILsFromReddit();
     }
@@ -85,12 +85,12 @@ public class RetrieveService extends IntentService implements GoogleApiClient.Co
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Log.e("RedditWearApp", "failed: ", throwable);
+                        Log.e("RedditWearApp", "failed: " + throwable.getLocalizedMessage(), throwable);
                     }
                 }, new Action0() {
                     @Override
                     public void call() {
-                        sendNewTILsNotification();
+                        sendNewPostsData();
                     }
                 });
     }
@@ -101,7 +101,7 @@ public class RetrieveService extends IntentService implements GoogleApiClient.Co
         }
     }
 
-    private void sendNewTILsNotification() {
+    private void sendNewPostsData() {
         if (mRedditPosts.size() <= 0) {
             return;
         }
