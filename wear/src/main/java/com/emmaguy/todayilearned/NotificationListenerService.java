@@ -8,6 +8,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
+import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.data.FreezableUtils;
@@ -53,10 +54,10 @@ public class NotificationListenerService extends WearableListenerService {
         for (DataEvent event : events) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 String path = event.getDataItem().getUri().getPath();
-                if (path.equals("/redditwear")) {
+                if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
-                    final ArrayList<String> posts = dataMapItem.getDataMap().getStringArrayList("posts");
-                    final ArrayList<String> subredditsForEachPost = dataMapItem.getDataMap().getStringArrayList("subredditsForEachPost");
+                    final ArrayList<String> posts = dataMapItem.getDataMap().getStringArrayList(Constants.KEY_REDDIT_POSTS);
+                    final ArrayList<String> subredditsForEachPost = dataMapItem.getDataMap().getStringArrayList(Constants.KEY_POST_SUBREDDITS);
 
                     ArrayList<Notification> notifications = new ArrayList<Notification>();
                     for (int i = 0; i < posts.size(); i++) {

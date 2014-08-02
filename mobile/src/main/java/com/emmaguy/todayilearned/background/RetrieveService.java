@@ -13,6 +13,7 @@ import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.Listing;
 import com.emmaguy.todayilearned.data.Post;
 import com.emmaguy.todayilearned.data.Reddit;
+import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -119,10 +120,9 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private void sendNewPostsData() {
         if (mGoogleApiClient.isConnected()) {
-            PutDataMapRequest mapRequest = PutDataMapRequest.create("/redditwear");
-            mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis()); // debug, ensure it sends, even if content is the same
-            mapRequest.getDataMap().putStringArrayList("posts", mRedditPosts);
-            mapRequest.getDataMap().putStringArrayList("subredditsForEachPost", mRedditPostSubreddits);
+            PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
+            mapRequest.getDataMap().putStringArrayList(Constants.KEY_REDDIT_POSTS, mRedditPosts);
+            mapRequest.getDataMap().putStringArrayList(Constants.KEY_POST_SUBREDDITS, mRedditPostSubreddits);
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, mapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
@@ -151,7 +151,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private String getSortType() {
-        return getSharedPreferences().getString(SettingsActivity.PREFS_SORT_ORDER, "hot");
+        return getSharedPreferences().getString(SettingsActivity.PREFS_SORT_ORDER, "new");
     }
 
     private String getSubreddit() {
