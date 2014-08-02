@@ -3,7 +3,7 @@ Reddit for Wear
 
 Periodically retrieves the latest top posts from selected subreddits, e.g. /r/todayilearned and /r/worldnews
 
-Stores the id of the first post retrieved, so when it makes the next request it only pulls new posts.
+Stores the latest created utc of the posts retrieved, so when we makes the next request we only show the user new posts. Previously attempted to use 'before' param with the fullname of a post, but when a post is deleted or removed, this caused the request to continually retrieve nothing.
 
 Requires an Android wearable - the posts are presented in a notification, 1 post per page, and can be scrolled through, left to right. There's an action at the end of the posts to dismiss them
 
