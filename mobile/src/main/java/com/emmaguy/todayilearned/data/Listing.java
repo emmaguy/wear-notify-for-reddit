@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Listing {
-    private List<Post> mTILs = new ArrayList<Post>();
+    private List<Post> mPosts = new ArrayList<Post>();
 
-    public void addTIL(Post post) {
-        mTILs.add(post);
+    public void addPost(Post post) {
+        mPosts.add(post);
     }
 
     public Iterable<? extends Post> getPosts() {
-        return mTILs;
+        return mPosts;
     }
 
     public static class ListingJsonDeserializer implements JsonDeserializer<Listing> {
@@ -30,7 +30,7 @@ public class Listing {
                 JsonObject data = e.getAsJsonObject().get("data").getAsJsonObject();
                 boolean stickied = data.get("stickied").getAsBoolean();
                 if (!stickied) {
-                    l.addTIL(new Post(data.get("title").getAsString(), data.get("id").getAsString(), data.get("subreddit").getAsString(), data.get("created_utc").getAsLong()));
+                    l.addPost(new Post(data.get("title").getAsString(), data.get("id").getAsString(), data.get("subreddit").getAsString(), data.get("created_utc").getAsLong()));
                 }
             }
 

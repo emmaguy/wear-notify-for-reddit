@@ -7,7 +7,7 @@ import rx.Observable;
 
 public interface Reddit {
     @GET("/r/{subreddit}/{sort}.json")
-    Observable<Listing> latestTILs(@Path("subreddit") String subreddit,
-                                   @Path("sort") String sort,
-                                   @Query("limit") Integer limit);
+    Observable<Listing> latestPosts(@Path("subreddit") String subreddit,
+                                    @Path("sort") String sort,
+                                    @Query("limit") Integer limit);
 }

@@ -70,7 +70,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private void retrieveLatestPostsFromReddit() {
-        mRedditEndpoint.latestTILs(getSubreddit(), getSortType(), getNumberToRequest())
+        mRedditEndpoint.latestPosts(getSubreddit(), getSortType(), getNumberToRequest())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(new Func1<Listing, Observable<Post>>() {
