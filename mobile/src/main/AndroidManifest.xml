@@ -30,6 +30,12 @@
                 android:resource="@xml/wakeful" />
         </receiver>
 
+        <service android:name=".background.TriggerRefreshListenerService" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+
         <service
             android:name=".background.RetrieveService"
             android:exported="false" />

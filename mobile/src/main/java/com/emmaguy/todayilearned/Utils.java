@@ -3,6 +3,7 @@ package com.emmaguy.todayilearned;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,5 +48,17 @@ public class Utils {
         subreddits.add(subreddit);
 
         saveSubreddits(c, subreddits);
+    }
+
+    public static void Log(String message) {
+        if (BuildConfig.DEBUG) {
+            Log.d("RedditWear", message);
+        }
+    }
+
+    public static void Log(String message, Throwable t) {
+        if (BuildConfig.DEBUG) {
+            Log.e("RedditWear", message, t);
+        }
     }
 }

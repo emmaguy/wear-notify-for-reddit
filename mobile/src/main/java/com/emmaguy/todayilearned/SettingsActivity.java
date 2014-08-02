@@ -93,6 +93,8 @@ public class SettingsActivity extends Activity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             updatePrefsSummary(findPreference(key));
 
+            Utils.Log("onSharedPreferenceChanged: " + key);
+
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
             } else if (key.equals(PREFS_SORT_ORDER) || key.equals(PREFS_SUBREDDITS) || key.equals(PREFS_SELECTED_SUBREDDITS)) {
@@ -101,6 +103,8 @@ public class SettingsActivity extends Activity {
         }
 
         private void clearSavedUtcTime() {
+            Utils.Log("clearSavedUtcTime");
+
             getPreferenceManager().getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, 0).apply();
         }
 

@@ -83,12 +83,17 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     @Override
                     public void call(Post post) {
                         if (postIsNewerThanPreviouslyRetrievedPosts(post)) {
+                            Utils.Log("Adding post: " + post.getTitle());
+
                             mRedditPosts.add(post.getTitle());
                             mRedditPostSubreddits.add(post.getSubreddit());
 
                             if (post.getCreatedUtc() > mLatestCreatedUtc) {
                                 mLatestCreatedUtc = post.getCreatedUtc();
+                                Utils.Log("updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
                             }
+                        } else {
+                            Utils.Log("Ignoring post: " + post.getTitle());
                         }
                     }
                 }, new Action1<Throwable>() {
@@ -99,6 +104,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 }, new Action0() {
                     @Override
                     public void call() {
+                        Utils.Log("Posts found: " + mRedditPosts.size());
                         if (mRedditPosts.size() > 0) {
                             if (mLatestCreatedUtc > 0) {
                                 storeNewCreatedUtc(mLatestCreatedUtc);
@@ -115,11 +121,15 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private void storeNewCreatedUtc(long createdAtUtc) {
+        Utils.Log("storeNewCreatedUtc: " + createdAtUtc);
+
         getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, createdAtUtc).apply();
     }
 
     private void sendNewPostsData() {
         if (mGoogleApiClient.isConnected()) {
+            Utils.Log("sendNewPostsData: " + mRedditPosts.size());
+
             PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
             mapRequest.getDataMap().putStringArrayList(Constants.KEY_REDDIT_POSTS, mRedditPosts);
             mapRequest.getDataMap().putStringArrayList(Constants.KEY_POST_SUBREDDITS, mRedditPostSubreddits);
@@ -129,6 +139,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
                             mRedditPosts.clear();
+
+                            Utils.Log("onResult: " + dataItemResult.getStatus());
 
                             if (mGoogleApiClient.isConnected()) {
                                 mGoogleApiClient.disconnect();
