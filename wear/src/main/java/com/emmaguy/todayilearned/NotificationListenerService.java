@@ -3,6 +3,7 @@ package com.emmaguy.todayilearned;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -62,6 +63,7 @@ public class NotificationListenerService extends WearableListenerService {
                         NotificationCompat.BigTextStyle extraPageStyle = new NotificationCompat.BigTextStyle();
                         extraPageStyle.bigText(posts.get(i));
                         extraPageStyle.setBigContentTitle(subredditsForEachPost.get(i));
+
                         Notification extraPageNotification = new NotificationCompat.Builder(this)
                                 .setStyle(extraPageStyle)
                                 .build();

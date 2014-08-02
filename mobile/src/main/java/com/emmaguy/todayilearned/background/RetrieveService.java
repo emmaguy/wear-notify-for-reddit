@@ -44,6 +44,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private GoogleApiClient mGoogleApiClient;
 
+    private long mLatestCreatedUtc = 0;
+
     public RetrieveService() {
         super("RetrieveService");
     }
@@ -51,7 +53,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Override
     protected void doWakefulWork(Intent intent) {
         connectToWearable();
-        retrieveLatestTILsFromReddit();
+        retrieveLatestPostsFromReddit();
     }
 
     private void connectToWearable() {
@@ -66,48 +68,56 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
-    private void retrieveLatestTILsFromReddit() {
-        mRedditEndpoint.latestTILs(getSubreddit(), getSortType(), getNumberToRequest(), getBeforeId())
+    private void retrieveLatestPostsFromReddit() {
+        mRedditEndpoint.latestTILs(getSubreddit(), getSortType(), getNumberToRequest())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(new Func1<Listing, Observable<Post>>() {
                     @Override
                     public Observable<Post> call(Listing listing) {
-                        storeNewBeforeId(listing.before);
-
                         return Observable.from(listing.getPosts());
                     }
                 })
                 .subscribe(new Action1<Post>() {
                     @Override
                     public void call(Post post) {
-                        mRedditPosts.add(post.getTitle());
-                        mRedditPostSubreddits.add(post.getSubreddit());
+                        if (postIsNewerThanPreviouslyRetrievedPosts(post)) {
+                            mRedditPosts.add(post.getTitle());
+                            mRedditPostSubreddits.add(post.getSubreddit());
+
+                            if (post.getCreatedUtc() > mLatestCreatedUtc) {
+                                mLatestCreatedUtc = post.getCreatedUtc();
+                            }
+                        }
                     }
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Log.e("RedditWearApp", "failed: " + throwable.getLocalizedMessage(), throwable);
+                        Log.e("RedditWearApp", "Failed to retrieve latest posts: " + throwable.getLocalizedMessage(), throwable);
                     }
                 }, new Action0() {
                     @Override
                     public void call() {
-                        sendNewPostsData();
+                        if (mRedditPosts.size() > 0) {
+                            if (mLatestCreatedUtc > 0) {
+                                storeNewCreatedUtc(mLatestCreatedUtc);
+                            }
+
+                            sendNewPostsData();
+                        }
                     }
                 });
     }
 
-    private void storeNewBeforeId(String before) {
-        if (!TextUtils.isEmpty(before)) {
-            getSharedPreferences().edit().putString(SettingsActivity.PREFS_BEFORE_ID, before).apply();
-        }
+    private boolean postIsNewerThanPreviouslyRetrievedPosts(Post post) {
+        return post.getCreatedUtc() > getCreatedUtcOfPosts();
+    }
+
+    private void storeNewCreatedUtc(long createdAtUtc) {
+        getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, createdAtUtc).apply();
     }
 
     private void sendNewPostsData() {
-        if (mRedditPosts.size() <= 0) {
-            return;
-        }
-
         if (mGoogleApiClient.isConnected()) {
             PutDataMapRequest mapRequest = PutDataMapRequest.create("/redditwear");
             mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis()); // debug, ensure it sends, even if content is the same
@@ -136,8 +146,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return Integer.parseInt(getSharedPreferences().getString(SettingsActivity.PREFS_NUMBER_TO_RETRIEVE, "5"));
     }
 
-    private String getBeforeId() {
-        return getSharedPreferences().getString(SettingsActivity.PREFS_BEFORE_ID, "");
+    private long getCreatedUtcOfPosts() {
+        return getSharedPreferences().getLong(SettingsActivity.PREFS_CREATED_UTC, 0);
     }
 
     private String getSortType() {

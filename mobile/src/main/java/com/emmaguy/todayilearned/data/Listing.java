@@ -31,7 +31,7 @@ public class Listing {
                 JsonObject data = e.getAsJsonObject().get("data").getAsJsonObject();
                 boolean stickied = data.get("stickied").getAsBoolean();
                 if (!stickied) {
-                    l.addTIL(new Post(data.get("title").getAsString(), data.get("id").getAsString(), data.get("subreddit").getAsString()));
+                    l.addTIL(new Post(data.get("title").getAsString(), data.get("id").getAsString(), data.get("subreddit").getAsString(), data.get("created_utc").getAsLong()));
                 }
             }
 

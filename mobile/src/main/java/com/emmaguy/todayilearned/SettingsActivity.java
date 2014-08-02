@@ -9,7 +9,6 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
-import android.util.Log;
 import android.widget.EditText;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -23,10 +22,10 @@ import de.psdev.licensesdialog.LicensesDialog;
 public class SettingsActivity extends Activity {
 
     public static final String PREFS_REFRESH_FREQUENCY = "sync_frequency";
-    public static final String PREFS_BEFORE_ID = "before_id";
     public static final String PREFS_NUMBER_TO_RETRIEVE = "number_to_retrieve";
     public static final String PREFS_SORT_ORDER = "sort_order";
     public static final String PREFS_SUBREDDITS = "subreddits";
+    public static final String PREFS_CREATED_UTC = "created_utc";
 
     public static final String OPEN_SOURCE = "open_source";
 
@@ -96,12 +95,12 @@ public class SettingsActivity extends Activity {
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
             } else if (key.equals(PREFS_SORT_ORDER) || key.equals(PREFS_SUBREDDITS)) {
-                clearSavedPosition();
+                clearSavedUtcTime();
             }
         }
 
-        private void clearSavedPosition() {
-            getPreferenceManager().getSharedPreferences().edit().putString(SettingsActivity.PREFS_BEFORE_ID, "").apply();
+        private void clearSavedUtcTime() {
+            getPreferenceManager().getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, 0).apply();
         }
 
         protected void initSummary() {
