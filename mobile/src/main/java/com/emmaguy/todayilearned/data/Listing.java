@@ -12,7 +12,6 @@ import java.util.List;
 
 public class Listing {
     private List<Post> mTILs = new ArrayList<Post>();
-    public String before;
 
     public void addTIL(Post post) {
         mTILs.add(post);
@@ -35,9 +34,6 @@ public class Listing {
                 }
             }
 
-            if (l.mTILs.size() > 0) {
-                l.before = "t3_" + l.mTILs.get(0).getId();
-            }
             return l;
         }
     }
