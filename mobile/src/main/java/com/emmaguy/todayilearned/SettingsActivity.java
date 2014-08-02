@@ -25,6 +25,7 @@ public class SettingsActivity extends Activity {
     public static final String PREFS_NUMBER_TO_RETRIEVE = "number_to_retrieve";
     public static final String PREFS_SORT_ORDER = "sort_order";
     public static final String PREFS_SUBREDDITS = "subreddits";
+    public static final String PREFS_SELECTED_SUBREDDITS = "selectedsubreddits";
     public static final String PREFS_CREATED_UTC = "created_utc";
 
     public static final String OPEN_SOURCE = "open_source";
@@ -94,7 +95,7 @@ public class SettingsActivity extends Activity {
 
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
-            } else if (key.equals(PREFS_SORT_ORDER) || key.equals(PREFS_SUBREDDITS)) {
+            } else if (key.equals(PREFS_SORT_ORDER) || key.equals(PREFS_SUBREDDITS) || key.equals(PREFS_SELECTED_SUBREDDITS)) {
                 clearSavedUtcTime();
             }
         }

@@ -21,6 +21,7 @@ public class AppListener implements WakefulIntentService.AlarmListener {
         if (!TextUtils.isEmpty(refreshString)) {
             int refreshIntervalMinutes = Integer.parseInt(refreshString);
             if (refreshIntervalMinutes > 0) {
+
                 mgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000, TimeUnit.MINUTES.toMillis(refreshIntervalMinutes), pi);
             } else if (refreshIntervalMinutes == -1) {
                 WakefulIntentService.cancelAlarms(context);

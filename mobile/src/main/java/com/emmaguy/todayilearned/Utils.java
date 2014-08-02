@@ -12,9 +12,6 @@ import java.util.List;
 import java.util.Set;
 
 public class Utils {
-    private static final String SELECTED_SUBREDDITS = "selectedsubreddits";
-    private static final String SUBREDDITS = "subreddits";
-
     private static Set<String> DefaultSubReddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews", "britishproblems", "showerthoughts"));
     private static Set<String> DefaultSelectedSubReddits = new HashSet<String>(Arrays.asList("todayilearned"));
 
@@ -23,7 +20,7 @@ public class Utils {
     }
 
     public static List<String> allSubReddits(Context c) {
-        Set<String> subReddits = getSharedPreferences(c).getStringSet(SUBREDDITS, DefaultSubReddits);
+        Set<String> subReddits = getSharedPreferences(c).getStringSet(SettingsActivity.PREFS_SUBREDDITS, DefaultSubReddits);
 
         ArrayList<String> sortedSubreddits = new ArrayList(subReddits);
         Collections.sort(sortedSubreddits);
@@ -32,17 +29,17 @@ public class Utils {
     }
 
     public static List<String> selectedSubReddits(Context c) {
-        Set<String> subReddits = getSharedPreferences(c).getStringSet(SELECTED_SUBREDDITS, DefaultSelectedSubReddits);
+        Set<String> subReddits = getSharedPreferences(c).getStringSet(SettingsActivity.PREFS_SELECTED_SUBREDDITS, DefaultSelectedSubReddits);
 
         return new ArrayList(subReddits);
     }
 
     public static void saveSubreddits(Context c, List<String> srs) {
-        getSharedPreferences(c).edit().putStringSet(SUBREDDITS, new HashSet<String>(srs)).apply();
+        getSharedPreferences(c).edit().putStringSet(SettingsActivity.PREFS_SUBREDDITS, new HashSet<String>(srs)).apply();
     }
 
     public static void saveSelectedSubreddits(Context c, List<String> selectedSubreddits) {
-        getSharedPreferences(c).edit().putStringSet(SELECTED_SUBREDDITS, new HashSet<String>(selectedSubreddits)).apply();
+        getSharedPreferences(c).edit().putStringSet(SettingsActivity.PREFS_SELECTED_SUBREDDITS, new HashSet<String>(selectedSubreddits)).apply();
     }
 
     public static void addSubreddit(Context c, String subreddit) {
