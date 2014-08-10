@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.wearable.activity.ConfirmationActivity;
 import android.util.Log;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
