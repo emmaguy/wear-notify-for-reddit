@@ -11,7 +11,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.Listing;
-import com.emmaguy.todayilearned.data.Post;
+import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.android.gms.common.ConnectionResult;
@@ -20,6 +20,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
@@ -40,8 +41,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             .build();
 
     private final Reddit mRedditEndpoint = restAdapter.create(Reddit.class);
-    private final ArrayList<String> mRedditPosts = new ArrayList<String>();
-    private final ArrayList<String> mRedditPostSubreddits = new ArrayList<String>();
+    private final ArrayList<Post> mRedditPosts = new ArrayList<Post>();
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -85,8 +85,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         if (postIsNewerThanPreviouslyRetrievedPosts(post)) {
                             Utils.Log("Adding post: " + post.getTitle());
 
-                            mRedditPosts.add(post.getTitle());
-                            mRedditPostSubreddits.add(post.getSubreddit());
+                            mRedditPosts.add(post);
 
                             if (post.getCreatedUtc() > mLatestCreatedUtc) {
                                 mLatestCreatedUtc = post.getCreatedUtc();
@@ -130,20 +129,28 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         if (mGoogleApiClient.isConnected()) {
             Utils.Log("sendNewPostsData: " + mRedditPosts.size());
 
+            Gson gson = new Gson();
+            final String latestPosts = gson.toJson(mRedditPosts);
+
+            // convert to json for sending to watch and to save to shared prefs
+            // don't need to preserve the order like having separate String lists, can more easily add/remove fields
             PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
-            mapRequest.getDataMap().putStringArrayList(Constants.KEY_REDDIT_POSTS, mRedditPosts);
-            mapRequest.getDataMap().putStringArrayList(Constants.KEY_POST_SUBREDDITS, mRedditPostSubreddits);
+            mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, latestPosts);
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, mapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            mRedditPosts.clear();
-
                             Utils.Log("onResult: " + dataItemResult.getStatus());
 
-                            if (mGoogleApiClient.isConnected()) {
-                                mGoogleApiClient.disconnect();
+                            if (dataItemResult.getStatus().isSuccess()) {
+                                getSharedPreferences().edit().putString(SettingsActivity.PREFS_REDDIT_POSTS, latestPosts).apply();
+
+                                mRedditPosts.clear();
+
+                                if (mGoogleApiClient.isConnected()) {
+                                    mGoogleApiClient.disconnect();
+                                }
                             }
                         }
                     });

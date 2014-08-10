@@ -10,5 +10,6 @@
 
     <string name="dismiss_all">Dismiss All</string>
     <string name="loading">Loading...</string>
+    <string name="open_on_phone">Open on phone</string>
 
 </resources>

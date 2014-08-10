@@ -10,6 +10,7 @@ import android.support.wearable.activity.ConfirmationActivity;
 import android.util.Log;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.data.FreezableUtils;
@@ -18,6 +19,8 @@ import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,14 +60,16 @@ public class NotificationListenerService extends WearableListenerService {
                 String path = event.getDataItem().getUri().getPath();
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
-                    final ArrayList<String> posts = dataMapItem.getDataMap().getStringArrayList(Constants.KEY_REDDIT_POSTS);
-                    final ArrayList<String> subredditsForEachPost = dataMapItem.getDataMap().getStringArrayList(Constants.KEY_POST_SUBREDDITS);
+                    final String latestPosts = dataMapItem.getDataMap().getString(Constants.KEY_REDDIT_POSTS);
+
+                    Gson gson = new Gson();
+                    ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {}.getType());
 
                     ArrayList<Notification> notifications = new ArrayList<Notification>();
                     for (int i = 0; i < posts.size(); i++) {
                         NotificationCompat.BigTextStyle extraPageStyle = new NotificationCompat.BigTextStyle();
-                        extraPageStyle.bigText(posts.get(i));
-                        extraPageStyle.setBigContentTitle(subredditsForEachPost.get(i));
+                        extraPageStyle.bigText(posts.get(i).getTitle());
+                        extraPageStyle.setBigContentTitle(posts.get(i).getSubreddit());
 
                         Notification extraPageNotification = new NotificationCompat.Builder(this)
                                 .setStyle(extraPageStyle)
@@ -73,14 +78,9 @@ public class NotificationListenerService extends WearableListenerService {
                         notifications.add(extraPageNotification);
                     }
 
-                    Intent dismissIntent = new Intent(this, DismissNotificationsReceiver.class);
-                    dismissIntent.putExtra(DismissNotificationsReceiver.NOTIFICATION_ID_EXTRA, NOTIFICATION_ID);
-                    dismissIntent.setAction(DismissNotificationsReceiver.DISMISS_ACTION);
-
-                    PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(this, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
                     NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                            .addAction(R.drawable.ic_action_done, getString(R.string.dismiss_all), dismissPendingIntent)
+                            .addAction(R.drawable.ic_action_done, getString(R.string.dismiss_all), getDismissPendingIntent())
+                            .addAction(R.drawable.go_to_phone_00156, getString(R.string.open_on_phone), getOpenOnPhonePendingIntent())
                             .setContentTitle(getResources().getQuantityString(R.plurals.x_new_posts, notifications.size(), notifications.size()))
                             .setSmallIcon(R.drawable.ic_launcher);
 
@@ -93,5 +93,18 @@ public class NotificationListenerService extends WearableListenerService {
                 }
             }
         }
+    }
+
+    private PendingIntent getOpenOnPhonePendingIntent() {
+        Intent openOnPhone = new Intent(this, OpenOnPhoneReceiver.class);
+        return PendingIntent.getBroadcast(this, 0, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private PendingIntent getDismissPendingIntent() {
+        Intent dismissIntent = new Intent(this, DismissNotificationsReceiver.class);
+        dismissIntent.putExtra(DismissNotificationsReceiver.NOTIFICATION_ID_EXTRA, NOTIFICATION_ID);
+        dismissIntent.setAction(DismissNotificationsReceiver.DISMISS_ACTION);
+
+        return PendingIntent.getBroadcast(this, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }
