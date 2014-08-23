@@ -47,5 +47,8 @@
     <string name="no_subreddits">No Subreddits selected!</string>
     <string name="enter_subreddit_name">Enter subreddit of your choice</string>
     <string name="title_activity_latest_posts">Latest Posts</string>
+    <string name="show_descriptions">Show post descriptions</string>
+    <string name="show_desc_summary_off">Subreddit and post title only</string>
+    <string name="show_desc_summary_on">Descriptions (self text) will appear below post titles</string>
 
 </resources>

@@ -8,8 +8,8 @@ android {
         applicationId "com.emmaguy.todayilearned"
         minSdkVersion 19
         targetSdkVersion 19
-        versionCode 8
-        versionName "1.4.3"
+        versionCode 9
+        versionName "1.4.4"
     }
     buildTypes {
         release {

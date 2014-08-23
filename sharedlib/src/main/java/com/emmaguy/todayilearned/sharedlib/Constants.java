@@ -6,4 +6,5 @@ public class Constants {
     public static final String PATH_OPEN_ON_PHONE = "/openonphone";
 
     public static final String KEY_REDDIT_POSTS = "posts";
+    public static final String KEY_SHOW_DESCRIPTIONS = "show_descs";
 }

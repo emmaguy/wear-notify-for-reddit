@@ -26,10 +26,11 @@ public class SettingsActivity extends Activity {
     public static final String PREFS_SORT_ORDER = "sort_order";
     public static final String PREFS_SUBREDDITS = "subreddits";
     public static final String PREFS_SELECTED_SUBREDDITS = "selectedsubreddits";
+    public static final String PREFS_SHOW_DESCRIPTIONS = "show_descriptions";
+
     public static final String PREFS_CREATED_UTC = "created_utc";
 
     public static final String PREFS_REDDIT_POSTS = "reddit_posts";
-
     public static final String OPEN_SOURCE = "open_source";
 
     @Override

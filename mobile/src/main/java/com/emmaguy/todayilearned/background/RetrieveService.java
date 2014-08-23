@@ -11,9 +11,9 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.Listing;
-import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -136,6 +136,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
             PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
             mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, latestPosts);
+            mapRequest.getDataMap().putBoolean(Constants.KEY_SHOW_DESCRIPTIONS, getSharedPreferences().getBoolean(SettingsActivity.PREFS_SHOW_DESCRIPTIONS, true));
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, mapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {

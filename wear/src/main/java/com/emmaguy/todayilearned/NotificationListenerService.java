@@ -3,10 +3,9 @@ package com.emmaguy.todayilearned;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.wearable.activity.ConfirmationActivity;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -61,6 +60,7 @@ public class NotificationListenerService extends WearableListenerService {
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                     final String latestPosts = dataMapItem.getDataMap().getString(Constants.KEY_REDDIT_POSTS);
+                    final boolean showDescriptions = dataMapItem.getDataMap().getBoolean(Constants.KEY_SHOW_DESCRIPTIONS);
 
                     Gson gson = new Gson();
                     ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {}.getType());
@@ -68,7 +68,7 @@ public class NotificationListenerService extends WearableListenerService {
                     ArrayList<Notification> notifications = new ArrayList<Notification>();
                     for (int i = 0; i < posts.size(); i++) {
                         NotificationCompat.BigTextStyle extraPageStyle = new NotificationCompat.BigTextStyle();
-                        extraPageStyle.bigText(posts.get(i).getTitle());
+                        extraPageStyle.bigText(posts.get(i).getTitle() + postDescription(showDescriptions, posts.get(i).getDescription()));
                         extraPageStyle.setBigContentTitle(posts.get(i).getSubreddit());
 
                         Notification extraPageNotification = new NotificationCompat.Builder(this)
@@ -93,6 +93,14 @@ public class NotificationListenerService extends WearableListenerService {
                 }
             }
         }
+    }
+
+    private String postDescription(boolean showDescriptions, String description) {
+        if (!showDescriptions || TextUtils.isEmpty(description)) {
+            return "";
+        }
+
+        return "\n\n" + description;
     }
 
     private PendingIntent getOpenOnPhonePendingIntent() {
