@@ -50,5 +50,20 @@
     <string name="show_descriptions">Show post descriptions</string>
     <string name="show_desc_summary_off">Subreddit and post title only</string>
     <string name="show_desc_summary_on">Descriptions (self text) will appear below post titles</string>
+    <string name="account">reddit Account</string>
+    <string name="tap_to_sign_in">Tap to sign in</string>
+    <string name="reddit_account">Reddit account</string>
+    <string name="sync_subreddits">Sync subreddits</string>
+    <string name="you_need_to_sign_in_to_sync_subreddits">You need to sign in to sync subreddits</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
+    <string name="login">Login</string>
+    <string name="login_to_reddit">Login to reddit</string>
+    <string name="failed_to_login">Failed to login. Please check your credentials and internet connection</string>
+    <string name="logging_in">Logging in...</string>
+    <string name="syncing_subreddits">Syncing subreddits...</string>
+    <string name="failed_to_sync_subreddits">Failed to sync subreddits</string>
+    <string name="logged_in_as_x">Logged in as %1$s</string>
+    <string name="successfully_synced_subreddits">Successfully synced subreddits</string>
 
 </resources>

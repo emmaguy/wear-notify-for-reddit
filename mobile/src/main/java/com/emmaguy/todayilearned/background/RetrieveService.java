@@ -8,9 +8,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.Utils;
-import com.emmaguy.todayilearned.data.Listing;
+import com.emmaguy.todayilearned.data.ListingResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
@@ -35,12 +36,6 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private final RestAdapter restAdapter = new RestAdapter.Builder()
-            .setEndpoint("http://www.reddit.com/")
-            .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Listing.class, new Listing.ListingJsonDeserializer()).create()))
-            .build();
-
-    private final Reddit mRedditEndpoint = restAdapter.create(Reddit.class);
     private final ArrayList<Post> mRedditPosts = new ArrayList<Post>();
 
     private GoogleApiClient mGoogleApiClient;
@@ -70,13 +65,21 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private void retrieveLatestPostsFromReddit() {
-        mRedditEndpoint.latestPosts(getSubreddit(), getSortType(), getNumberToRequest())
+        final RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint("https://www.reddit.com/")
+                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(ListingResponse.class, new ListingResponse.ListingJsonDeserializer()).create()))
+                .build();
+
+        final Reddit reddit = restAdapter.create(Reddit.class);
+
+        reddit.latestPosts(getSubreddit(), getSortType(), getNumberToRequest())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .flatMap(new Func1<Listing, Observable<Post>>() {
+                .flatMap(new Func1<ListingResponse, Observable<Post>>() {
                     @Override
-                    public Observable<Post> call(Listing listing) {
-                        return Observable.from(listing.getPosts());
+                    public Observable<Post> call(ListingResponse listingResponse) {
+                        return Observable.from(listingResponse.getPosts());
                     }
                 })
                 .subscribe(new Action1<Post>() {
@@ -113,6 +116,14 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         }
                     }
                 });
+    }
+
+    private String getModhash() {
+        return getSharedPreferences().getString(SettingsActivity.PREFS_KEY_MODHASH, "");
+    }
+
+    private String getCookie() {
+        return getSharedPreferences().getString(SettingsActivity.PREFS_KEY_COOKIE, "");
     }
 
     private boolean postIsNewerThanPreviouslyRetrievedPosts(Post post) {

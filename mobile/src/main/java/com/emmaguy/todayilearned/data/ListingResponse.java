@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Listing {
+public class ListingResponse {
     private List<Post> mPosts = new ArrayList<Post>();
 
     public void addPost(Post post) {
@@ -22,10 +22,10 @@ public class Listing {
         return mPosts;
     }
 
-    public static class ListingJsonDeserializer implements JsonDeserializer<Listing> {
+    public static class ListingJsonDeserializer implements JsonDeserializer<ListingResponse> {
         @Override
-        public Listing deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            Listing l = new Listing();
+        public ListingResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            ListingResponse l = new ListingResponse();
             JsonObject dataObject = json.getAsJsonObject().get("data").getAsJsonObject();
             for (JsonElement e : dataObject.get("children").getAsJsonArray()) {
                 JsonObject data = e.getAsJsonObject().get("data").getAsJsonObject();
