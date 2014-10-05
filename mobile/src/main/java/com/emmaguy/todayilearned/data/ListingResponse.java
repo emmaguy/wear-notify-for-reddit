@@ -34,6 +34,7 @@ public class ListingResponse {
                     l.addPost(new Post(data.get("title").getAsString(),
                             data.get("subreddit").getAsString(),
                             data.get("selftext").getAsString(),
+                            data.get("name").getAsString(),
                             data.get("permalink").getAsString(),
                             data.get("created_utc").getAsLong()));
                 }

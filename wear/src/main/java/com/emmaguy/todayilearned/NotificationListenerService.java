@@ -1,21 +1,30 @@
 package com.emmaguy.todayilearned;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.RemoteInput;
+import android.app.Service;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.data.FreezableUtils;
+import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.google.gson.Gson;
@@ -27,8 +36,12 @@ import java.util.concurrent.TimeUnit;
 
 public class NotificationListenerService extends WearableListenerService {
     private static final int NOTIFICATION_ID = 1;
+    private static final String GROUP_KEY_SUBREDDIT_POSTS = "group_key_subreddit_posts";
+    private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
+    private static final String ACTION_RESPONSE = "com.emmaguy.todayilearned.Reply";
 
     private GoogleApiClient mGoogleApiClient;
+    private Handler mHandler;
 
     @Override
     public void onCreate() {
@@ -39,6 +52,29 @@ public class NotificationListenerService extends WearableListenerService {
                 .build();
 
         mGoogleApiClient.connect();
+
+        mHandler = new Handler();
+    }
+
+    @Override
+    public void onMessageReceived(MessageEvent messageEvent) {
+        String message = "";
+
+        if (messageEvent.getPath().equals(Constants.PATH_POST_REPLY_RESULT_SUCCESS)) {
+            message = getString(R.string.reply_successful);
+        } else if (messageEvent.getPath().equals(Constants.PATH_POST_REPLY_RESULT_FAILURE)) {
+            message = getString(R.string.reply_failed_sad_face);
+        }
+
+        if(!TextUtils.isEmpty(message)) {
+            final String msg = message;
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(NotificationListenerService.this, msg, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
     @Override
@@ -63,36 +99,75 @@ public class NotificationListenerService extends WearableListenerService {
                     final boolean showDescriptions = dataMapItem.getDataMap().getBoolean(Constants.KEY_SHOW_DESCRIPTIONS);
 
                     Gson gson = new Gson();
-                    ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {}.getType());
+                    ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {
+                    }.getType());
 
-                    ArrayList<Notification> notifications = new ArrayList<Notification>();
+                    Bitmap background = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.theme_blue)}, 1, 1, Bitmap.Config.ARGB_8888);
+                    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     for (int i = 0; i < posts.size(); i++) {
-                        NotificationCompat.BigTextStyle extraPageStyle = new NotificationCompat.BigTextStyle();
-                        extraPageStyle.bigText(posts.get(i).getTitle() + postDescription(showDescriptions, posts.get(i).getDescription()));
-                        extraPageStyle.setBigContentTitle(posts.get(i).getSubreddit());
+                        Post post = posts.get(i);
+                        Log.d("emmalolz", "building notif, name: " + post.getFullname());
+                        int notificationId = NOTIFICATION_ID + i;
 
-                        Notification extraPageNotification = new NotificationCompat.Builder(this)
-                                .setStyle(extraPageStyle)
+                        Notification.Action replyAction = new Notification.Action.Builder(
+                                R.drawable.ic_full_reply, getString(R.string.reply_to_x, post.getTitle()), getReplyPendingIntent(notificationId, post.getFullname()))
+                                .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
                                 .build();
 
-                        notifications.add(extraPageNotification);
+                        Notification.Action openOnPhoneAction = new Notification.Action.Builder(
+                                R.drawable.go_to_phone_00156, getString(R.string.open_on_phone), getOpenOnPhonePendingIntent(notificationId, post.getPermalink()))
+                                .build();
+
+                        Notification.Builder builder = new Notification.Builder(this)
+                                .setContentTitle(post.getSubreddit())
+                                .setContentText((post.getTitle() + postDescription(showDescriptions, post.getDescription())))
+                                .setGroup(GROUP_KEY_SUBREDDIT_POSTS)
+                                .addAction(replyAction)
+                                .addAction(openOnPhoneAction)
+                                .setSmallIcon(R.drawable.ic_launcher);
+
+                        Notification.WearableExtender extender = new Notification.WearableExtender();
+                        extender.setBackground(background);
+                        builder.extend(extender);
+
+                        notificationManager.notify(notificationId, builder.build());
                     }
-
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                            .addAction(R.drawable.ic_action_done, getString(R.string.dismiss_all), getDismissPendingIntent())
-                            .addAction(R.drawable.go_to_phone_00156, getString(R.string.open_on_phone), getOpenOnPhonePendingIntent())
-                            .setContentTitle(getResources().getQuantityString(R.plurals.x_new_posts, notifications.size(), notifications.size()))
-                            .setSmallIcon(R.drawable.ic_launcher);
-
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-                    notificationManager.notify(NOTIFICATION_ID,
-                            new NotificationCompat.WearableExtender()
-                                    .addPages(notifications)
-                                    .extend(builder)
-                                    .build());
                 }
             }
         }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (null == intent || null == intent.getAction()) {
+            return Service.START_STICKY;
+        }
+        String action = intent.getAction();
+        if (action.equals(ACTION_RESPONSE)) {
+            Bundle remoteInputResults = RemoteInput.getResultsFromIntent(intent);
+            CharSequence replyMessage = "";
+            if (remoteInputResults != null) {
+                replyMessage = remoteInputResults.getCharSequence(EXTRA_VOICE_REPLY);
+            }
+            sendReplyToPhone(replyMessage.toString(), intent.getStringExtra(Constants.PATH_KEY_POST_FULLNAME));
+        }
+        return Service.START_STICKY;
+    }
+
+    private void sendReplyToPhone(String text, String fullname) {
+        Log.d("emmalolz", "text: " + text + " name: " + fullname);
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(Constants.PATH_REPLY);
+        putDataMapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
+        putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE, text);
+        putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_POST_FULLNAME, fullname);
+
+        Wearable.DataApi.putDataItem(mGoogleApiClient, putDataMapRequest.asPutDataRequest())
+                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                    @Override
+                    public void onResult(DataApi.DataItemResult dataItemResult) {
+                        Log.d("RedditWear", "sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
+                    }
+                });
     }
 
     private String postDescription(boolean showDescriptions, String description) {
@@ -103,16 +178,15 @@ public class NotificationListenerService extends WearableListenerService {
         return "\n\n" + description;
     }
 
-    private PendingIntent getOpenOnPhonePendingIntent() {
+    private PendingIntent getOpenOnPhonePendingIntent(int notificationId, String permalink) {
         Intent openOnPhone = new Intent(this, OpenOnPhoneReceiver.class);
-        return PendingIntent.getBroadcast(this, 0, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
+        openOnPhone.putExtra(Constants.KEY_POST_PERMALINK, permalink);
+        return PendingIntent.getBroadcast(this, notificationId, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getDismissPendingIntent() {
-        Intent dismissIntent = new Intent(this, DismissNotificationsReceiver.class);
-        dismissIntent.putExtra(DismissNotificationsReceiver.NOTIFICATION_ID_EXTRA, NOTIFICATION_ID);
-        dismissIntent.setAction(DismissNotificationsReceiver.DISMISS_ACTION);
-
-        return PendingIntent.getBroadcast(this, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    private PendingIntent getReplyPendingIntent(int notificationId, String fullname) {
+        Intent intent = new Intent(ACTION_RESPONSE);
+        intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, fullname);
+        return PendingIntent.getService(this, notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

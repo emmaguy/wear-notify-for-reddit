@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.Utils;
@@ -85,7 +86,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 .subscribe(new Action1<Post>() {
                     @Override
                     public void call(Post post) {
-                        if (postIsNewerThanPreviouslyRetrievedPosts(post)) {
+                        // In debug, never ignore posts - we want content to test with
+                        if (postIsNewerThanPreviouslyRetrievedPosts(post) || BuildConfig.DEBUG) {
                             Utils.Log("Adding post: " + post.getTitle());
 
                             mRedditPosts.add(post);
@@ -156,8 +158,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             Utils.Log("onResult: " + dataItemResult.getStatus());
 
                             if (dataItemResult.getStatus().isSuccess()) {
-                                getSharedPreferences().edit().putString(SettingsActivity.PREFS_REDDIT_POSTS, latestPosts).apply();
-
                                 mRedditPosts.clear();
 
                                 if (mGoogleApiClient.isConnected()) {

@@ -11,6 +11,10 @@ public interface Reddit {
     Observable<LoginResponse> login(@Query("user") String username,
                                     @Query("passwd") String password);
 
+    @POST("/api/comment?api_type=json")
+    Observable<CommentResponse> commentOnPost(@Query("text") String comment,
+                                              @Query("thing_id") String postId);
+
     @GET("/subreddits/mine/subscriber.json")
     Observable<SubscriptionResponse> subredditSubscriptions();
 

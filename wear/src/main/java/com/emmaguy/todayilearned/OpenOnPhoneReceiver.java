@@ -11,7 +11,8 @@ import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.concurrent.TimeUnit;
@@ -28,7 +29,7 @@ public class OpenOnPhoneReceiver extends BroadcastReceiver {
                 .addApi(Wearable.API)
                 .build();
 
-        new ConnectTask(context).execute();
+        new ConnectTask(context, intent.getStringExtra(Constants.KEY_POST_PERMALINK)).execute();
     }
 
     private void showConfirmation(Context context) {
@@ -41,9 +42,11 @@ public class OpenOnPhoneReceiver extends BroadcastReceiver {
 
     private class ConnectTask extends AsyncTask<Void, Void, Void> {
         private final Context mContext;
+        private final String mPermalink;
 
-        public ConnectTask(Context context) {
-            mContext = context.getApplicationContext();
+        public ConnectTask(Context context, String permalink) {
+            mContext = context;
+            mPermalink = permalink;
         }
 
         @Override
@@ -54,14 +57,20 @@ public class OpenOnPhoneReceiver extends BroadcastReceiver {
                 return null;
             }
 
-            Wearable.MessageApi.sendMessage(mGoogleApiClient, "", Constants.PATH_OPEN_ON_PHONE, null).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
-                @Override
-                public void onResult(MessageApi.SendMessageResult sendMessageResult) {
-                    if (sendMessageResult.getStatus().isSuccess()) {
-                        showConfirmation(mContext);
-                    }
-                }
-            });
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(Constants.PATH_OPEN_ON_PHONE);
+            putDataMapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
+            putDataMapRequest.getDataMap().putString(Constants.KEY_POST_PERMALINK, mPermalink);
+
+            Wearable.DataApi.putDataItem(mGoogleApiClient, putDataMapRequest.asPutDataRequest())
+                    .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                        @Override
+                        public void onResult(DataApi.DataItemResult dataItemResult) {
+                            Log.d("RedditWear", "Open on phone putDataItem status: " + dataItemResult.getStatus().toString());
+                            if (dataItemResult.getStatus().isSuccess()) {
+                                showConfirmation(mContext);
+                            }
+                        }
+                    });
 
             return null;
         }

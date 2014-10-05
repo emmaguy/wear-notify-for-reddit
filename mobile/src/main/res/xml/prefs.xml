@@ -41,7 +41,7 @@
     <PreferenceCategory android:title="@string/reddit_account">
         <PreferenceScreen
             android:key="account_info"
-            android:title="@string/account"
+            android:title="@string/reddit_account"
             android:summary="@string/tap_to_sign_in" />
 
         <PreferenceScreen
