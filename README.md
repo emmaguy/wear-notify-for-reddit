@@ -7,7 +7,7 @@ Stores the latest created utc of the posts retrieved, so when we makes the next 
 
 Requires an Android wearable - the posts are presented in a notification, 1 post per page, and can be scrolled through, left to right. There's an action at the end of the posts to dismiss them
 
-|  ![wear1](https://raw.githubusercontent.com/emmaguy/til/master/images/wear_home.png) | ![wear2](https://raw.githubusercontent.com/emmaguy/til/master/images/wear_til_with_position.png) | ![wear3](https://raw.githubusercontent.com/emmaguy/til/master/images/wear_dismiss_all.png)  |
+|  ![wear1](https://raw.githubusercontent.com/emmaguy/til/master/images/home.png) | ![wear2](https://raw.githubusercontent.com/emmaguy/til/master/images/all.png) | ![wear3](https://raw.githubusercontent.com/emmaguy/til/master/images/reply.png)  |
 |---|---|---|
 
 There's a short settings page where the subreddits, sync refresh interval, ordering and number of posts to retrieve can be configured.
