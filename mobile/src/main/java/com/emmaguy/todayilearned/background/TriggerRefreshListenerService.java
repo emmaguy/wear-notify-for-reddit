@@ -28,6 +28,7 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import retrofit.RestAdapter;
+import retrofit.android.AndroidLog;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -67,8 +68,16 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                 if (Constants.PATH_REPLY.equals(path)) {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
                     String message = dataMap.getString(Constants.PATH_KEY_MESSAGE);
+                    boolean isDirectMessage = dataMap.getBoolean(Constants.PATH_KEY_IS_DIRECT_MESSAGE);
 
-                    replyToRedditPost(fullname, message);
+                    if (isDirectMessage) {
+                        String subject = dataMap.getString(Constants.PATH_KEY_MESSAGE_SUBJECT);
+                        String toUser = dataMap.getString(Constants.PATH_KEY_MESSAGE_TO_USER);
+
+                        replyToDirectMessage(subject, message, toUser);
+                    } else {
+                        replyToRedditPost(fullname, message);
+                    }
                 } else if (Constants.PATH_OPEN_ON_PHONE.equals(path)) {
                     String permalink = dataMap.getString(Constants.KEY_POST_PERMALINK);
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.reddit.com" + permalink));
@@ -85,6 +94,46 @@ public class TriggerRefreshListenerService extends WearableListenerService {
 
     private String getCookie() {
         return PreferenceManager.getDefaultSharedPreferences(this).getString(SettingsActivity.PREFS_KEY_COOKIE, "");
+    }
+
+    private void replyToDirectMessage(String subject, String message, String toUser) {
+        String cookie = getCookie();
+        String modhash = getModhash();
+
+        if (TextUtils.isEmpty(cookie) || TextUtils.isEmpty(modhash)) {
+            Log.e("RedditWear", "Not logged in, can't reply to message");
+            return;
+        }
+
+        final RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint("https://www.reddit.com/")
+                .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(CommentResponse.class, new CommentResponse.CommentResponseJsonDeserializer()).create()))
+                .build();
+
+        final Reddit redditEndpoint = restAdapter.create(Reddit.class);
+        redditEndpoint.replyToDirectMessage(subject, message, toUser)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<CommentResponse>() {
+                    @Override
+                    public void onNext(CommentResponse response) {
+                        if (response == null) {
+                            sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                        }
+                    }
+
+                    @Override
+                    public void onCompleted() {
+                        sendReplyResult(Constants.PATH_POST_REPLY_RESULT_SUCCESS);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("RedditWear", "Failed to post to reddit", e);
+                        sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                    }
+                });
     }
 
     private void replyToRedditPost(String fullname, String message) {

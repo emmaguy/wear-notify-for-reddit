@@ -25,10 +25,16 @@ import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import retrofit.RestAdapter;
+import retrofit.converter.ConversionException;
+import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
+import retrofit.mime.TypedInput;
+import retrofit.mime.TypedOutput;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
@@ -69,11 +75,99 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint("https://www.reddit.com/")
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(ListingResponse.class, new ListingResponse.ListingJsonDeserializer()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder()
+                        .registerTypeAdapter(ListingResponse.class, new ListingResponse.ListingJsonDeserializer()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);
 
+        if (isLoggedIn() && messagesEnabled()) {
+            Log.d("RedditWear", "Retrieving user's messages");
+
+            reddit.unreadMessages()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .flatMap(new Func1<ListingResponse, Observable<Post>>() {
+                        @Override
+                        public Observable<Post> call(ListingResponse listingResponse) {
+                            return Observable.from(listingResponse.getPosts());
+                        }
+                    })
+                    .subscribe(new Action1<Post>() {
+                        @Override
+                        public void call(Post post) {
+                            Log.d("RedditWear", "Found a message: " + post.getDescription());
+                            mRedditPosts.add(post);
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Log.d("RedditWear", "Failed to get user's messages", throwable);
+                        }
+                    }, new Action0() {
+                        @Override
+                        public void call() {
+                            // No messages to mark as read, so just request posts as normal
+                            if (mRedditPosts.size() <= 0) {
+                                Log.d("RedditWear", "No messages found");
+                                getLatestSubredditPosts(reddit);
+                            } else {
+                                getLatestSubredditPosts(reddit);
+                                // Mark all as read, then request latest posts from subreddits
+                                getRestAdapter()
+                                        .create(Reddit.class)
+                                        .markAllMessagesRead()
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(new Action1<MarkAllReadResponse>() {
+                                            @Override
+                                            public void call(MarkAllReadResponse response) {
+                                                if (response.isSuccessResponse()) {
+                                                    getLatestSubredditPosts(reddit);
+                                                }
+                                            }
+                                        });
+                            }
+                        }
+                    });
+        } else {
+            getLatestSubredditPosts(reddit);
+        }
+    }
+
+    private RestAdapter getRestAdapter() {
+        return new RestAdapter.Builder()
+                .setEndpoint("https://www.reddit.com/")
+                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                .setConverter(new Converter() {
+                    @Override
+                    public Object fromBody(TypedInput body, Type type) throws ConversionException {
+                        try {
+                            java.util.Scanner s = new java.util.Scanner(body.in()).useDelimiter("\\A");
+                            String bodyText = s.hasNext() ? s.next() : "";
+                            return new MarkAllReadResponse(bodyText.startsWith("202 Accepted"));
+                        } catch (IOException e) {
+                            throw new ConversionException(e);
+                        }
+                    }
+
+                    @Override
+                    public TypedOutput toBody(Object object) {
+                        throw new UnsupportedOperationException();
+                    }
+                })
+                .build();
+    }
+
+    private boolean messagesEnabled() {
+        return getSharedPreferences().getBoolean(SettingsActivity.PREFS_MESSAGES_ENABLED, true);
+    }
+
+    private boolean isLoggedIn() {
+        return !TextUtils.isEmpty(getCookie());
+    }
+
+    private void getLatestSubredditPosts(final Reddit reddit) {
         reddit.latestPosts(getSubreddit(), getSortType(), getNumberToRequest())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

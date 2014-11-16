@@ -15,4 +15,7 @@ public class Constants {
 
     public static final String PATH_KEY_MESSAGE = "post_message";
     public static final String PATH_KEY_POST_FULLNAME = "post_fullname";
+    public static final String PATH_KEY_IS_DIRECT_MESSAGE = "is_direct";
+    public static final String PATH_KEY_MESSAGE_SUBJECT = "msg_subject";
+    public static final String PATH_KEY_MESSAGE_TO_USER = "msg_to_user";
 }

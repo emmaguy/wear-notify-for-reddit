@@ -14,6 +14,10 @@
     <string name="reply">Reply</string>
     <string name="title_activity_reply">ReplyActivity</string>
     <string name="hello_round">Hello Round World!</string>
-    <string name="hello_square">Hello Square World!</string><string name="reply_to_x">Reply to %1$s</string><string name="reply_successful">Reply successful!</string><string name="reply_failed_sad_face">Reply failed :(</string>
+    <string name="hello_square">Hello Square World!</string>
+    <string name="reply_to_x">Reply to %1$s</string>
+    <string name="reply_successful">Reply successful!</string>
+    <string name="reply_failed_sad_face">Reply failed :(</string>
+    <string name="message_from_x">Message from %1$s</string>
 
 </resources>

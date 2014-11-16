@@ -66,7 +66,7 @@ public class NotificationListenerService extends WearableListenerService {
             message = getString(R.string.reply_failed_sad_face);
         }
 
-        if(!TextUtils.isEmpty(message)) {
+        if (!TextUtils.isEmpty(message)) {
             final String msg = message;
             mHandler.post(new Runnable() {
                 @Override
@@ -96,7 +96,6 @@ public class NotificationListenerService extends WearableListenerService {
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                     final String latestPosts = dataMapItem.getDataMap().getString(Constants.KEY_REDDIT_POSTS);
-                    final boolean showDescriptions = dataMapItem.getDataMap().getBoolean(Constants.KEY_SHOW_DESCRIPTIONS);
 
                     Gson gson = new Gson();
                     ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {
@@ -106,11 +105,13 @@ public class NotificationListenerService extends WearableListenerService {
                     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     for (int i = 0; i < posts.size(); i++) {
                         Post post = posts.get(i);
-                        Log.d("emmalolz", "building notif, name: " + post.getFullname());
-                        int notificationId = NOTIFICATION_ID + i;
+                        final boolean showDescriptions = dataMapItem.getDataMap().getBoolean(Constants.KEY_SHOW_DESCRIPTIONS) || post.isDirectMessage();
+
+                        Log.d("RedditWear", "building notif, name: " + post.getFullname());
+                        int notificationId = (int) post.getCreatedUtc();
 
                         Notification.Action replyAction = new Notification.Action.Builder(
-                                R.drawable.ic_full_reply, getString(R.string.reply_to_x, post.getTitle()), getReplyPendingIntent(notificationId, post.getFullname()))
+                                R.drawable.ic_full_reply, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(notificationId, post))
                                 .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
                                 .build();
 
@@ -119,12 +120,13 @@ public class NotificationListenerService extends WearableListenerService {
                                 .build();
 
                         Notification.Builder builder = new Notification.Builder(this)
-                                .setContentTitle(post.getSubreddit())
-                                .setContentText((post.getTitle() + postDescription(showDescriptions, post.getDescription())))
+                                .setContentTitle(post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit())
+                                .setContentText((post.isDirectMessage() ? post.getDescription() : post.getTitle() + postDescription(showDescriptions, post.getDescription())))
                                 .setGroup(GROUP_KEY_SUBREDDIT_POSTS)
-                                .addAction(replyAction)
-                                .addAction(openOnPhoneAction)
                                 .setSmallIcon(R.drawable.ic_launcher);
+
+                        builder.addAction(replyAction);
+                        builder.addAction(openOnPhoneAction);
 
                         Notification.WearableExtender extender = new Notification.WearableExtender();
                         extender.setBackground(background);
@@ -149,17 +151,23 @@ public class NotificationListenerService extends WearableListenerService {
             if (remoteInputResults != null) {
                 replyMessage = remoteInputResults.getCharSequence(EXTRA_VOICE_REPLY);
             }
-            sendReplyToPhone(replyMessage.toString(), intent.getStringExtra(Constants.PATH_KEY_POST_FULLNAME));
+            String subject = intent.getStringExtra(Constants.PATH_KEY_MESSAGE_SUBJECT);
+            String toUser = intent.getStringExtra(Constants.PATH_KEY_MESSAGE_TO_USER);
+            String fullname = intent.getStringExtra(Constants.PATH_KEY_POST_FULLNAME);
+            boolean isDirectMessage = intent.getBooleanExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE, false);
+            sendReplyToPhone(replyMessage.toString(), fullname, toUser, subject, isDirectMessage);
         }
         return Service.START_STICKY;
     }
 
-    private void sendReplyToPhone(String text, String fullname) {
-        Log.d("emmalolz", "text: " + text + " name: " + fullname);
+    private void sendReplyToPhone(String text, String fullname, String toUser, String subject, boolean isDirectMessage) {
         PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(Constants.PATH_REPLY);
         putDataMapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
+        putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE_SUBJECT, subject);
         putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE, text);
         putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_POST_FULLNAME, fullname);
+        putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE_TO_USER, toUser);
+        putDataMapRequest.getDataMap().putBoolean(Constants.PATH_KEY_IS_DIRECT_MESSAGE, isDirectMessage);
 
         Wearable.DataApi.putDataItem(mGoogleApiClient, putDataMapRequest.asPutDataRequest())
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
@@ -171,10 +179,14 @@ public class NotificationListenerService extends WearableListenerService {
     }
 
     private String postDescription(boolean showDescriptions, String description) {
-        if (!showDescriptions || TextUtils.isEmpty(description)) {
+        if (!showDescriptions) {
             return "";
         }
 
+        if (TextUtils.isEmpty(description)) {
+            return "";
+        }
+        Log.e("RedditWear", "desc: '" + description + "'");
         return "\n\n" + description;
     }
 
@@ -184,9 +196,12 @@ public class NotificationListenerService extends WearableListenerService {
         return PendingIntent.getBroadcast(this, notificationId, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getReplyPendingIntent(int notificationId, String fullname) {
+    private PendingIntent getReplyPendingIntent(int notificationId, Post post) {
         Intent intent = new Intent(ACTION_RESPONSE);
-        intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, fullname);
+        intent.putExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE, post.isDirectMessage());
+        intent.putExtra(Constants.PATH_KEY_MESSAGE_TO_USER, post.getAuthor());
+        intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getDescription());
+        intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
         return PendingIntent.getService(this, notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

@@ -43,6 +43,7 @@ public class SettingsActivity extends Activity {
     public static final String PREFS_SELECTED_SUBREDDITS = "selectedsubreddits";
     public static final String PREFS_SHOW_DESCRIPTIONS = "show_descriptions";
     public static final String PREFS_CREATED_UTC = "created_utc";
+    public static final String PREFS_MESSAGES_ENABLED = "messages_enabled";
 
     public static final String PREFS_ACCOUNT_INFO = "account_info";
     public static final String PREFS_SYNC_SUBREDDITS = "sync_subreddits";

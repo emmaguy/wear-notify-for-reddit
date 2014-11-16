@@ -6,13 +6,15 @@ public class Post {
     private final String mDescription;
     private final String mFullname;
     private final String mPermalink;
+    private final String mAuthor;
     private final long mCreatedUtc;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, long createdUtc) {
+    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, long createdUtc) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
         mPermalink = permalink;
+        mAuthor = author;
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
     }
@@ -39,5 +41,36 @@ public class Post {
 
     public String getPermalink() {
         return mPermalink;
+    }
+
+    public String getShortTitle() {
+        if(isDirectMessage()) {
+            return getShortDescription();
+        }
+
+        return getShortString(mTitle);
+    }
+
+    private String getShortString(String string) {
+        if (string.length() < 15) {
+            return string;
+        }
+        return string.substring(0, 12) + "...";
+    }
+
+    public boolean isDirectMessage() {
+        return mFullname.startsWith("t4");
+    }
+
+    public String getAuthor() {
+        return mAuthor;
+    }
+
+    public String getShortDescription() {
+        if (mDescription.contains("\n")) {
+            String title = mDescription.substring(0, mDescription.indexOf("\n"));
+            return getShortString(title);
+        }
+        return getShortString(mDescription);
     }
 }

@@ -47,6 +47,11 @@
         <PreferenceScreen
             android:key="sync_subreddits"
             android:title="@string/sync_subreddits" />
+
+        <CheckBoxPreference
+            android:key="messages_enabled"
+            android:title="@string/retrieve_messages"
+            android:defaultValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/special_thanks">

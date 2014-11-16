@@ -1,5 +1,7 @@
 package com.emmaguy.todayilearned.data;
 
+import com.emmaguy.todayilearned.background.MarkAllReadResponse;
+
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
@@ -18,8 +20,20 @@ public interface Reddit {
     @GET("/subreddits/mine/subscriber.json")
     Observable<SubscriptionResponse> subredditSubscriptions();
 
+
+    @GET("/message/unread.json")
+    Observable<ListingResponse> unreadMessages();
+
     @GET("/r/{subreddit}/{sort}.json")
     Observable<ListingResponse> latestPosts(@Path("subreddit") String subreddit,
                                             @Path("sort") String sort,
                                             @Query("limit") Integer limit);
+
+    @POST("/api/read_all_messages")
+    Observable<MarkAllReadResponse> markAllMessagesRead();
+
+    @POST("/api/compose?api_type=json")
+    Observable<CommentResponse> replyToDirectMessage(@Query("subject") String subject,
+                                                     @Query("text") String message,
+                                                     @Query("to") String toUser);
 }

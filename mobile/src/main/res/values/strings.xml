@@ -63,6 +63,6 @@
     <string name="syncing_subreddits">Syncing subreddits...</string>
     <string name="failed_to_sync_subreddits">Failed to sync subreddits</string>
     <string name="logged_in_as_x">Logged in as %1$s</string>
-    <string name="successfully_synced_subreddits">Successfully synced subreddits</string>
+    <string name="successfully_synced_subreddits">Successfully synced subreddits</string><string name="retrieve_messages">Retrieve messages</string>
 
 </resources>
