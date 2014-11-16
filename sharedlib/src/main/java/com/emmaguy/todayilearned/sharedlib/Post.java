@@ -7,9 +7,10 @@ public class Post {
     private final String mFullname;
     private final String mPermalink;
     private final String mAuthor;
+    private final String mId;
     private final long mCreatedUtc;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, long createdUtc) {
+    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, long createdUtc) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
@@ -17,6 +18,7 @@ public class Post {
         mAuthor = author;
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
+        mId = id;
     }
 
     public String getTitle() {
@@ -40,6 +42,10 @@ public class Post {
     }
 
     public String getPermalink() {
+        if(isDirectMessage()) {
+            return "/message/messages/" + mId;
+        }
+
         return mPermalink;
     }
 

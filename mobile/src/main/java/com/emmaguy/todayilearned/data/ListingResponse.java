@@ -45,6 +45,7 @@ public class ListingResponse {
                             data.get("name").getAsString(),
                             getEmptyStringOrValue(data, "permalink"),
                             data.get("author").getAsString(),
+                            data.get("id").getAsString(),
                             data.get("created_utc").getAsLong()));
                 }
             }
