@@ -7,6 +7,7 @@ import android.app.RemoteInput;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -19,6 +20,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.data.FreezableUtils;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -30,15 +32,17 @@ import com.google.android.gms.wearable.WearableListenerService;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationListenerService extends WearableListenerService {
-    private static final int NOTIFICATION_ID = 1;
     private static final String GROUP_KEY_SUBREDDIT_POSTS = "group_key_subreddit_posts";
     private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
     private static final String ACTION_RESPONSE = "com.emmaguy.todayilearned.Reply";
+
+    private static final long TIMEOUT_MS = 30 * 1000;
 
     private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
@@ -77,6 +81,26 @@ public class NotificationListenerService extends WearableListenerService {
         }
     }
 
+    public Bitmap loadBitmapFromAsset(Asset asset) {
+        if (asset == null) {
+            throw new IllegalArgumentException("Asset must be non-null");
+        }
+        ConnectionResult result = mGoogleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        if (!result.isSuccess()) {
+            return null;
+        }
+        // convert asset into a file descriptor and block until it's ready
+        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(mGoogleApiClient, asset).await().getInputStream();
+        mGoogleApiClient.disconnect();
+
+        if (assetInputStream == null) {
+            Log.e("RedditWear", "Requested an unknown Asset.");
+            return null;
+        }
+        // decode the stream into a bitmap
+        return BitmapFactory.decodeStream(assetInputStream);
+    }
+
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         final List<DataEvent> events = FreezableUtils.freezeIterable(dataEvents);
@@ -105,6 +129,7 @@ public class NotificationListenerService extends WearableListenerService {
                     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     for (int i = 0; i < posts.size(); i++) {
                         Post post = posts.get(i);
+
                         final boolean showDescriptions = dataMapItem.getDataMap().getBoolean(Constants.KEY_SHOW_DESCRIPTIONS) || post.isDirectMessage();
 
                         Log.d("RedditWear", "building notif, name: " + post.getFullname());
@@ -124,6 +149,16 @@ public class NotificationListenerService extends WearableListenerService {
                                 .setContentText((post.isDirectMessage() ? post.getDescription() : post.getTitle() + postDescription(showDescriptions, post.getDescription())))
                                 .setGroup(GROUP_KEY_SUBREDDIT_POSTS)
                                 .setSmallIcon(R.drawable.ic_launcher);
+
+
+                        if (post.hasThumbnail()) {
+                            Asset a = dataMapItem.getDataMap().getAsset(post.getId());
+                            Bitmap b = loadBitmapFromAsset(a);
+
+                            if(b != null) {
+                                builder.setLargeIcon(b);
+                            }
+                        }
 
                         builder.addAction(replyAction);
                         builder.addAction(openOnPhoneAction);

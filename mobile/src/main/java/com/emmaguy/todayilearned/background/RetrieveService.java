@@ -2,32 +2,39 @@ package com.emmaguy.todayilearned.background;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.Utils;
-import com.emmaguy.todayilearned.data.ListingResponse;
+import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 
 import retrofit.RestAdapter;
 import retrofit.converter.ConversionException;
@@ -36,15 +43,13 @@ import retrofit.converter.GsonConverter;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private final ArrayList<Post> mRedditPosts = new ArrayList<Post>();
-
     private GoogleApiClient mGoogleApiClient;
 
     private long mLatestCreatedUtc = 0;
@@ -56,6 +61,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Override
     protected void doWakefulWork(Intent intent) {
         connectToWearable();
+
         retrieveLatestPostsFromReddit();
     }
 
@@ -76,63 +82,120 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 .setEndpoint("https://www.reddit.com/")
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .setConverter(new GsonConverter(new GsonBuilder()
-                        .registerTypeAdapter(ListingResponse.class, new ListingResponse.ListingJsonDeserializer()).create()))
+                        .registerTypeAdapter(new TypeToken<List<Post>>() {
+                        }.getType(), new ListingJsonDeserializer()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);
 
-        if (isLoggedIn() && messagesEnabled()) {
-            Log.d("RedditWear", "Retrieving user's messages");
+        latestPostsFromReddit(reddit)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<List<Post>>() {
+                    @Override
+                    public void call(List<Post> posts) {
+                        Utils.Log("Found posts: " + posts.size());
 
+                        if (mLatestCreatedUtc > 0) {
+                            updateRetrievedPostCreatedUtc(mLatestCreatedUtc);
+                        }
+
+                        if (posts.size() > 0) {
+                            sendNewPostsData(posts);
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Utils.Log("Failed to get latest posts/messages", throwable);
+                    }
+                });
+
+        if (isLoggedIn() && messagesEnabled()) {
             reddit.unreadMessages()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .flatMap(new Func1<ListingResponse, Observable<Post>>() {
+                    .subscribe(new Action1<List<Post>>() {
                         @Override
-                        public Observable<Post> call(ListingResponse listingResponse) {
-                            return Observable.from(listingResponse.getPosts());
-                        }
-                    })
-                    .subscribe(new Action1<Post>() {
-                        @Override
-                        public void call(Post post) {
-                            Log.d("RedditWear", "Found a message: " + post.getDescription());
-                            mRedditPosts.add(post);
+                        public void call(List<Post> messages) {
+                            Utils.Log("Found messages: " + messages.size());
+
+                            if (messages.size() > 0) {
+                                sendNewPostsData(messages);
+
+                                getRestAdapter()
+                                        .create(Reddit.class)
+                                        .markAllMessagesRead();
+                            }
                         }
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            Log.d("RedditWear", "Failed to get user's messages", throwable);
-                        }
-                    }, new Action0() {
-                        @Override
-                        public void call() {
-                            // No messages to mark as read, so just request posts as normal
-                            if (mRedditPosts.size() <= 0) {
-                                Log.d("RedditWear", "No messages found");
-                                getLatestSubredditPosts(reddit);
-                            } else {
-                                getLatestSubredditPosts(reddit);
-                                // Mark all as read, then request latest posts from subreddits
-                                getRestAdapter()
-                                        .create(Reddit.class)
-                                        .markAllMessagesRead()
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(new Action1<MarkAllReadResponse>() {
-                                            @Override
-                                            public void call(MarkAllReadResponse response) {
-                                                if (response.isSuccessResponse()) {
-                                                    getLatestSubredditPosts(reddit);
-                                                }
-                                            }
-                                        });
-                            }
+                            Utils.Log("Failed to get latest messages", throwable);
                         }
                     });
-        } else {
-            getLatestSubredditPosts(reddit);
         }
+    }
+
+    private Observable<List<Post>> latestPostsFromReddit(final Reddit reddit) {
+        return reddit.latestPosts(getSubreddit(), getSortType(), getNumberToRequest())
+                .lift(RetrieveService.<Post>flattenList())
+                .filter(new Func1<Post, Boolean>() {
+                    @Override
+                    public Boolean call(Post post) {
+                        // TODO: where should this go?
+                        if (post.getCreatedUtc() > mLatestCreatedUtc) {
+                            mLatestCreatedUtc = post.getCreatedUtc();
+                            Utils.Log("Updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
+                        }
+                        downloadImage(post);
+                        // Check that this post is new (i.e. we haven't retrieved it before)
+                        // In debug, never ignore posts - we want content to test with
+                        return (post.getCreatedUtc() > getCreatedUtcOfRetrievedPosts()) || BuildConfig.DEBUG;
+                    }
+                })
+                .toList();
+    }
+
+    private void downloadImage(Post post) {
+        try {
+            URL url = new URL(post.getThumbnail());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+            post.setThumbnailImage(bitmap);
+        } catch (Exception e) {
+            Utils.Log("failed to download image: " + post.getThumbnail());
+        }
+    }
+
+    private static <T> Observable.Operator<T, List<T>> flattenList() {
+        return new Observable.Operator<T, List<T>>() {
+            @Override
+            public Subscriber<? super List<T>> call(final Subscriber<? super T> subscriber) {
+                return new Subscriber<List<T>>() {
+                    @Override
+                    public void onCompleted() {
+                        subscriber.onCompleted();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        subscriber.onError(e);
+                    }
+
+                    @Override
+                    public void onNext(List<T> list) {
+                        for (T c : list) {
+                            subscriber.onNext(c);
+                        }
+                    }
+                };
+            }
+        };
     }
 
     private RestAdapter getRestAdapter() {
@@ -167,53 +230,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return !TextUtils.isEmpty(getCookie());
     }
 
-    private void getLatestSubredditPosts(final Reddit reddit) {
-        reddit.latestPosts(getSubreddit(), getSortType(), getNumberToRequest())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .flatMap(new Func1<ListingResponse, Observable<Post>>() {
-                    @Override
-                    public Observable<Post> call(ListingResponse listingResponse) {
-                        return Observable.from(listingResponse.getPosts());
-                    }
-                })
-                .subscribe(new Action1<Post>() {
-                    @Override
-                    public void call(Post post) {
-                        // In debug, never ignore posts - we want content to test with
-                        if (postIsNewerThanPreviouslyRetrievedPosts(post) || BuildConfig.DEBUG) {
-                            Utils.Log("Adding post: " + post.getTitle());
-
-                            mRedditPosts.add(post);
-
-                            if (post.getCreatedUtc() > mLatestCreatedUtc) {
-                                mLatestCreatedUtc = post.getCreatedUtc();
-                                Utils.Log("updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
-                            }
-                        } else {
-                            Utils.Log("Ignoring post: " + post.getTitle());
-                        }
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Log.e("RedditWearApp", "Failed to retrieve latest posts: " + throwable.getLocalizedMessage(), throwable);
-                    }
-                }, new Action0() {
-                    @Override
-                    public void call() {
-                        Utils.Log("Posts found: " + mRedditPosts.size());
-                        if (mRedditPosts.size() > 0) {
-                            if (mLatestCreatedUtc > 0) {
-                                storeNewCreatedUtc(mLatestCreatedUtc);
-                            }
-
-                            sendNewPostsData();
-                        }
-                    }
-                });
-    }
-
     private String getModhash() {
         return getSharedPreferences().getString(SettingsActivity.PREFS_KEY_MODHASH, "");
     }
@@ -222,28 +238,24 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return getSharedPreferences().getString(SettingsActivity.PREFS_KEY_COOKIE, "");
     }
 
-    private boolean postIsNewerThanPreviouslyRetrievedPosts(Post post) {
-        return post.getCreatedUtc() > getCreatedUtcOfPosts();
-    }
-
-    private void storeNewCreatedUtc(long createdAtUtc) {
-        Utils.Log("storeNewCreatedUtc: " + createdAtUtc);
-
-        getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, createdAtUtc).apply();
-    }
-
-    private void sendNewPostsData() {
+    private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
-            Utils.Log("sendNewPostsData: " + mRedditPosts.size());
+            Utils.Log("sendNewPostsData: " + posts.size());
 
             Gson gson = new Gson();
-            final String latestPosts = gson.toJson(mRedditPosts);
+            final String latestPosts = gson.toJson(posts);
 
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
             PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
             mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, latestPosts);
             mapRequest.getDataMap().putBoolean(Constants.KEY_SHOW_DESCRIPTIONS, getSharedPreferences().getBoolean(SettingsActivity.PREFS_SHOW_DESCRIPTIONS, true));
+
+            for(Post p : posts) {
+                if(p.hasThumbnail() && p.getThumbnailImage() != null) {
+                    mapRequest.getDataMap().putAsset(p.getId(), createAssetFromBitmap(p.getThumbnailImage()));
+                }
+            }
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, mapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
@@ -252,8 +264,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             Utils.Log("onResult: " + dataItemResult.getStatus());
 
                             if (dataItemResult.getStatus().isSuccess()) {
-                                mRedditPosts.clear();
-
                                 if (mGoogleApiClient.isConnected()) {
                                     mGoogleApiClient.disconnect();
                                 }
@@ -261,6 +271,12 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         }
                     });
         }
+    }
+
+    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
+        return Asset.createFromBytes(byteStream.toByteArray());
     }
 
     private SharedPreferences getSharedPreferences() {
@@ -271,7 +287,13 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return Integer.parseInt(getSharedPreferences().getString(SettingsActivity.PREFS_NUMBER_TO_RETRIEVE, "5"));
     }
 
-    private long getCreatedUtcOfPosts() {
+    private void updateRetrievedPostCreatedUtc(long createdAtUtc) {
+        Utils.Log("updateRetrievedPostCreatedUtc: " + createdAtUtc);
+
+        getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, createdAtUtc).apply();
+    }
+
+    private long getCreatedUtcOfRetrievedPosts() {
         return getSharedPreferences().getLong(SettingsActivity.PREFS_CREATED_UTC, 0);
     }
 

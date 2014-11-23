@@ -2,6 +2,7 @@ package com.emmaguy.todayilearned.data;
 
 import android.text.TextUtils;
 
+import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -13,21 +14,13 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListingResponse {
-    private List<Post> mPosts = new ArrayList<Post>();
+public class ListingJsonDeserializer implements JsonDeserializer<List<Post>> {
+    @Override
+    public List<Post> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        Utils.Log(json.toString());
 
-    public void addPost(Post post) {
-        mPosts.add(post);
-    }
-
-    public Iterable<? extends Post> getPosts() {
-        return mPosts;
-    }
-
-    public static class ListingJsonDeserializer implements JsonDeserializer<ListingResponse> {
-        @Override
-        public ListingResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            ListingResponse l = new ListingResponse();
+        List<Post> l = new ArrayList<Post>();
+        if (json.isJsonObject()) {
             JsonObject dataObject = json.getAsJsonObject().get("data").getAsJsonObject();
             for (JsonElement e : dataObject.get("children").getAsJsonArray()) {
                 JsonObject data = e.getAsJsonObject().get("data").getAsJsonObject();
@@ -39,29 +32,30 @@ public class ListingResponse {
                 if (!stickied) {
                     String title = getEmptyStringOrValue(data, "title");
                     String selftext = getEmptyStringOrValue(data, "selftext");
-                    l.addPost(new Post(title,
+                    l.add(new Post(title,
                             getEmptyStringOrValue(data, "subreddit"),
                             TextUtils.isEmpty(selftext) ? getEmptyStringOrValue(data, "subject") + "\n" + getEmptyStringOrValue(data, "body") : selftext,
                             data.get("name").getAsString(),
                             getEmptyStringOrValue(data, "permalink"),
                             data.get("author").getAsString(),
                             data.get("id").getAsString(),
+                            data.get("thumbnail").getAsString(),
                             data.get("created_utc").getAsLong()));
                 }
             }
-
-            return l;
         }
 
-        private String getEmptyStringOrValue(JsonObject data, String key) {
-            String value = "";
-            if (data.has(key)) {
-                JsonElement element = data.get(key);
-                if (element != null && !element.isJsonNull()) {
-                    value = element.getAsString().trim();
-                }
+        return l;
+    }
+
+    private String getEmptyStringOrValue(JsonObject data, String key) {
+        String value = "";
+        if (data.has(key)) {
+            JsonElement element = data.get(key);
+            if (element != null && !element.isJsonNull()) {
+                value = element.getAsString().trim();
             }
-            return value;
         }
+        return value;
     }
 }

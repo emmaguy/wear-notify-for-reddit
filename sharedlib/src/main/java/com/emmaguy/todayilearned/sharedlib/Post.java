@@ -1,5 +1,8 @@
 package com.emmaguy.todayilearned.sharedlib;
 
+import android.graphics.Bitmap;
+import android.text.TextUtils;
+
 public class Post {
     private final String mSubreddit;
     private final String mTitle;
@@ -8,9 +11,11 @@ public class Post {
     private final String mPermalink;
     private final String mAuthor;
     private final String mId;
+    private final String mThumbnail;
     private final long mCreatedUtc;
+    private Bitmap mThumbnailImage;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, long createdUtc) {
+    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
@@ -18,6 +23,7 @@ public class Post {
         mAuthor = author;
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
+        mThumbnail = thumbnail;
         mId = id;
     }
 
@@ -78,5 +84,25 @@ public class Post {
             return getShortString(title);
         }
         return getShortString(mDescription);
+    }
+
+    public boolean hasThumbnail() {
+        return !TextUtils.isEmpty(mThumbnail) && !mThumbnail.equals("default");
+    }
+
+    public String getThumbnail() {
+        return mThumbnail;
+    }
+
+    public void setThumbnailImage(Bitmap thumbnailImage) {
+        mThumbnailImage = thumbnailImage;
+    }
+
+    public Bitmap getThumbnailImage() {
+        return mThumbnailImage;
+    }
+
+    public String getId() {
+        return mId;
     }
 }
