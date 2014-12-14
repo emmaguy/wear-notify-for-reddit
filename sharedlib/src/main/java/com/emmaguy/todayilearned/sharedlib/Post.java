@@ -1,6 +1,5 @@
 package com.emmaguy.todayilearned.sharedlib;
 
-import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 public class Post {
@@ -13,7 +12,7 @@ public class Post {
     private final String mId;
     private final String mThumbnail;
     private final long mCreatedUtc;
-    private Bitmap mThumbnailImage;
+    private byte[] mThumbnailImage;
 
     public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc) {
         mTitle = title;
@@ -48,7 +47,7 @@ public class Post {
     }
 
     public String getPermalink() {
-        if(isDirectMessage()) {
+        if (isDirectMessage()) {
             return "/message/messages/" + mId;
         }
 
@@ -56,7 +55,7 @@ public class Post {
     }
 
     public String getShortTitle() {
-        if(isDirectMessage()) {
+        if (isDirectMessage()) {
             return getShortDescription();
         }
 
@@ -94,11 +93,11 @@ public class Post {
         return mThumbnail;
     }
 
-    public void setThumbnailImage(Bitmap thumbnailImage) {
+    public void setThumbnailImage(byte[] thumbnailImage) {
         mThumbnailImage = thumbnailImage;
     }
 
-    public Bitmap getThumbnailImage() {
+    public byte[] getThumbnailImage() {
         return mThumbnailImage;
     }
 

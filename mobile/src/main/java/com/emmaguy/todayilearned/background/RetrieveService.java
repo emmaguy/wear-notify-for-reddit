@@ -16,6 +16,7 @@ import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,6 +35,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit.RestAdapter;
@@ -94,7 +96,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 .subscribe(new Action1<List<Post>>() {
                     @Override
                     public void call(List<Post> posts) {
-                        Utils.Log("Found posts: " + posts.size());
+                        Logger.Log("Found posts: " + posts.size());
 
                         if (mLatestCreatedUtc > 0) {
                             updateRetrievedPostCreatedUtc(mLatestCreatedUtc);
@@ -107,7 +109,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Utils.Log("Failed to get latest posts/messages", throwable);
+                        Logger.Log("Failed to get latest posts/messages", throwable);
                     }
                 });
 
@@ -118,7 +120,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     .subscribe(new Action1<List<Post>>() {
                         @Override
                         public void call(List<Post> messages) {
-                            Utils.Log("Found messages: " + messages.size());
+                            Logger.Log("Found messages: " + messages.size());
 
                             if (messages.size() > 0) {
                                 sendNewPostsData(messages);
@@ -131,7 +133,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            Utils.Log("Failed to get latest messages", throwable);
+                            Logger.Log("Failed to get latest messages", throwable);
                         }
                     });
         }
@@ -146,30 +148,35 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         // TODO: where should this go?
                         if (post.getCreatedUtc() > mLatestCreatedUtc) {
                             mLatestCreatedUtc = post.getCreatedUtc();
-                            Utils.Log("Updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
+                            Logger.Log("Updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
                         }
-                        downloadImage(post);
+
                         // Check that this post is new (i.e. we haven't retrieved it before)
                         // In debug, never ignore posts - we want content to test with
                         return (post.getCreatedUtc() > getCreatedUtcOfRetrievedPosts()) || BuildConfig.DEBUG;
                     }
                 })
-                .toList();
-    }
+                .flatMap(new Func1<Post, Observable<List<Post>>>() {
+                    @Override
+                    public Observable<List<Post>> call(Post post) {
+                        try {
+                            URL url = new URL(post.getThumbnail());
+                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            connection.setDoInput(true);
+                            connection.connect();
+                            InputStream input = connection.getInputStream();
 
-    private void downloadImage(Post post) {
-        try {
-            URL url = new URL(post.getThumbnail());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap bitmap = BitmapFactory.decodeStream(input);
+                            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                            Bitmap bitmap = BitmapFactory.decodeStream(input);
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
+                            post.setThumbnailImage(byteStream.toByteArray());
+                        } catch (Exception e) {
+                            Logger.Log("failed to download image: " + post.getThumbnail(), e);
+                        }
 
-            post.setThumbnailImage(bitmap);
-        } catch (Exception e) {
-            Utils.Log("failed to download image: " + post.getThumbnail());
-        }
+                        return Observable.just(Arrays.asList(post));
+                    }
+                });
     }
 
     private static <T> Observable.Operator<T, List<T>> flattenList() {
@@ -240,7 +247,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
-            Utils.Log("sendNewPostsData: " + posts.size());
+            Logger.Log("sendNewPostsData: " + posts.size());
 
             Gson gson = new Gson();
             final String latestPosts = gson.toJson(posts);
@@ -249,19 +256,21 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
             PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
             mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, latestPosts);
-            mapRequest.getDataMap().putBoolean(Constants.KEY_SHOW_DESCRIPTIONS, getSharedPreferences().getBoolean(SettingsActivity.PREFS_SHOW_DESCRIPTIONS, true));
 
-            for(Post p : posts) {
-                if(p.hasThumbnail() && p.getThumbnailImage() != null) {
-                    mapRequest.getDataMap().putAsset(p.getId(), createAssetFromBitmap(p.getThumbnailImage()));
+            for (Post p : posts) {
+                if (p.hasThumbnail() && p.getThumbnailImage() != null) {
+                    Asset asset = Asset.createFromBytes(p.getThumbnailImage());
+                    mapRequest.getDataMap().putAsset(p.getId(), asset);
                 }
             }
+
+            mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, mapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Utils.Log("onResult: " + dataItemResult.getStatus());
+                            Logger.Log("onResult: " + dataItemResult.getStatus());
 
                             if (dataItemResult.getStatus().isSuccess()) {
                                 if (mGoogleApiClient.isConnected()) {
@@ -273,12 +282,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
-        return Asset.createFromBytes(byteStream.toByteArray());
-    }
-
     private SharedPreferences getSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     }
@@ -288,7 +291,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private void updateRetrievedPostCreatedUtc(long createdAtUtc) {
-        Utils.Log("updateRetrievedPostCreatedUtc: " + createdAtUtc);
+        Logger.Log("updateRetrievedPostCreatedUtc: " + createdAtUtc);
 
         getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, createdAtUtc).apply();
     }

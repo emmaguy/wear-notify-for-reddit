@@ -22,6 +22,7 @@ import com.emmaguy.todayilearned.background.AppListener;
 import com.emmaguy.todayilearned.data.LoginResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.SubscriptionResponse;
+import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
@@ -35,13 +36,11 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class SettingsActivity extends Activity {
-
     public static final String PREFS_REFRESH_FREQUENCY = "sync_frequency";
     public static final String PREFS_NUMBER_TO_RETRIEVE = "number_to_retrieve";
     public static final String PREFS_SORT_ORDER = "sort_order";
     public static final String PREFS_SUBREDDITS = "subreddits";
     public static final String PREFS_SELECTED_SUBREDDITS = "selectedsubreddits";
-    public static final String PREFS_SHOW_DESCRIPTIONS = "show_descriptions";
     public static final String PREFS_CREATED_UTC = "created_utc";
     public static final String PREFS_MESSAGES_ENABLED = "messages_enabled";
 
@@ -152,7 +151,7 @@ public class SettingsActivity extends Activity {
 
                         @Override
                         public void onError(Throwable e) {
-                            Utils.Log("Error syncing subreddits", e);
+                            Logger.Log("Error syncing subreddits", e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
                         }
@@ -204,7 +203,7 @@ public class SettingsActivity extends Activity {
 
                         @Override
                         public void onError(Throwable e) {
-                            Utils.Log("Error logging in to reddit", e);
+                            Logger.Log("Error logging in to reddit", e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
                         }
@@ -238,7 +237,7 @@ public class SettingsActivity extends Activity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             updatePrefsSummary(findPreference(key));
 
-            Utils.Log("onSharedPreferenceChanged: " + key);
+            Logger.Log("onSharedPreferenceChanged: " + key);
 
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
@@ -248,7 +247,7 @@ public class SettingsActivity extends Activity {
         }
 
         private void clearSavedUtcTime() {
-            Utils.Log("clearSavedUtcTime");
+            Logger.Log("clearSavedUtcTime");
 
             getPreferenceManager().getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, 0).apply();
         }

@@ -1,20 +1,31 @@
 apply plugin: 'com.android.application'
 
+Properties props = new Properties()
+props.load(new FileInputStream(file(project.property("signing.properties"))))
+
 android {
     compileSdkVersion 21
-    buildToolsVersion '21.1.1'
+    buildToolsVersion '21.1.2'
 
+    signingConfigs {
+        release {
+            storeFile file(props['keystore'])
+            storePassword props['keystore.password']
+            keyAlias props['keyalias']
+            keyPassword props['keyalias.password']
+        }
+    }
     defaultConfig {
         applicationId "com.emmaguy.todayilearned"
+        signingConfig signingConfigs.release
         minSdkVersion 20
         targetSdkVersion 21
-        versionCode 12
+        versionCode 13
         versionName "1.6.0"
     }
     buildTypes {
         release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
         }
     }
 }

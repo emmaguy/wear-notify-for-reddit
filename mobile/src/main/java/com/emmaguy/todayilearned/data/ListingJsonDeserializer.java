@@ -3,6 +3,7 @@ package com.emmaguy.todayilearned.data;
 import android.text.TextUtils;
 
 import com.emmaguy.todayilearned.Utils;
+import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -17,7 +18,7 @@ import java.util.List;
 public class ListingJsonDeserializer implements JsonDeserializer<List<Post>> {
     @Override
     public List<Post> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        Utils.Log(json.toString());
+        Logger.Log(json.toString());
 
         List<Post> l = new ArrayList<Post>();
         if (json.isJsonObject()) {

@@ -47,9 +47,6 @@
     <string name="no_subreddits">No Subreddits selected!</string>
     <string name="enter_subreddit_name">Enter subreddit of your choice</string>
     <string name="title_activity_latest_posts">Latest Posts</string>
-    <string name="show_descriptions">Show post descriptions</string>
-    <string name="show_desc_summary_off">Subreddit and post title only</string>
-    <string name="show_desc_summary_on">Descriptions (self text) will appear below post titles</string>
     <string name="tap_to_sign_in">Tap to sign in</string>
     <string name="reddit_account">Reddit account</string>
     <string name="sync_subreddits">Sync subreddits</string>

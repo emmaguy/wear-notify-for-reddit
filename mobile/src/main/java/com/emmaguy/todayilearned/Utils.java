@@ -49,16 +49,4 @@ public class Utils {
 
         saveSubreddits(c, subreddits);
     }
-
-    public static void Log(String message) {
-        if (BuildConfig.DEBUG) {
-            Log.d("RedditWear", message);
-        }
-    }
-
-    public static void Log(String message, Throwable t) {
-        if (BuildConfig.DEBUG) {
-            Log.e("RedditWear", message, t);
-        }
-    }
 }

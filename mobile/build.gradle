@@ -1,23 +1,31 @@
 apply plugin: 'com.android.application'
 
+Properties props = new Properties()
+props.load(new FileInputStream(file(project.property("signing.properties"))))
+
 android {
     compileSdkVersion 21
-    buildToolsVersion '21.1.1'
+    buildToolsVersion '21.1.2'
 
+    signingConfigs {
+        release {
+            storeFile file(props['keystore'])
+            storePassword props['keystore.password']
+            keyAlias props['keyalias']
+            keyPassword props['keyalias.password']
+        }
+    }
     defaultConfig {
         applicationId "com.emmaguy.todayilearned"
+        signingConfig signingConfigs.release
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 12
+        versionCode 13
         versionName "1.6.0"
     }
     buildTypes {
-        debug{
-            applicationIdSuffix ".debug"
-        }
         release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
         }
     }
 }
@@ -30,8 +38,8 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':sharedlib')
     compile 'com.squareup.retrofit:retrofit:1.6.1'
-    compile 'com.netflix.rxjava:rxjava-core:0.19.1'
-    compile 'com.netflix.rxjava:rxjava-android:0.19.1'
+    compile 'com.netflix.rxjava:rxjava-core:0.20.7'
+    compile 'com.netflix.rxjava:rxjava-android:0.20.7'
     compile 'com.google.android.gms:play-services-wearable:+'
     compile 'com.android.support:support-v4:21.+'
     compile('de.psdev.licensesdialog:licensesdialog:1.5.0') {
