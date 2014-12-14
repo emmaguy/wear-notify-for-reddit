@@ -1,5 +1,7 @@
 package com.emmaguy.todayilearned.sharedlib;
 
+import android.text.TextUtils;
+
 public class Post {
     private final String mSubreddit;
     private final String mTitle;
@@ -8,9 +10,11 @@ public class Post {
     private final String mPermalink;
     private final String mAuthor;
     private final String mId;
+    private final String mThumbnail;
     private final long mCreatedUtc;
+    private byte[] mThumbnailImage;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, long createdUtc) {
+    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
@@ -18,6 +22,7 @@ public class Post {
         mAuthor = author;
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
+        mThumbnail = thumbnail;
         mId = id;
     }
 
@@ -42,7 +47,7 @@ public class Post {
     }
 
     public String getPermalink() {
-        if(isDirectMessage()) {
+        if (isDirectMessage()) {
             return "/message/messages/" + mId;
         }
 
@@ -50,7 +55,7 @@ public class Post {
     }
 
     public String getShortTitle() {
-        if(isDirectMessage()) {
+        if (isDirectMessage()) {
             return getShortDescription();
         }
 
@@ -78,5 +83,25 @@ public class Post {
             return getShortString(title);
         }
         return getShortString(mDescription);
+    }
+
+    public boolean hasThumbnail() {
+        return !TextUtils.isEmpty(mThumbnail) && !mThumbnail.equals("default");
+    }
+
+    public String getThumbnail() {
+        return mThumbnail;
+    }
+
+    public void setThumbnailImage(byte[] thumbnailImage) {
+        mThumbnailImage = thumbnailImage;
+    }
+
+    public byte[] getThumbnailImage() {
+        return mThumbnailImage;
+    }
+
+    public String getId() {
+        return mId;
     }
 }

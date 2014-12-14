@@ -1,6 +1,9 @@
 package com.emmaguy.todayilearned.data;
 
 import com.emmaguy.todayilearned.background.MarkAllReadResponse;
+import com.emmaguy.todayilearned.sharedlib.Post;
+
+import java.util.List;
 
 import retrofit.http.GET;
 import retrofit.http.POST;
@@ -22,12 +25,12 @@ public interface Reddit {
 
 
     @GET("/message/unread.json")
-    Observable<ListingResponse> unreadMessages();
+    Observable<List<Post>> unreadMessages();
 
     @GET("/r/{subreddit}/{sort}.json")
-    Observable<ListingResponse> latestPosts(@Path("subreddit") String subreddit,
-                                            @Path("sort") String sort,
-                                            @Query("limit") Integer limit);
+    Observable<List<Post>> latestPosts(@Path("subreddit") String subreddit,
+                                       @Path("sort") String sort,
+                                       @Query("limit") Integer limit);
 
     @POST("/api/read_all_messages")
     Observable<MarkAllReadResponse> markAllMessagesRead();

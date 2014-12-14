@@ -8,6 +8,7 @@ import android.support.wearable.activity.ConfirmationActivity;
 import android.util.Log;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -53,7 +54,7 @@ public class OpenOnPhoneReceiver extends BroadcastReceiver {
         protected Void doInBackground(Void... params) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Log.e("RedditWear", "Service failed to connect");
+                Logger.Log("Service failed to connect");
                 return null;
             }
 
@@ -65,7 +66,7 @@ public class OpenOnPhoneReceiver extends BroadcastReceiver {
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Log.d("RedditWear", "Open on phone putDataItem status: " + dataItemResult.getStatus().toString());
+                            Logger.Log("Open on phone putDataItem status: " + dataItemResult.getStatus().toString());
                             if (dataItemResult.getStatus().isSuccess()) {
                                 showConfirmation(mContext);
                             }

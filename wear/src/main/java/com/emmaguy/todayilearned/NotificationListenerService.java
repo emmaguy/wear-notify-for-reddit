@@ -7,6 +7,7 @@ import android.app.RemoteInput;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -14,11 +15,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.data.FreezableUtils;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -30,15 +33,17 @@ import com.google.android.gms.wearable.WearableListenerService;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationListenerService extends WearableListenerService {
-    private static final int NOTIFICATION_ID = 1;
     private static final String GROUP_KEY_SUBREDDIT_POSTS = "group_key_subreddit_posts";
     private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
     private static final String ACTION_RESPONSE = "com.emmaguy.todayilearned.Reply";
+
+    private static final long TIMEOUT_MS = 30 * 1000;
 
     private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
@@ -77,6 +82,23 @@ public class NotificationListenerService extends WearableListenerService {
         }
     }
 
+    public Bitmap loadBitmapFromAsset(Asset asset) {
+        ConnectionResult result = mGoogleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        if (!result.isSuccess()) {
+            return null;
+        }
+        // convert asset into a file descriptor and block until it's ready
+        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(mGoogleApiClient, asset).await().getInputStream();
+        mGoogleApiClient.disconnect();
+
+        if (assetInputStream == null) {
+            Logger.Log("Requested an unknown Asset");
+            return null;
+        }
+        // decode the stream into a bitmap
+        return BitmapFactory.decodeStream(assetInputStream);
+    }
+
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         final List<DataEvent> events = FreezableUtils.freezeIterable(dataEvents);
@@ -85,7 +107,7 @@ public class NotificationListenerService extends WearableListenerService {
         if (!mGoogleApiClient.isConnected()) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Log.e("RedditWear", "Service failed to connect");
+                Logger.Log("Service failed to connect");
                 return;
             }
         }
@@ -98,16 +120,21 @@ public class NotificationListenerService extends WearableListenerService {
                     final String latestPosts = dataMapItem.getDataMap().getString(Constants.KEY_REDDIT_POSTS);
 
                     Gson gson = new Gson();
-                    ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {
-                    }.getType());
+                    ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {}.getType());
 
                     Bitmap background = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.theme_blue)}, 1, 1, Bitmap.Config.ARGB_8888);
                     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     for (int i = 0; i < posts.size(); i++) {
                         Post post = posts.get(i);
-                        final boolean showDescriptions = dataMapItem.getDataMap().getBoolean(Constants.KEY_SHOW_DESCRIPTIONS) || post.isDirectMessage();
 
-                        Log.d("RedditWear", "building notif, name: " + post.getFullname());
+                        Bitmap backgroundBitmap = null;
+                        if (post.hasThumbnail()) {
+                            Asset a = dataMapItem.getDataMap().getAsset(post.getId());
+                            if (a != null) {
+                                backgroundBitmap = loadBitmapFromAsset(a);
+                            }
+                        }
+
                         int notificationId = (int) post.getCreatedUtc();
 
                         Notification.Action replyAction = new Notification.Action.Builder(
@@ -121,16 +148,23 @@ public class NotificationListenerService extends WearableListenerService {
 
                         Notification.Builder builder = new Notification.Builder(this)
                                 .setContentTitle(post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit())
-                                .setContentText((post.isDirectMessage() ? post.getDescription() : post.getTitle() + postDescription(showDescriptions, post.getDescription())))
-                                .setGroup(GROUP_KEY_SUBREDDIT_POSTS)
+                                .setContentText((post.isDirectMessage() ? post.getDescription() : post.getTitle() + postDescription(post.getDescription())))
                                 .setSmallIcon(R.drawable.ic_launcher);
+
+                        if (backgroundBitmap != null) {
+                            builder.setLargeIcon(backgroundBitmap);
+                        } else {
+                            // if it's not got an image we can group it with the other text based ones
+                            builder.setGroup(GROUP_KEY_SUBREDDIT_POSTS);
+
+                            // and set a background on it
+                            Notification.WearableExtender extender = new Notification.WearableExtender();
+                            extender.setBackground(background);
+                            builder.extend(extender);
+                        }
 
                         builder.addAction(replyAction);
                         builder.addAction(openOnPhoneAction);
-
-                        Notification.WearableExtender extender = new Notification.WearableExtender();
-                        extender.setBackground(background);
-                        builder.extend(extender);
 
                         notificationManager.notify(notificationId, builder.build());
                     }
@@ -173,20 +207,17 @@ public class NotificationListenerService extends WearableListenerService {
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                     @Override
                     public void onResult(DataApi.DataItemResult dataItemResult) {
-                        Log.d("RedditWear", "sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
+                        Logger.Log("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
                     }
                 });
     }
 
-    private String postDescription(boolean showDescriptions, String description) {
-        if (!showDescriptions) {
-            return "";
-        }
+    private String postDescription(String description) {
+        description = description.trim();
 
         if (TextUtils.isEmpty(description)) {
             return "";
         }
-        Log.e("RedditWear", "desc: '" + description + "'");
         return "\n\n" + description;
     }
 

@@ -9,9 +9,11 @@ import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.SettingsActivity;
+import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.CommentResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.data.FreezableUtils;
@@ -101,7 +103,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
         String modhash = getModhash();
 
         if (TextUtils.isEmpty(cookie) || TextUtils.isEmpty(modhash)) {
-            Log.e("RedditWear", "Not logged in, can't reply to message");
+            Logger.Log("Not logged in, can't reply to message");
             return;
         }
 
@@ -130,7 +132,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e("RedditWear", "Failed to post to reddit", e);
+                        Logger.Log("Failed to post to reddit", e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
@@ -141,7 +143,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
         String modhash = getModhash();
 
         if (TextUtils.isEmpty(cookie) || TextUtils.isEmpty(modhash)) {
-            Log.e("RedditWear", "Not logged in, can't post reply");
+            Logger.Log("Not logged in, can't post reply");
             return;
         }
 
@@ -170,7 +172,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e("RedditWear", "Failed to post to reddit", e);
+                        Logger.Log("Failed to post to reddit", e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
@@ -180,7 +182,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
         Wearable.MessageApi.sendMessage(mGoogleApiClient, "", result, null).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
             @Override
             public void onResult(MessageApi.SendMessageResult sendMessageResult) {
-                Log.d("RedditWear", "sendReplyResult: " + result + " status " + sendMessageResult.getStatus());
+                Logger.Log("sendReplyResult: " + result + " status " + sendMessageResult.getStatus());
             }
         });
     }
