@@ -6,8 +6,8 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.data.CommentResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -88,11 +88,11 @@ public class TriggerRefreshListenerService extends WearableListenerService {
     }
 
     private String getModhash() {
-        return PreferenceManager.getDefaultSharedPreferences(this).getString(SettingsActivity.PREFS_KEY_MODHASH, "");
+        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_modhash), "");
     }
 
     private String getCookie() {
-        return PreferenceManager.getDefaultSharedPreferences(this).getString(SettingsActivity.PREFS_KEY_COOKIE, "");
+        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_cookie), "");
     }
 
     private void replyToDirectMessage(String subject, String message, String toUser) {

@@ -3,11 +3,11 @@
         android:title="@string/settings"
         android:key="parent">
         <com.emmaguy.todayilearned.SubredditPreference
-            android:key="subreddits"
+            android:key="@string/prefs_key_subreddits"
             android:title="@string/subreddits"
             android:summary="@string/tap_to_modify" />
         <ListPreference
-            android:key="sync_frequency"
+            android:key="@string/prefs_key_sync_frequency"
             android:title="@string/pref_title_sync_frequency"
             android:entries="@array/pref_sync_frequency_titles"
             android:entryValues="@array/pref_sync_frequency_values"
@@ -15,7 +15,7 @@
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
         <ListPreference
-            android:key="number_to_retrieve"
+            android:key="@string/prefs_key_number_to_retrieve"
             android:title="@string/number_to_retrieve"
             android:entries="@array/pref_posts_to_request"
             android:entryValues="@array/pref_posts_to_request"
@@ -23,7 +23,7 @@
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
         <ListPreference
-            android:key="sort_order"
+            android:key="@string/prefs_key_sort_order"
             android:title="@string/sort_order"
             android:entries="@array/pref_sort_order"
             android:entryValues="@array/pref_sort_order"
@@ -34,23 +34,23 @@
 
     <PreferenceCategory android:title="@string/reddit_account">
         <PreferenceScreen
-            android:key="account_info"
+            android:key="@string/prefs_key_account_info"
             android:title="@string/reddit_account"
             android:summary="@string/tap_to_sign_in" />
 
         <PreferenceScreen
-            android:key="sync_subreddits"
+            android:key="@string/prefs_key_sync_subreddits"
             android:title="@string/sync_subreddits" />
 
         <CheckBoxPreference
-            android:key="messages_enabled"
+            android:key="@string/prefs_key_messages_enabled"
             android:title="@string/retrieve_messages"
             android:defaultValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/special_thanks">
         <PreferenceScreen
-            android:key="open_source"
+            android:key="@string/prefs_key_open_source"
             android:title="@string/open_source_projects" />
     </PreferenceCategory>
 

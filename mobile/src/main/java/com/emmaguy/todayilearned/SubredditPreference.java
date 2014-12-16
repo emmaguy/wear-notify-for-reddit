@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Set;
 
 public class SubredditPreference extends Preference {
-    public static final String PREFS_SUBREDDITS = "subreddits";
-    public static final String PREFS_SELECTED_SUBREDDITS = "selectedsubreddits";
-
     private static Set<String> DefaultSubReddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews", "britishproblems", "showerthoughts", "pics"));
     private static Set<String> DefaultSelectedSubReddits = new HashSet<String>(Arrays.asList("todayilearned"));
 
@@ -37,8 +34,12 @@ public class SubredditPreference extends Preference {
         showSelectSubredditsDialog();
     }
 
+    public String getSelectedSubredditsKey() {
+        return getContext().getString(R.string.prefs_key_selected_subreddits);
+    }
+
     public List<String> getAllSubreddits() {
-        Set<String> subreddits = getSharedPreferences().getStringSet(PREFS_SUBREDDITS, DefaultSubReddits);
+        Set<String> subreddits = getSharedPreferences().getStringSet(getKey(), DefaultSubReddits);
 
         ArrayList<String> sortedSubreddits = new ArrayList(subreddits);
         Collections.sort(sortedSubreddits);
@@ -47,11 +48,11 @@ public class SubredditPreference extends Preference {
     }
 
     public List<String> getAllSelectedSubreddits() {
-        return getAllSelectedSubreddits(getSharedPreferences());
+        return getAllSelectedSubreddits(getSharedPreferences(), getSelectedSubredditsKey());
     }
 
-    public static List<String> getAllSelectedSubreddits(SharedPreferences prefs) {
-        Set<String> subreddits = prefs.getStringSet(PREFS_SELECTED_SUBREDDITS, DefaultSelectedSubReddits);
+    public static List<String> getAllSelectedSubreddits(SharedPreferences prefs, String key) {
+        Set<String> subreddits = prefs.getStringSet(key, DefaultSelectedSubReddits);
 
         return new ArrayList(subreddits);
     }
@@ -77,11 +78,11 @@ public class SubredditPreference extends Preference {
     }
 
     public void saveSubreddits(List<String> srs) {
-        getSharedPreferences().edit().putStringSet(PREFS_SUBREDDITS, new HashSet<String>(srs)).apply();
+        getSharedPreferences().edit().putStringSet(getKey(), new HashSet<String>(srs)).apply();
     }
 
     public void saveSelectedSubreddits(List<String> selectedSubreddits) {
-        getSharedPreferences().edit().putStringSet(PREFS_SELECTED_SUBREDDITS, new HashSet<String>(selectedSubreddits)).apply();
+        getSharedPreferences().edit().putStringSet(getSelectedSubredditsKey(), new HashSet<String>(selectedSubreddits)).apply();
     }
 
     private void showSelectSubredditsDialog() {
