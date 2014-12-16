@@ -22,6 +22,7 @@ import com.emmaguy.todayilearned.background.AppListener;
 import com.emmaguy.todayilearned.data.LoginResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.SubscriptionResponse;
+import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.google.gson.GsonBuilder;
 
@@ -178,7 +179,7 @@ public class SettingsActivity extends Activity {
             final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.logging_in));
 
             final RestAdapter restAdapter = new RestAdapter.Builder()
-                    .setEndpoint("https://www.reddit.com/")
+                    .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                     .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(LoginResponse.class, new LoginResponse.LoginResponseJsonDeserializer()).create()))
                     .build();
 

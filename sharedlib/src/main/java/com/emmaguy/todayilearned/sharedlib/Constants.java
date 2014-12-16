@@ -1,6 +1,8 @@
 package com.emmaguy.todayilearned.sharedlib;
 
 public class Constants {
+    public static final String ENDPOINT_URL_REDDIT = "https://www.reddit.com/";
+
     public static final String PATH_REDDIT_POSTS = "/redditwear";
     public static final String PATH_REFRESH = "/refresh";
     public static final String PATH_OPEN_ON_PHONE = "/openonphone";

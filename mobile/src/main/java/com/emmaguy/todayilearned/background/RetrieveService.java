@@ -52,8 +52,6 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    public static final String ENDPOINT_URL_REDDIT = "https://www.reddit.com/";
-
     private GoogleApiClient mGoogleApiClient;
 
     private long mLatestCreatedUtc = 0;
@@ -83,7 +81,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private void retrieveLatestPostsFromReddit() {
         final RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(ENDPOINT_URL_REDDIT)
+                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {}.getType(), new ListingJsonDeserializer()).create()))
                 .build();
@@ -207,7 +205,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private RestAdapter getRestAdapter() {
         return new RestAdapter.Builder()
-                .setEndpoint(ENDPOINT_URL_REDDIT)
+                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .setConverter(new Converter() {
                     @Override

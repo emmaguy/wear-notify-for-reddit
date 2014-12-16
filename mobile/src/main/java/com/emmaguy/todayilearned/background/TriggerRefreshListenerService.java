@@ -105,7 +105,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
         }
 
         final RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("https://www.reddit.com/")
+                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(CommentResponse.class, new CommentResponse.CommentResponseJsonDeserializer()).create()))
                 .build();
@@ -145,7 +145,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
         }
 
         final RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("https://www.reddit.com/")
+                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(CommentResponse.class, new CommentResponse.CommentResponseJsonDeserializer()).create()))
                 .build();
