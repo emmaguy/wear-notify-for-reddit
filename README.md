@@ -7,8 +7,8 @@ Stores the latest created utc of the posts retrieved, so when we makes the next 
 
 Requires an Android wearable - the posts are presented in a notification, 1 post per page, and can be scrolled through, left to right. There's an action at the end of the posts to dismiss them
 
-|  ![wear1](https://raw.githubusercontent.com/emmaguy/til/master/images/home.png) | ![wear2](https://raw.githubusercontent.com/emmaguy/til/master/images/all.png) | ![wear3](https://raw.githubusercontent.com/emmaguy/til/master/images/reply.png)  |
-|---|---|---|
+|  ![wear1](https://raw.githubusercontent.com/emmaguy/til/master/images/home.png) | ![wear2](https://raw.githubusercontent.com/emmaguy/til/master/images/images.png) | ![wear3](https://raw.githubusercontent.com/emmaguy/til/master/images/all.png) | ![wear4](https://raw.githubusercontent.com/emmaguy/til/master/images/reply.png)  |
+|---|---|---|---|
 
 There's a short settings page where the subreddits, sync refresh interval, ordering and number of posts to retrieve can be configured.
 
@@ -16,7 +16,7 @@ There's a short settings page where the subreddits, sync refresh interval, order
 
 Available on the Play Store: https://play.google.com/store/apps/details?id=com.emmaguy.todayilearned
 
-Note: this used to just be a 'Today I Learned' thing (hence the package name), but decided to expand it to other subreddits!
+Note: this used to just be a 'Today I Learned' thing (hence the package name), but decided to expand it to other subreddits.
 
 License
 --------

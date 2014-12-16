@@ -2,16 +2,20 @@ package com.emmaguy.todayilearned.sharedlib;
 
 import android.text.TextUtils;
 
+import com.google.gson.annotations.Expose;
+
 public class Post {
-    private final String mSubreddit;
-    private final String mTitle;
-    private final String mDescription;
-    private final String mFullname;
-    private final String mPermalink;
-    private final String mAuthor;
-    private final String mId;
-    private final String mThumbnail;
-    private final long mCreatedUtc;
+    @Expose private final String mSubreddit;
+    @Expose private final String mTitle;
+    @Expose private final String mDescription;
+    @Expose private final String mFullname;
+    @Expose private final String mPermalink;
+    @Expose private final String mAuthor;
+    @Expose private final String mId;
+    @Expose private final String mThumbnail;
+    @Expose private final long mCreatedUtc;
+
+    // When we serialise the Post to send to the wearable, don't include the thumbnail - it will be added as an asset
     private byte[] mThumbnailImage;
 
     public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc) {
@@ -86,7 +90,8 @@ public class Post {
     }
 
     public boolean hasThumbnail() {
-        return !TextUtils.isEmpty(mThumbnail) && !mThumbnail.equals("default");
+        String thumbnail = mThumbnail == null ? "" : mThumbnail.trim();
+        return !TextUtils.isEmpty(thumbnail) && !thumbnail.equals("default")&& !thumbnail.equals("nsfw");
     }
 
     public String getThumbnail() {

@@ -122,7 +122,7 @@ public class NotificationListenerService extends WearableListenerService {
                     Gson gson = new Gson();
                     ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {}.getType());
 
-                    Bitmap background = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.theme_blue)}, 1, 1, Bitmap.Config.ARGB_8888);
+                    Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.theme_blue)}, 1, 1, Bitmap.Config.ARGB_8888);
                     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     for (int i = 0; i < posts.size(); i++) {
                         Post post = posts.get(i);
@@ -153,13 +153,16 @@ public class NotificationListenerService extends WearableListenerService {
 
                         if (backgroundBitmap != null) {
                             builder.setLargeIcon(backgroundBitmap);
+                            Logger.Log("Post: " + post.getId() + ", service failed to connect");
                         } else {
+                            Logger.Log("Post: " + post.getId() + ", grouping, no image found");
+
                             // if it's not got an image we can group it with the other text based ones
                             builder.setGroup(GROUP_KEY_SUBREDDIT_POSTS);
 
-                            // and set a background on it
+                            // and set a themeBlueBitmap on it
                             Notification.WearableExtender extender = new Notification.WearableExtender();
-                            extender.setBackground(background);
+                            extender.setBackground(themeBlueBitmap);
                             builder.extend(extender);
                         }
 

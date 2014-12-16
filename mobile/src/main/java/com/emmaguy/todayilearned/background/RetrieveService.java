@@ -11,8 +11,8 @@ import android.text.TextUtils;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.Utils;
+import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -24,6 +24,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,7 +36,6 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 
 import retrofit.RestAdapter;
@@ -83,9 +83,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint("https://www.reddit.com/")
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder()
-                        .registerTypeAdapter(new TypeToken<List<Post>>() {
-                        }.getType(), new ListingJsonDeserializer()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {}.getType(), new ListingJsonDeserializer()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);
@@ -145,38 +143,38 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 .filter(new Func1<Post, Boolean>() {
                     @Override
                     public Boolean call(Post post) {
-                        // TODO: where should this go?
-                        if (post.getCreatedUtc() > mLatestCreatedUtc) {
-                            mLatestCreatedUtc = post.getCreatedUtc();
-                            Logger.Log("Updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
-                        }
-
                         // Check that this post is new (i.e. we haven't retrieved it before)
                         // In debug, never ignore posts - we want content to test with
                         return (post.getCreatedUtc() > getCreatedUtcOfRetrievedPosts()) || BuildConfig.DEBUG;
                     }
                 })
-                .flatMap(new Func1<Post, Observable<List<Post>>>() {
+                .doOnNext(new Action1<Post>() {
                     @Override
-                    public Observable<List<Post>> call(Post post) {
-                        try {
-                            URL url = new URL(post.getThumbnail());
-                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                            connection.setDoInput(true);
-                            connection.connect();
-                            InputStream input = connection.getInputStream();
-
-                            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                            Bitmap bitmap = BitmapFactory.decodeStream(input);
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
-                            post.setThumbnailImage(byteStream.toByteArray());
-                        } catch (Exception e) {
-                            Logger.Log("failed to download image: " + post.getThumbnail(), e);
+                    public void call(Post post) {
+                        if (post.getCreatedUtc() > mLatestCreatedUtc) {
+                            mLatestCreatedUtc = post.getCreatedUtc();
+                            Logger.Log("Updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
                         }
 
-                        return Observable.just(Arrays.asList(post));
+                        if (post.hasThumbnail()) {
+                            try {
+                                URL url = new URL(post.getThumbnail());
+                                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                                connection.setDoInput(true);
+                                connection.connect();
+                                InputStream input = connection.getInputStream();
+
+                                final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                                Bitmap bitmap = BitmapFactory.decodeStream(input);
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
+                                post.setThumbnailImage(byteStream.toByteArray());
+                            } catch (Exception e) {
+                                Logger.Log("failed to download image: " + post.getThumbnail(), e);
+                            }
+                        }
                     }
-                });
+                })
+                .toList();
     }
 
     private static <T> Observable.Operator<T, List<T>> flattenList() {
@@ -249,8 +247,10 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         if (mGoogleApiClient.isConnected()) {
             Logger.Log("sendNewPostsData: " + posts.size());
 
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
             final String latestPosts = gson.toJson(posts);
+
+            Logger.Log("latestPosts: " + latestPosts);
 
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
@@ -260,13 +260,17 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             for (Post p : posts) {
                 if (p.hasThumbnail() && p.getThumbnailImage() != null) {
                     Asset asset = Asset.createFromBytes(p.getThumbnailImage());
+
+                    Logger.Log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
                     mapRequest.getDataMap().putAsset(p.getId(), asset);
                 }
             }
 
             mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
-            Wearable.DataApi.putDataItem(mGoogleApiClient, mapRequest.asPutDataRequest())
+            PutDataRequest request = mapRequest.asPutDataRequest();
+            Logger.Log("Sending request: " + request);
+            Wearable.DataApi.putDataItem(mGoogleApiClient, request)
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {

@@ -4,12 +4,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.SettingsActivity;
-import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.CommentResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -30,7 +28,6 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import retrofit.RestAdapter;
-import retrofit.android.AndroidLog;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
