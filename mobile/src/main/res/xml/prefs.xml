@@ -2,7 +2,7 @@
     <PreferenceCategory
         android:title="@string/settings"
         android:key="parent">
-        <PreferenceScreen
+        <com.emmaguy.todayilearned.SubredditPreference
             android:key="subreddits"
             android:title="@string/subreddits"
             android:summary="@string/tap_to_modify" />

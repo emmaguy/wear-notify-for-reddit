@@ -39,8 +39,6 @@ public class SettingsActivity extends Activity {
     public static final String PREFS_REFRESH_FREQUENCY = "sync_frequency";
     public static final String PREFS_NUMBER_TO_RETRIEVE = "number_to_retrieve";
     public static final String PREFS_SORT_ORDER = "sort_order";
-    public static final String PREFS_SUBREDDITS = "subreddits";
-    public static final String PREFS_SELECTED_SUBREDDITS = "selectedsubreddits";
     public static final String PREFS_CREATED_UTC = "created_utc";
     public static final String PREFS_MESSAGES_ENABLED = "messages_enabled";
 
@@ -75,7 +73,6 @@ public class SettingsActivity extends Activity {
             initSummary();
 
             initialiseClickListener(PREFS_OPEN_SOURCE);
-            initialiseClickListener(PREFS_SUBREDDITS);
             initialiseClickListener(PREFS_ACCOUNT_INFO);
             initialiseClickListener(PREFS_SYNC_SUBREDDITS);
         }
@@ -103,10 +100,7 @@ public class SettingsActivity extends Activity {
 
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (preference.getKey().equals(PREFS_SUBREDDITS)) {
-                showSelectSubredditsDialog();
-                return true;
-            } else if (preference.getKey().equals(PREFS_OPEN_SOURCE)) {
+            if (preference.getKey().equals(PREFS_OPEN_SOURCE)) {
                 new LicensesDialog(getActivity(), R.raw.open_source_notices, false, true).show();
                 return true;
             } else if (preference.getKey().equals(PREFS_ACCOUNT_INFO)) {
@@ -139,8 +133,10 @@ public class SettingsActivity extends Activity {
                         public void onNext(SubscriptionResponse response) {
                             List<String> subreddits = response.getSubreddits();
 
-                            Utils.saveSubreddits(getActivity().getApplicationContext(), subreddits);
-                            Utils.saveSelectedSubreddits(getActivity().getApplicationContext(), subreddits);
+                            SubredditPreference pref = (SubredditPreference) findPreference(SubredditPreference.PREFS_SUBREDDITS);
+
+                            pref.saveSubreddits(subreddits);
+                            pref.saveSelectedSubreddits(subreddits);
                         }
 
                         @Override
@@ -241,7 +237,7 @@ public class SettingsActivity extends Activity {
 
             if (key.equals(PREFS_REFRESH_FREQUENCY)) {
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
-            } else if (key.equals(PREFS_SORT_ORDER) || key.equals(PREFS_SUBREDDITS) || key.equals(PREFS_SELECTED_SUBREDDITS)) {
+            } else if (key.equals(PREFS_SORT_ORDER) || key.equals(SubredditPreference.PREFS_SUBREDDITS) || key.equals(SubredditPreference.PREFS_SELECTED_SUBREDDITS)) {
                 clearSavedUtcTime();
             }
         }
@@ -296,77 +292,6 @@ public class SettingsActivity extends Activity {
 
         private String getUsername() {
             return getPreferenceManager().getSharedPreferences().getString(SettingsActivity.PREFS_KEY_USERNAME, "");
-        }
-
-        private void showSelectSubredditsDialog() {
-            final List<String> savedSubreddits = Utils.allSubReddits(getActivity().getApplicationContext());
-            final List<String> selectedSubreddits = Utils.selectedSubReddits(getActivity().getApplicationContext());
-            final boolean[] selected = new boolean[savedSubreddits.size()];
-
-            int i = 0;
-            for (String s : savedSubreddits) {
-                selected[i] = selectedSubreddits.contains(s);
-
-                i++;
-            }
-
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(getString(R.string.select_subreddits))
-                    .setMultiChoiceItems(savedSubreddits.toArray(new String[savedSubreddits.size()]), selected, new DialogInterface.OnMultiChoiceClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i, boolean b) {
-                            selected[i] = b;
-                            ((AlertDialog) dialogInterface).getListView().setItemChecked(i, b);
-                        }
-                    })
-                    .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            List<String> selectedSrs = new ArrayList<String>();
-
-                            int index = 0;
-                            for (boolean b : selected) {
-                                if (b) {
-                                    selectedSrs.add(savedSubreddits.get(index));
-                                }
-                                index++;
-                            }
-                            Utils.saveSubreddits(getActivity().getApplicationContext(), savedSubreddits);
-                            Utils.saveSelectedSubreddits(getActivity().getApplicationContext(), selectedSrs);
-                        }
-                    })
-                    .setNeutralButton(R.string.add_subreddit, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            showAddSubredditDialog();
-                        }
-                    })
-                    .setNegativeButton(R.string.cancel, null)
-                    .create()
-                    .show();
-        }
-
-        private void showAddSubredditDialog() {
-            final EditText input = new EditText(getActivity());
-
-            new AlertDialog.Builder(getActivity())
-                    .setNegativeButton(R.string.cancel, null)
-                    .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            String subreddit = input.getText().toString().trim();
-                            if (subreddit.length() > 0) {
-                                Utils.addSubreddit(getActivity().getApplicationContext(), subreddit);
-                            }
-                            showSelectSubredditsDialog();
-                        }
-                    })
-                    .setTitle(R.string.add_subreddit)
-                    .setMessage(R.string.enter_subreddit_name)
-                    .setView(input)
-                    .create()
-                    .show();
         }
     }
 }

@@ -11,8 +11,8 @@ import android.text.TextUtils;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.SettingsActivity;
+import com.emmaguy.todayilearned.SubredditPreference;
 import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -52,6 +52,8 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    public static final String ENDPOINT_URL_REDDIT = "https://www.reddit.com/";
+
     private GoogleApiClient mGoogleApiClient;
 
     private long mLatestCreatedUtc = 0;
@@ -81,7 +83,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private void retrieveLatestPostsFromReddit() {
         final RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("https://www.reddit.com/")
+                .setEndpoint(ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {}.getType(), new ListingJsonDeserializer()).create()))
                 .build();
@@ -205,7 +207,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private RestAdapter getRestAdapter() {
         return new RestAdapter.Builder()
-                .setEndpoint("https://www.reddit.com/")
+                .setEndpoint(ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .setConverter(new Converter() {
                     @Override
@@ -309,7 +311,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private String getSubreddit() {
-        return TextUtils.join("+", Utils.selectedSubReddits(getApplicationContext()));
+        return TextUtils.join("+", SubredditPreference.getAllSelectedSubreddits(getSharedPreferences()));
     }
 
     @Override
