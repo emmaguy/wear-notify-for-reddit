@@ -107,7 +107,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Logger.Log("Failed to get latest posts/messages", throwable);
+                        Logger.Log("Failed to get latest posts", throwable);
                     }
                 });
 
@@ -125,7 +125,20 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
                                 getRestAdapter()
                                         .create(Reddit.class)
-                                        .markAllMessagesRead();
+                                        .markAllMessagesRead()
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(new Action1<MarkAllReadResponse>() {
+                                            @Override
+                                            public void call(MarkAllReadResponse markAllReadResponse) {
+                                                Logger.Log("Mark all read: " + markAllReadResponse.isSuccessResponse());
+                                            }
+                                        }, new Action1<Throwable>() {
+                                            @Override
+                                            public void call(Throwable throwable) {
+                                                Logger.Log("Failed to mark all as read", throwable);
+                                            }
+                                        });
                             }
                         }
                     }, new Action1<Throwable>() {

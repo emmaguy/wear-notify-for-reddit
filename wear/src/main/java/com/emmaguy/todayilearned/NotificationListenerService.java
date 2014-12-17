@@ -107,7 +107,7 @@ public class NotificationListenerService extends WearableListenerService {
         if (!mGoogleApiClient.isConnected()) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Logger.Log("Service failed to connect");
+                Logger.Log("Service failed to connect: " + connectionResult);
                 return;
             }
         }

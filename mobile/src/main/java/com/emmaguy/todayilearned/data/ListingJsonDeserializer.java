@@ -35,11 +35,11 @@ public class ListingJsonDeserializer implements JsonDeserializer<List<Post>> {
                     l.add(new Post(title,
                             getEmptyStringOrValue(data, "subreddit"),
                             TextUtils.isEmpty(selftext) ? getEmptyStringOrValue(data, "subject") + "\n" + getEmptyStringOrValue(data, "body") : selftext,
-                            data.get("name").getAsString(),
+                            getEmptyStringOrValue(data, "name"),
                             getEmptyStringOrValue(data, "permalink"),
-                            data.get("author").getAsString(),
-                            data.get("id").getAsString(),
-                            data.get("thumbnail").getAsString(),
+                            getEmptyStringOrValue(data, "author"),
+                            getEmptyStringOrValue(data, "id"),
+                            getEmptyStringOrValue(data, "thumbnail"),
                             data.get("created_utc").getAsLong()));
                 }
             }
