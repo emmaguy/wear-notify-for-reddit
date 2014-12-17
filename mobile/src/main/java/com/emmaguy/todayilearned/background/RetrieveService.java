@@ -10,8 +10,8 @@ import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.BuildConfig;
+import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.SettingsActivity;
 import com.emmaguy.todayilearned.SubredditPreference;
 import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
 import com.emmaguy.todayilearned.data.Reddit;
@@ -83,7 +83,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {}.getType(), new ListingJsonDeserializer()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {
+                }.getType(), new ListingJsonDeserializer()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);
@@ -241,7 +242,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private boolean messagesEnabled() {
-        return getSharedPreferences().getBoolean(SettingsActivity.PREFS_MESSAGES_ENABLED, true);
+        return getSharedPreferences().getBoolean(getString(R.string.prefs_key_messages_enabled), true);
     }
 
     private boolean isLoggedIn() {
@@ -249,11 +250,11 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private String getModhash() {
-        return getSharedPreferences().getString(SettingsActivity.PREFS_KEY_MODHASH, "");
+        return getSharedPreferences().getString(getString(R.string.prefs_key_modhash), "");
     }
 
     private String getCookie() {
-        return getSharedPreferences().getString(SettingsActivity.PREFS_KEY_COOKIE, "");
+        return getSharedPreferences().getString(getString(R.string.prefs_key_cookie), "");
     }
 
     private void sendNewPostsData(List<Post> posts) {
@@ -304,25 +305,25 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private int getNumberToRequest() {
-        return Integer.parseInt(getSharedPreferences().getString(SettingsActivity.PREFS_NUMBER_TO_RETRIEVE, "5"));
+        return Integer.parseInt(getSharedPreferences().getString(getString(R.string.prefs_key_number_to_retrieve), "5"));
     }
 
     private void updateRetrievedPostCreatedUtc(long createdAtUtc) {
         Logger.Log("updateRetrievedPostCreatedUtc: " + createdAtUtc);
 
-        getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, createdAtUtc).apply();
+        getSharedPreferences().edit().putLong(getString(R.string.prefs_key_created_utc), createdAtUtc).apply();
     }
 
     private long getCreatedUtcOfRetrievedPosts() {
-        return getSharedPreferences().getLong(SettingsActivity.PREFS_CREATED_UTC, 0);
+        return getSharedPreferences().getLong(getString(R.string.prefs_key_created_utc), 0);
     }
 
     private String getSortType() {
-        return getSharedPreferences().getString(SettingsActivity.PREFS_SORT_ORDER, "new");
+        return getSharedPreferences().getString(getString(R.string.prefs_key_sort_order), "new");
     }
 
     private String getSubreddit() {
-        return TextUtils.join("+", SubredditPreference.getAllSelectedSubreddits(getSharedPreferences()));
+        return TextUtils.join("+", SubredditPreference.getAllSelectedSubreddits(getSharedPreferences(), getString(R.string.prefs_key_selected_subreddits)));
     }
 
     @Override

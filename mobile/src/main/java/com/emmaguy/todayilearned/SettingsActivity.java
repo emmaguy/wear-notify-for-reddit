@@ -26,7 +26,6 @@ import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Logger;
 import com.google.gson.GsonBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import de.psdev.licensesdialog.LicensesDialog;
@@ -37,21 +36,6 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class SettingsActivity extends Activity {
-    public static final String PREFS_REFRESH_FREQUENCY = "sync_frequency";
-    public static final String PREFS_NUMBER_TO_RETRIEVE = "number_to_retrieve";
-    public static final String PREFS_SORT_ORDER = "sort_order";
-    public static final String PREFS_CREATED_UTC = "created_utc";
-    public static final String PREFS_MESSAGES_ENABLED = "messages_enabled";
-
-    public static final String PREFS_ACCOUNT_INFO = "account_info";
-    public static final String PREFS_SYNC_SUBREDDITS = "sync_subreddits";
-
-    public static final String PREFS_OPEN_SOURCE = "open_source";
-
-    public static final String PREFS_KEY_COOKIE = "cookie";
-    public static final String PREFS_KEY_MODHASH = "modhash";
-    private static final String PREFS_KEY_USERNAME = "username";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,9 +57,9 @@ public class SettingsActivity extends Activity {
 
             initSummary();
 
-            initialiseClickListener(PREFS_OPEN_SOURCE);
-            initialiseClickListener(PREFS_ACCOUNT_INFO);
-            initialiseClickListener(PREFS_SYNC_SUBREDDITS);
+            initialiseClickListener(getString(R.string.prefs_key_open_source));
+            initialiseClickListener(getString(R.string.prefs_key_account_info));
+            initialiseClickListener(getString(R.string.prefs_key_sync_subreddits));
         }
 
         private void initialiseClickListener(String key) {
@@ -101,12 +85,12 @@ public class SettingsActivity extends Activity {
 
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (preference.getKey().equals(PREFS_OPEN_SOURCE)) {
+            if (preference.getKey().equals(getString(R.string.prefs_key_open_source))) {
                 new LicensesDialog(getActivity(), R.raw.open_source_notices, false, true).show();
                 return true;
-            } else if (preference.getKey().equals(PREFS_ACCOUNT_INFO)) {
+            } else if (preference.getKey().equals(getString(R.string.prefs_key_account_info))) {
                 showLoginDialog();
-            } else if (preference.getKey().equals(PREFS_SYNC_SUBREDDITS)) {
+            } else if (preference.getKey().equals(getString(R.string.prefs_key_sync_subreddits))) {
                 if (isLoggedIn()) {
                     syncSubreddits();
                 } else {
@@ -134,7 +118,7 @@ public class SettingsActivity extends Activity {
                         public void onNext(SubscriptionResponse response) {
                             List<String> subreddits = response.getSubreddits();
 
-                            SubredditPreference pref = (SubredditPreference) findPreference(SubredditPreference.PREFS_SUBREDDITS);
+                            SubredditPreference pref = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
 
                             pref.saveSubreddits(subreddits);
                             pref.saveSelectedSubreddits(subreddits);
@@ -210,12 +194,12 @@ public class SettingsActivity extends Activity {
         private void updateLoginInformation(String modhash, String cookie, String username) {
             getPreferenceManager().getSharedPreferences()
                     .edit()
-                    .putString(SettingsActivity.PREFS_KEY_USERNAME, username)
-                    .putString(SettingsActivity.PREFS_KEY_MODHASH, modhash)
-                    .putString(SettingsActivity.PREFS_KEY_COOKIE, cookie)
+                    .putString(getString(R.string.prefs_key_username), username)
+                    .putString(getString(R.string.prefs_key_modhash), modhash)
+                    .putString(getString(R.string.prefs_key_cookie), cookie)
                     .apply();
 
-            updatePrefsSummary(findPreference(PREFS_ACCOUNT_INFO));
+            updatePrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
         }
 
         private boolean isLoggedIn() {
@@ -223,11 +207,11 @@ public class SettingsActivity extends Activity {
         }
 
         private String getModhash() {
-            return getPreferenceManager().getSharedPreferences().getString(SettingsActivity.PREFS_KEY_MODHASH, "");
+            return getPreferenceManager().getSharedPreferences().getString(getString(R.string.prefs_key_modhash), "");
         }
 
         private String getCookie() {
-            return getPreferenceManager().getSharedPreferences().getString(SettingsActivity.PREFS_KEY_COOKIE, "");
+            return getPreferenceManager().getSharedPreferences().getString(getString(R.string.prefs_key_cookie), "");
         }
 
         @Override
@@ -236,9 +220,11 @@ public class SettingsActivity extends Activity {
 
             Logger.Log("onSharedPreferenceChanged: " + key);
 
-            if (key.equals(PREFS_REFRESH_FREQUENCY)) {
+            SubredditPreference subredditPreference = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
+
+            if (key.equals(getString(R.string.prefs_key_sync_frequency))) {
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
-            } else if (key.equals(PREFS_SORT_ORDER) || key.equals(SubredditPreference.PREFS_SUBREDDITS) || key.equals(SubredditPreference.PREFS_SELECTED_SUBREDDITS)) {
+            } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();
             }
         }
@@ -246,7 +232,7 @@ public class SettingsActivity extends Activity {
         private void clearSavedUtcTime() {
             Logger.Log("clearSavedUtcTime");
 
-            getPreferenceManager().getSharedPreferences().edit().putLong(SettingsActivity.PREFS_CREATED_UTC, 0).apply();
+            getPreferenceManager().getSharedPreferences().edit().putLong(getString(R.string.prefs_key_created_utc), 0).apply();
         }
 
         protected void initSummary() {
@@ -283,7 +269,7 @@ public class SettingsActivity extends Activity {
             } else if (pref instanceof PreferenceScreen) {
                 PreferenceScreen screen = (PreferenceScreen) pref;
 
-                if (screen.getKey().equals(PREFS_ACCOUNT_INFO)) {
+                if (screen.getKey().equals(getString(R.string.prefs_key_account_info))) {
                     if (isLoggedIn()) {
                         screen.setSummary(getString(R.string.logged_in_as_x, getUsername()));
                     }
@@ -292,7 +278,7 @@ public class SettingsActivity extends Activity {
         }
 
         private String getUsername() {
-            return getPreferenceManager().getSharedPreferences().getString(SettingsActivity.PREFS_KEY_USERNAME, "");
+            return getPreferenceManager().getSharedPreferences().getString(getString(R.string.prefs_key_username), "");
         }
     }
 }
