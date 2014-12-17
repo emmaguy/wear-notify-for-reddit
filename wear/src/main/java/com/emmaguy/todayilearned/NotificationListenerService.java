@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -148,7 +147,7 @@ public class NotificationListenerService extends WearableListenerService {
 
                         Notification.Builder builder = new Notification.Builder(this)
                                 .setContentTitle(post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit())
-                                .setContentText((post.isDirectMessage() ? post.getDescription() : post.getTitle() + postDescription(post.getDescription())))
+                                .setContentText((post.isDirectMessage() ? post.getDescription() : post.getPostContents()))
                                 .setSmallIcon(R.drawable.ic_launcher);
 
                         if (backgroundBitmap != null) {
@@ -213,15 +212,6 @@ public class NotificationListenerService extends WearableListenerService {
                         Logger.Log("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
                     }
                 });
-    }
-
-    private String postDescription(String description) {
-        description = description.trim();
-
-        if (TextUtils.isEmpty(description)) {
-            return "";
-        }
-        return "\n\n" + description;
     }
 
     private PendingIntent getOpenOnPhonePendingIntent(int notificationId, String permalink) {

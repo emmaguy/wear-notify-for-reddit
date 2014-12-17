@@ -117,8 +117,8 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                 .subscribe(new Observer<CommentResponse>() {
                     @Override
                     public void onNext(CommentResponse response) {
-                        if (response == null) {
-                            sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                        if (response.hasErrors()) {
+                            throw new RuntimeException("Response: " + response);
                         }
                     }
 
@@ -157,8 +157,8 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                 .subscribe(new Observer<CommentResponse>() {
                     @Override
                     public void onNext(CommentResponse response) {
-                        if (response == null) {
-                            sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                        if (response.hasErrors()) {
+                            throw new RuntimeException("Response: " + response);
                         }
                     }
 

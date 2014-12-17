@@ -83,8 +83,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {
-                }.getType(), new ListingJsonDeserializer()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {}.getType(), new ListingJsonDeserializer()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);

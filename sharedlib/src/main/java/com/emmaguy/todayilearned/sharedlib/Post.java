@@ -5,15 +5,24 @@ import android.text.TextUtils;
 import com.google.gson.annotations.Expose;
 
 public class Post {
-    @Expose private final String mSubreddit;
-    @Expose private final String mTitle;
-    @Expose private final String mDescription;
-    @Expose private final String mFullname;
-    @Expose private final String mPermalink;
-    @Expose private final String mAuthor;
-    @Expose private final String mId;
-    @Expose private final String mThumbnail;
-    @Expose private final long mCreatedUtc;
+    @Expose
+    private final String mSubreddit;
+    @Expose
+    private final String mTitle;
+    @Expose
+    private final String mDescription;
+    @Expose
+    private final String mFullname;
+    @Expose
+    private final String mPermalink;
+    @Expose
+    private final String mAuthor;
+    @Expose
+    private final String mId;
+    @Expose
+    private final String mThumbnail;
+    @Expose
+    private final long mCreatedUtc;
 
     // When we serialise the Post to send to the wearable, don't include the thumbnail - it will be added as an asset
     private byte[] mThumbnailImage;
@@ -31,7 +40,10 @@ public class Post {
     }
 
     public String getTitle() {
-        return mTitle;
+        if (TextUtils.isEmpty(mTitle)) {
+            return "";
+        }
+        return mTitle.trim();
     }
 
     public String getSubreddit() {
@@ -39,7 +51,10 @@ public class Post {
     }
 
     public String getDescription() {
-        return mDescription;
+        if (TextUtils.isEmpty(mDescription)) {
+            return "";
+        }
+        return mDescription.trim();
     }
 
     public String getFullname() {
@@ -91,7 +106,7 @@ public class Post {
 
     public boolean hasThumbnail() {
         String thumbnail = mThumbnail == null ? "" : mThumbnail.trim();
-        return !TextUtils.isEmpty(thumbnail) && !thumbnail.equals("default")&& !thumbnail.equals("nsfw");
+        return !TextUtils.isEmpty(thumbnail) && !thumbnail.equals("default") && !thumbnail.equals("nsfw");
     }
 
     public String getThumbnail() {
@@ -108,5 +123,19 @@ public class Post {
 
     public String getId() {
         return mId;
+    }
+
+    public String getPostContents() {
+        String title = getTitle();
+        String description = getDescription();
+
+        if (TextUtils.isEmpty(title)) {
+            return description;
+        }
+
+        if (TextUtils.isEmpty(description)) {
+            return title;
+        }
+        return "\n\n" + description;
     }
 }
