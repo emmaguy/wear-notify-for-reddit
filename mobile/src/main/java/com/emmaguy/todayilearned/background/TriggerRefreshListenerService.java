@@ -90,9 +90,11 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     Intent intent = PocketUtil.newAddToPocketIntent(url, "", this);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     if (intent == null) {
+                        Logger.sendEvent(getApplicationContext(), "SaveToPocket", "Failed");
                         sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED);
                     } else {
                         startActivity(intent);
+                        Logger.sendEvent(getApplicationContext(), "SaveToPocket", "Success");
                         sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS);
                     }
                 }
