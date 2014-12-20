@@ -11,7 +11,7 @@ import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.data.CommentResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.sharedlib.Logger;
+import com.emmaguy.todayilearned.Logger;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.data.FreezableUtils;
@@ -124,12 +124,14 @@ public class TriggerRefreshListenerService extends WearableListenerService {
 
                     @Override
                     public void onCompleted() {
+                        Logger.sendEvent(getApplicationContext(), "SendDM", "Success");
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_SUCCESS);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Logger.Log("Failed to post to reddit", e);
+                        Logger.sendEvent(getApplicationContext(), "SendDM", "Failed");
+                        Logger.Log(getApplicationContext(), "Failed to post to reddit", e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
@@ -165,11 +167,13 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onCompleted() {
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_SUCCESS);
+                        Logger.sendEvent(getApplicationContext(), "ReplyToPost", "Success");
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Logger.Log("Failed to post to reddit", e);
+                        Logger.sendEvent(getApplicationContext(), "ReplyToPost", "Failed");
+                        Logger.Log(getApplicationContext(), "Failed to post to reddit", e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });

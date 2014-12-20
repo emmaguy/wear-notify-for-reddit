@@ -1,6 +1,6 @@
 package com.emmaguy.todayilearned.data;
 
-import com.emmaguy.todayilearned.sharedlib.Logger;
+import com.emmaguy.todayilearned.Logger;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

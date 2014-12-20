@@ -1,6 +1,6 @@
 package com.emmaguy.todayilearned.data;
 
-import com.emmaguy.todayilearned.sharedlib.Logger;
+import com.emmaguy.todayilearned.Logger;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -8,17 +8,26 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
-import org.json.JSONArray;
-
 import java.lang.reflect.Type;
 
 public class LoginResponse {
+    private boolean mHasErrors;
     private String mModhash;
     private String mCookie;
+    private String mErrors;
 
-    public LoginResponse(String modhash, String cookie) {
-        mModhash = modhash;
-        mCookie = cookie;
+    public boolean hasErrors() {
+        return mHasErrors;
+    }
+
+    @Override
+    public String toString() {
+        return "Has errors: " + mHasErrors + " " + mErrors;
+    }
+
+    private void setErrors(String errors) {
+        mHasErrors = true;
+        mErrors = errors;
     }
 
     public String getModhash() {
@@ -29,20 +38,39 @@ public class LoginResponse {
         return mCookie;
     }
 
+    public void setModhash(String modhash) {
+        mModhash = modhash;
+    }
+
+    public void setCookie(String cookie) {
+        mCookie = cookie;
+    }
+
     public static class LoginResponseJsonDeserializer implements JsonDeserializer<LoginResponse> {
         @Override
         public LoginResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             Logger.Log("json: " + json);
             JsonObject jsonContents = json.getAsJsonObject().get("json").getAsJsonObject();
 
-            // TODO: handle errors
-//            if (jsonContents.has("errors")) {
-//                JsonArray errors = jsonContents.get("errors").getAsJsonArray();
-//            }
+            LoginResponse loginResponse = new LoginResponse();
 
-            JsonObject dataObject = jsonContents.get("data").getAsJsonObject();
+            if (jsonContents.has("data")) {
+                JsonObject dataObject = jsonContents.get("data").getAsJsonObject();
+                String modhash = dataObject.get("modhash").getAsString();
+                String cookie = dataObject.get("cookie").getAsString();
 
-            return new LoginResponse(dataObject.get("modhash").getAsString(), dataObject.get("cookie").getAsString());
+                loginResponse.setModhash(modhash);
+                loginResponse.setCookie(cookie);
+            }
+
+            if (jsonContents.has("errors")) {
+                JsonArray errors = jsonContents.get("errors").getAsJsonArray();
+                if (errors.size() > 0) {
+                    loginResponse.setErrors(errors.toString());
+                }
+            }
+
+            return loginResponse;
         }
     }
 }

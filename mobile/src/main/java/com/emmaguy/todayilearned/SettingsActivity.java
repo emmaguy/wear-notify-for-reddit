@@ -23,7 +23,7 @@ import com.emmaguy.todayilearned.data.LoginResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.SubscriptionResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.sharedlib.Logger;
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
@@ -132,7 +132,7 @@ public class SettingsActivity extends Activity {
 
                         @Override
                         public void onError(Throwable e) {
-                            Logger.Log("Error syncing subreddits", e);
+                            Logger.Log(getActivity().getApplicationContext(), "Error syncing subreddits", e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
                         }
@@ -174,17 +174,22 @@ public class SettingsActivity extends Activity {
                     .subscribe(new Observer<LoginResponse>() {
                         @Override
                         public void onNext(LoginResponse response) {
+                            if (response.hasErrors()) {
+                                throw new RuntimeException("Failed to login: " + response);
+                            }
                             updateLoginInformation(response.getModhash(), response.getCookie(), username);
                         }
 
                         @Override
                         public void onCompleted() {
+                            Logger.sendEvent(getActivity().getApplicationContext(), "Login", "Success");
                             spinner.dismiss();
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            Logger.Log("Error logging in to reddit", e);
+                            Logger.sendEvent(getActivity().getApplicationContext(), "Login", "Failed");
+                            Logger.Log(getActivity().getApplicationContext(), "Error logging in to reddit", e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
                         }
@@ -218,8 +223,6 @@ public class SettingsActivity extends Activity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             updatePrefsSummary(findPreference(key));
 
-            Logger.Log("onSharedPreferenceChanged: " + key);
-
             SubredditPreference subredditPreference = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
 
             if (key.equals(getString(R.string.prefs_key_sync_frequency))) {
@@ -230,8 +233,6 @@ public class SettingsActivity extends Activity {
         }
 
         private void clearSavedUtcTime() {
-            Logger.Log("clearSavedUtcTime");
-
             getPreferenceManager().getSharedPreferences().edit().putLong(getString(R.string.prefs_key_created_utc), 0).apply();
         }
 

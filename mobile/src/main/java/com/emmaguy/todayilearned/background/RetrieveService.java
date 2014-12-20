@@ -16,7 +16,7 @@ import com.emmaguy.todayilearned.SubredditPreference;
 import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.sharedlib.Logger;
+import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -83,7 +83,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {}.getType(), new ListingJsonDeserializer()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {
+                }.getType(), new ListingJsonDeserializer()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);
@@ -107,7 +108,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Logger.Log("Failed to get latest posts", throwable);
+                        Logger.Log(getApplicationContext(), "Failed to get latest posts", throwable);
                     }
                 });
 
@@ -136,7 +137,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                         }, new Action1<Throwable>() {
                                             @Override
                                             public void call(Throwable throwable) {
-                                                Logger.Log("Failed to mark all as read", throwable);
+                                                Logger.Log(getApplicationContext(), "Failed to mark all as read", throwable);
                                             }
                                         });
                             }
@@ -144,7 +145,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            Logger.Log("Failed to get latest messages", throwable);
+                            Logger.Log(getApplicationContext(), "Failed to get latest messages", throwable);
                         }
                     });
         }
@@ -182,7 +183,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                 bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
                                 post.setThumbnailImage(byteStream.toByteArray());
                             } catch (Exception e) {
-                                Logger.Log("failed to download image: " + post.getThumbnail(), e);
+                                Logger.Log(getApplicationContext(), "Failed to download image: " + post.getThumbnail(), e);
                             }
                         }
                     }

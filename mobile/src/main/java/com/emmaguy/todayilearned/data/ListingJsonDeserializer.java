@@ -2,7 +2,7 @@ package com.emmaguy.todayilearned.data;
 
 import android.text.TextUtils;
 
-import com.emmaguy.todayilearned.sharedlib.Logger;
+import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

@@ -10,7 +10,7 @@ import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.sharedlib.Logger;
+import com.emmaguy.todayilearned.Logger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +22,7 @@ public class AppListener implements WakefulIntentService.AlarmListener {
         if (!TextUtils.isEmpty(refreshString)) {
             int refreshIntervalMinutes = Integer.parseInt(refreshString);
             if (refreshIntervalMinutes > 0) {
-                Logger.Log("Setting alarm, interval: " + refreshIntervalMinutes);
+                Logger.sendEvent(context.getApplicationContext(), "UpdateInterval", "" + refreshIntervalMinutes);
                 mgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000, TimeUnit.MINUTES.toMillis(refreshIntervalMinutes), pi);
             } else if (refreshIntervalMinutes == -1) {
                 WakefulIntentService.cancelAlarms(context);

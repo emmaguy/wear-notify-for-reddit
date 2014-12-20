@@ -20,7 +20,7 @@ android {
         signingConfig signingConfigs.release
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 16
+        versionCode 18
         versionName "2.0.1"
     }
     buildTypes {
@@ -40,11 +40,12 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.6.1'
     compile 'com.netflix.rxjava:rxjava-core:0.20.7'
     compile 'com.netflix.rxjava:rxjava-android:0.20.7'
-    compile 'com.google.android.gms:play-services-wearable:+'
     compile 'com.android.support:support-v4:21.+'
     compile('de.psdev.licensesdialog:licensesdialog:1.5.0') {
         exclude module: 'support-v4'
     }
     compile 'com.commonsware.cwac:wakeful:1.0.+'
+    compile 'com.google.android.gms:play-services-base:6.5.+' // for google analytics
+    compile 'com.google.android.gms:play-services-wearable:6.5.+'
     wearApp project(':wear')
 }
