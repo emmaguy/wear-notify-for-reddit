@@ -260,16 +260,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return getSharedPreferences().getString(getString(R.string.prefs_key_cookie), "");
     }
 
-    private boolean isPackageInstalled(String packagename, Context context) {
-        PackageManager pm = context.getPackageManager();
-        try {
-            pm.getPackageInfo(packagename, PackageManager.GET_ACTIVITIES);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
-    }
-
     private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
             Logger.Log("sendNewPostsData: " + posts.size());
