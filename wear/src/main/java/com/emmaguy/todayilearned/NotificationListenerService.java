@@ -67,6 +67,10 @@ public class NotificationListenerService extends WearableListenerService {
             message = getString(R.string.reply_successful);
         } else if (messageEvent.getPath().equals(Constants.PATH_POST_REPLY_RESULT_FAILURE)) {
             message = getString(R.string.reply_failed_sad_face);
+        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS)) {
+            message = getString(R.string.saving_to_pocket_succeeded);
+        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED)) {
+            message = getString(R.string.saving_to_pocket_failed_sad_face);
         }
 
         if (!TextUtils.isEmpty(message)) {
@@ -116,6 +120,7 @@ public class NotificationListenerService extends WearableListenerService {
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                     final String latestPosts = dataMapItem.getDataMap().getString(Constants.KEY_REDDIT_POSTS);
+                    final boolean canSaveToPocket = dataMapItem.getDataMap().getBoolean(Constants.KEY_POCKET_INSTALLED);
 
                     Gson gson = new Gson();
                     ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {
@@ -166,6 +171,13 @@ public class NotificationListenerService extends WearableListenerService {
                         }
 
                         builder.addAction(replyAction);
+
+                        if (canSaveToPocket) {
+                            builder.addAction(new Notification.Action.Builder(
+                                    R.drawable.ic_pocket, getString(R.string.save_to_pocket), getSaveToPocketPendingIntent(notificationId, post.getPermalink()))
+                                    .build());
+                        }
+
                         builder.addAction(openOnPhoneAction);
 
                         notificationManager.notify(notificationId, builder.build());
@@ -218,6 +230,12 @@ public class NotificationListenerService extends WearableListenerService {
         Intent openOnPhone = new Intent(this, OpenOnPhoneReceiver.class);
         openOnPhone.putExtra(Constants.KEY_POST_PERMALINK, permalink);
         return PendingIntent.getBroadcast(this, notificationId, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private PendingIntent getSaveToPocketPendingIntent(int notificationId, String permalink) {
+        Intent saveToPocket = new Intent(this, SaveToPocketReceiver.class);
+        saveToPocket.putExtra(Constants.KEY_POST_PERMALINK, permalink);
+        return PendingIntent.getBroadcast(this, notificationId, saveToPocket, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private PendingIntent getReplyPendingIntent(int notificationId, Post post) {

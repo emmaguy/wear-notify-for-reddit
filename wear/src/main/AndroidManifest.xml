@@ -21,6 +21,10 @@
         </service>
 
         <receiver
+            android:name="com.emmaguy.todayilearned.SaveToPocketReceiver"
+            android:enabled="true"
+            android:exported="true" />
+        <receiver
             android:name="com.emmaguy.todayilearned.OpenOnPhoneReceiver"
             android:enabled="true"
             android:exported="true" />

@@ -32,7 +32,9 @@ public class Logger {
     private static synchronized Tracker getTracker(Context c) {
         if (mTracker == null) {
             mTracker = GoogleAnalytics.getInstance(c).newTracker(R.xml.google_analytics);
-            GoogleAnalytics.getInstance(c).getLogger().setLogLevel(com.google.android.gms.analytics.Logger.LogLevel.VERBOSE);
+            if(BuildConfig.DEBUG) {
+                GoogleAnalytics.getInstance(c).getLogger().setLogLevel(com.google.android.gms.analytics.Logger.LogLevel.VERBOSE);
+            }
         }
         return mTracker;
     }

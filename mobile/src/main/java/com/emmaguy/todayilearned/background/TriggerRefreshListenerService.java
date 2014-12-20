@@ -6,12 +6,13 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.Logger;
+import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.data.CommentResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.Logger;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.data.FreezableUtils;
@@ -82,6 +83,18 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.reddit.com" + permalink));
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
+                } else if (Constants.PATH_SAVE_TO_POCKET.equals(path)) {
+                    String permalink = dataMap.getString(Constants.KEY_POST_PERMALINK);
+                    String url = "http://www.reddit.com" + permalink;
+
+                    Intent intent = PocketUtil.newAddToPocketIntent(url, "", this);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    if (intent == null) {
+                        sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED);
+                    } else {
+                        startActivity(intent);
+                        sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS);
+                    }
                 }
             }
         }

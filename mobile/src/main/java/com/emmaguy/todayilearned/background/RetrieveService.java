@@ -1,7 +1,9 @@
 package com.emmaguy.todayilearned.background;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -10,13 +12,14 @@ import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.BuildConfig;
+import com.emmaguy.todayilearned.Logger;
+import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.SubredditPreference;
 import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -257,6 +260,16 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return getSharedPreferences().getString(getString(R.string.prefs_key_cookie), "");
     }
 
+    private boolean isPackageInstalled(String packagename, Context context) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(packagename, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
     private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
             Logger.Log("sendNewPostsData: " + posts.size());
@@ -280,6 +293,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 }
             }
 
+            mapRequest.getDataMap().putBoolean(Constants.KEY_POCKET_INSTALLED, PocketUtil.isPocketInstalled(this));
             mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
             PutDataRequest request = mapRequest.asPutDataRequest();
