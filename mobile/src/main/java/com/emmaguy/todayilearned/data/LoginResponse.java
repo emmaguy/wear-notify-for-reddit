@@ -22,7 +22,7 @@ public class LoginResponse {
 
     @Override
     public String toString() {
-        return "Has errors: " + mHasErrors + " " + mErrors;
+        return "LoginResponse has errors: " + mHasErrors + " " + mErrors;
     }
 
     private void setErrors(String errors) {

@@ -23,7 +23,6 @@ import com.emmaguy.todayilearned.data.LoginResponse;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.SubscriptionResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
@@ -116,6 +115,9 @@ public class SettingsActivity extends Activity {
                     .subscribe(new Observer<SubscriptionResponse>() {
                         @Override
                         public void onNext(SubscriptionResponse response) {
+                            if (response.hasErrors()) {
+                                throw new RuntimeException("Failed to sync subreddits: " + response);
+                            }
                             List<String> subreddits = response.getSubreddits();
 
                             SubredditPreference pref = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
@@ -127,12 +129,14 @@ public class SettingsActivity extends Activity {
                         @Override
                         public void onCompleted() {
                             spinner.dismiss();
+                            Logger.sendEvent(getActivity(), "SyncSubreddits", "Success");
                             Toast.makeText(getActivity(), R.string.successfully_synced_subreddits, Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            Logger.Log(getActivity().getApplicationContext(), "Error syncing subreddits", e);
+                            Logger.sendEvent(getActivity(), "SyncSubreddits", "Failure");
+                            Logger.Log(getActivity().getApplicationContext(), e.getMessage(), e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
                         }
@@ -189,7 +193,7 @@ public class SettingsActivity extends Activity {
                         @Override
                         public void onError(Throwable e) {
                             Logger.sendEvent(getActivity().getApplicationContext(), "Login", "Failed");
-                            Logger.Log(getActivity().getApplicationContext(), "Error logging in to reddit", e);
+                            Logger.Log(getActivity().getApplicationContext(), e.getMessage(), e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
                         }
@@ -226,6 +230,7 @@ public class SettingsActivity extends Activity {
             SubredditPreference subredditPreference = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
 
             if (key.equals(getString(R.string.prefs_key_sync_frequency))) {
+                Logger.sendEvent(getActivity().getApplicationContext(), "UpdateInterval", sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency), ""));
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
             } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();

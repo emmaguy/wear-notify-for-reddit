@@ -133,7 +133,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onNext(CommentResponse response) {
                         if (response.hasErrors()) {
-                            throw new RuntimeException("Response: " + response);
+                            throw new RuntimeException("Failed to reply to DM: " + response);
                         }
                     }
 
@@ -146,7 +146,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onError(Throwable e) {
                         Logger.sendEvent(getApplicationContext(), "SendDM", "Failed");
-                        Logger.Log(getApplicationContext(), "Failed to post to reddit", e);
+                        Logger.Log(getApplicationContext(), e.getMessage(), e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
@@ -175,7 +175,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onNext(CommentResponse response) {
                         if (response.hasErrors()) {
-                            throw new RuntimeException("Response: " + response);
+                            throw new RuntimeException("Failed to comment on post: " + response);
                         }
                     }
 
@@ -188,7 +188,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onError(Throwable e) {
                         Logger.sendEvent(getApplicationContext(), "ReplyToPost", "Failed");
-                        Logger.Log(getApplicationContext(), "Failed to post to reddit", e);
+                        Logger.Log(getApplicationContext(), e.getMessage(), e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });

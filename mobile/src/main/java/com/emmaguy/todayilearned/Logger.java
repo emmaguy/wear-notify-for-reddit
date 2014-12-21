@@ -21,9 +21,10 @@ public class Logger {
         if (BuildConfig.DEBUG) {
             Log.e("RedditWear", message, t);
         } else {
+            String description = message + " " + new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t);
             getTracker(c)
                     .send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t))
+                            .setDescription(description)
                             .setFatal(false)
                             .build());
         }

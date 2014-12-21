@@ -20,7 +20,7 @@ public class CommentResponse {
 
     @Override
     public String toString() {
-        return "Has errors: " + mHasErrors + " " + mErrors;
+        return "CommentResponse has errors: " + mHasErrors + " " + mErrors;
     }
 
     private void setErrors(String errors) {

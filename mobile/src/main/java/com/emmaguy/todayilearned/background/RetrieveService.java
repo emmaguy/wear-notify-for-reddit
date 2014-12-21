@@ -132,12 +132,14 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                         .subscribe(new Action1<MarkAllReadResponse>() {
                                             @Override
                                             public void call(MarkAllReadResponse markAllReadResponse) {
-                                                Logger.Log("Mark all read: " + markAllReadResponse.isSuccessResponse());
+                                                if (markAllReadResponse.hasErrors()) {
+                                                    throw new RuntimeException("Failed to mark all as read: " + markAllReadResponse);
+                                                }
                                             }
                                         }, new Action1<Throwable>() {
                                             @Override
                                             public void call(Throwable throwable) {
-                                                Logger.Log(getApplicationContext(), "Failed to mark all as read", throwable);
+                                                Logger.Log(getApplicationContext(), throwable.getMessage(), throwable);
                                             }
                                         });
                             }
@@ -227,7 +229,15 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         try {
                             java.util.Scanner s = new java.util.Scanner(body.in()).useDelimiter("\\A");
                             String bodyText = s.hasNext() ? s.next() : "";
-                            return new MarkAllReadResponse(bodyText.startsWith("202 Accepted"));
+                            boolean isSuccessResponse = bodyText.startsWith("202 Accepted");
+
+                            MarkAllReadResponse markAllReadResponse = new MarkAllReadResponse();
+
+                            if (!isSuccessResponse) {
+                                markAllReadResponse.setErrors(bodyText);
+                            }
+
+                            return markAllReadResponse;
                         } catch (IOException e) {
                             throw new ConversionException(e);
                         }
