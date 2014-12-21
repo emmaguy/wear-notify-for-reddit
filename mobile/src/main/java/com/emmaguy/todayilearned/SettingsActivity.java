@@ -35,6 +35,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class SettingsActivity extends Activity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,13 +130,13 @@ public class SettingsActivity extends Activity {
                         @Override
                         public void onCompleted() {
                             spinner.dismiss();
-                            Logger.sendEvent(getActivity(), "SyncSubreddits", "Success");
+                            Logger.sendEvent(getActivity(), Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_SUCCESS);
                             Toast.makeText(getActivity(), R.string.successfully_synced_subreddits, Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            Logger.sendEvent(getActivity(), "SyncSubreddits", "Failure");
+                            Logger.sendEvent(getActivity(), Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_FAILURE);
                             Logger.Log(getActivity().getApplicationContext(), e.getMessage(), e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
@@ -186,13 +187,13 @@ public class SettingsActivity extends Activity {
 
                         @Override
                         public void onCompleted() {
-                            Logger.sendEvent(getActivity().getApplicationContext(), "Login", "Success");
+                            Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
                             spinner.dismiss();
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            Logger.sendEvent(getActivity().getApplicationContext(), "Login", "Failed");
+                            Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
                             Logger.Log(getActivity().getApplicationContext(), e.getMessage(), e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
@@ -230,7 +231,7 @@ public class SettingsActivity extends Activity {
             SubredditPreference subredditPreference = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
 
             if (key.equals(getString(R.string.prefs_key_sync_frequency))) {
-                Logger.sendEvent(getActivity().getApplicationContext(), "UpdateInterval", sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency), ""));
+                Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_UPDATE_INTERVAL, sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency), ""));
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
             } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();

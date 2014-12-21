@@ -90,11 +90,11 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     Intent intent = PocketUtil.newAddToPocketIntent(url, "", this);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     if (intent == null) {
-                        Logger.sendEvent(getApplicationContext(), "SaveToPocket", "Failed");
+                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_FAILURE);
                         sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED);
                     } else {
                         startActivity(intent);
-                        Logger.sendEvent(getApplicationContext(), "SaveToPocket", "Success");
+                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_SUCCESS);
                         sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS);
                     }
                 }
@@ -139,13 +139,13 @@ public class TriggerRefreshListenerService extends WearableListenerService {
 
                     @Override
                     public void onCompleted() {
-                        Logger.sendEvent(getApplicationContext(), "SendDM", "Success");
+                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_SUCCESS);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_SUCCESS);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Logger.sendEvent(getApplicationContext(), "SendDM", "Failed");
+                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_FAILURE);
                         Logger.Log(getApplicationContext(), e.getMessage(), e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
@@ -182,12 +182,12 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onCompleted() {
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_SUCCESS);
-                        Logger.sendEvent(getApplicationContext(), "ReplyToPost", "Success");
+                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_SUCCESS);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Logger.sendEvent(getApplicationContext(), "ReplyToPost", "Failed");
+                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_FAILURE);
                         Logger.Log(getApplicationContext(), e.getMessage(), e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }

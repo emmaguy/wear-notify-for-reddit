@@ -9,6 +9,16 @@ import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
 public class Logger {
+    public static final String LOG_EVENT_SYNC_SUBREDDITS = "SyncSubreddits";
+    public static final String LOG_EVENT_UPDATE_INTERVAL = "UpdateInterval";
+    public static final String LOG_EVENT_SAVE_TO_POCKET = "SaveToPocket";
+    public static final String LOG_EVENT_REPLY_TO_POST = "ReplyToPost";
+    public static final String LOG_EVENT_SEND_DM = "SendDM";
+    public static final String LOG_EVENT_LOGIN = "Login";
+
+    public static final String LOG_EVENT_SUCCESS = "Success";
+    public static final String LOG_EVENT_FAILURE = "Failure";
+
     private static Tracker mTracker;
 
     public static void Log(String message) {
