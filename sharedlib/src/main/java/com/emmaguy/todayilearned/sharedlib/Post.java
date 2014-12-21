@@ -136,6 +136,7 @@ public class Post {
         if (TextUtils.isEmpty(description)) {
             return title;
         }
-        return "\n\n" + description;
+        
+        return title + "\n\n" + description;
     }
 }
