@@ -106,7 +106,7 @@ public class Post {
 
     public boolean hasThumbnail() {
         String thumbnail = mThumbnail == null ? "" : mThumbnail.trim();
-        return !TextUtils.isEmpty(thumbnail) && !thumbnail.equals("default") && !thumbnail.equals("nsfw");
+        return !TextUtils.isEmpty(thumbnail) && !thumbnail.equals("default") && !thumbnail.equals("nsfw") && !thumbnail.equals("self");
     }
 
     public String getThumbnail() {
