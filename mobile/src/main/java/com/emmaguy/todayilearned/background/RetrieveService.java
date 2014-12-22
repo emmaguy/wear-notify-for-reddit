@@ -185,7 +185,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                 bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
                                 post.setThumbnailImage(byteStream.toByteArray());
                             } catch (Exception e) {
-                                Logger.Log(getApplicationContext(), "Failed to download image: " + post.getThumbnail(), e);
+                                Logger.Log(getApplicationContext(), "Failed to download image", e);
                             }
                         }
                     }
