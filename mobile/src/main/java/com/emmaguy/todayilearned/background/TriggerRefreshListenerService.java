@@ -146,7 +146,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onError(Throwable e) {
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_FAILURE);
-                        Logger.Log(getApplicationContext(), e.getMessage(), e);
+                        Logger.sendThrowable(getApplicationContext(), e.getMessage(), e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
@@ -188,7 +188,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     @Override
                     public void onError(Throwable e) {
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_FAILURE);
-                        Logger.Log(getApplicationContext(), e.getMessage(), e);
+                        Logger.sendThrowable(getApplicationContext(), e.getMessage(), e);
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });

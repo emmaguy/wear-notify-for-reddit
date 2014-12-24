@@ -108,7 +108,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Logger.Log(getApplicationContext(), "Failed to get latest posts", throwable);
+                        Logger.sendThrowable(getApplicationContext(), "Failed to get latest posts", throwable);
                     }
                 });
 
@@ -139,7 +139,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                         }, new Action1<Throwable>() {
                                             @Override
                                             public void call(Throwable throwable) {
-                                                Logger.Log(getApplicationContext(), throwable.getMessage(), throwable);
+                                                Logger.sendThrowable(getApplicationContext(), throwable.getMessage(), throwable);
                                             }
                                         });
                             }
@@ -147,7 +147,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            Logger.Log(getApplicationContext(), "Failed to get latest messages", throwable);
+                            Logger.sendThrowable(getApplicationContext(), "Failed to get latest messages", throwable);
                         }
                     });
         }
@@ -185,7 +185,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                 bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
                                 post.setThumbnailImage(byteStream.toByteArray());
                             } catch (Exception e) {
-                                Logger.Log(getApplicationContext(), "Failed to download image", e);
+                                Logger.sendThrowable(getApplicationContext(), "Failed to download image", e);
                             }
                         }
                     }

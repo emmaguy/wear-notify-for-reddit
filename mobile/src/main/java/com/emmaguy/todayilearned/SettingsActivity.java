@@ -137,7 +137,7 @@ public class SettingsActivity extends Activity {
                         @Override
                         public void onError(Throwable e) {
                             Logger.sendEvent(getActivity(), Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_FAILURE);
-                            Logger.Log(getActivity().getApplicationContext(), e.getMessage(), e);
+                            Logger.sendThrowable(getActivity().getApplicationContext(), e.getMessage(), e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
                         }
@@ -194,7 +194,7 @@ public class SettingsActivity extends Activity {
                         @Override
                         public void onError(Throwable e) {
                             Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
-                            Logger.Log(getActivity().getApplicationContext(), e.getMessage(), e);
+                            Logger.sendThrowable(getActivity().getApplicationContext(), e.getMessage(), e);
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
                         }
