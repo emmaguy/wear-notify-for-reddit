@@ -55,7 +55,7 @@
     <string name="username">Username</string>
     <string name="login">Login</string>
     <string name="login_to_reddit">Login to reddit</string>
-    <string name="failed_to_login">Failed to login. Please check your credentials and internet connection</string>
+    <string name="failed_to_login">Failed to login. Please check your username/password and internet connection</string>
     <string name="logging_in">Logging in...</string>
     <string name="syncing_subreddits">Syncing subreddits...</string>
     <string name="failed_to_sync_subreddits">Failed to sync subreddits</string>

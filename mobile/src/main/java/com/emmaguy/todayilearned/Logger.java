@@ -1,6 +1,8 @@
 package com.emmaguy.todayilearned;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -27,15 +29,22 @@ public class Logger {
         }
     }
 
+    private static boolean isConnectedToNetwork(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
     public static void sendThrowable(Context c, String message, Throwable t) {
         if (BuildConfig.DEBUG) {
             Log.e("RedditWear", message, t);
         } else {
-            String description = message + " " + new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t);
+            String description = new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t);
             getTracker(c)
-                    .send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(description)
-                            .setFatal(false)
+                    .send(new HitBuilders.EventBuilder()
+                            .setCategory(description)
+                            .setAction(message)
+                            .setLabel("Connected to network: " + String.valueOf(isConnectedToNetwork(c)))
                             .build());
         }
     }
