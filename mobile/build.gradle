@@ -20,8 +20,8 @@ android {
         signingConfig signingConfigs.release
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 22
-        versionName "2.0.5"
+        versionCode 23
+        versionName "2.0.6"
     }
     buildTypes {
         release {
