@@ -11,7 +11,6 @@ import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.data.response.CommentResponse;
-import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -130,14 +129,20 @@ public class WearListenerService extends WearableListenerService {
                     @Override
                     public void call(Throwable e) {
                         Logger.sendThrowable(getApplicationContext(), "Failed to vote", e);
+                        Logger.sendEvent(getApplicationContext(), getVoteType(voteDirection), Logger.LOG_EVENT_FAILURE);
                         sendReplyResult(Constants.PATH_KEY_VOTE_RESULT_FAILED);
                     }
                 }, new Action0() {
                     @Override
                     public void call() {
+                        Logger.sendEvent(getApplicationContext(), getVoteType(voteDirection), Logger.LOG_EVENT_SUCCESS);
                         sendReplyResult(Constants.PATH_KEY_VOTE_RESULT_SUCCESS);
                     }
                 });
+    }
+
+    private static String getVoteType(int voteDirection) {
+        return voteDirection > 0 ? Logger.LOG_EVENT_VOTE_UP : Logger.LOG_EVENT_VOTE_DOWN;
     }
 
     private void replyToDirectMessage(String subject, String message, String toUser) {

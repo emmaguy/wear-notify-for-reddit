@@ -19,6 +19,8 @@ public class Logger {
     public static final String LOG_EVENT_REPLY_TO_POST = "ReplyToPost";
     public static final String LOG_EVENT_SEND_DM = "SendDM";
     public static final String LOG_EVENT_LOGIN = "Login";
+    public static final String LOG_EVENT_VOTE_UP = "Upvote";
+    public static final String LOG_EVENT_VOTE_DOWN = "Downvote";
 
     public static final String LOG_EVENT_SUCCESS = "Success";
     public static final String LOG_EVENT_FAILURE = "Failure";
