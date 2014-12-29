@@ -42,22 +42,17 @@ public class Logger {
         if (BuildConfig.DEBUG) {
             Log.e("RedditWear", message, t);
         } else {
-            String description = "Exception: " + t.getMessage() + " " + new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t);
+            String description = "Exception: " + new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t);
 
             if (t instanceof RetrofitError) {
                 RetrofitError retrofitError = (RetrofitError) t;
                 description += " " + retrofitError.getKind();
-
-                Response response = retrofitError.getResponse();
-                if (response != null) {
-                    description += " " + response.getStatus() + " " + response.getReason();
-                }
             }
 
             getTracker(c)
                     .send(new HitBuilders.EventBuilder()
                             .setCategory(description)
-                            .setAction(message)
+                            .setAction(message + " msg: " + t.getMessage())
                             .setLabel("Connected to network: " + String.valueOf(isConnectedToNetwork(c)))
                             .build());
         }
