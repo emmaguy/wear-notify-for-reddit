@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned;
+package com.emmaguy.todayilearned.data;
 
 import retrofit.RequestInterceptor;
 

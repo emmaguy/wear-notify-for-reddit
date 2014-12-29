@@ -36,7 +36,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             @Override
             public void onResult(MessageApi.SendMessageResult result) {
                 if (!result.getStatus().isSuccess()) {
-                    Toast.makeText(MainActivity.this, "Failed to retrieve posts " + result.getStatus(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.failed_to_retrieve) + " " + result.getStatus(), Toast.LENGTH_LONG).show();
                 }
                 finishActivity();
             }

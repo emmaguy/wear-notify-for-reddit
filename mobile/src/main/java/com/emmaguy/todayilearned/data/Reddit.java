@@ -1,6 +1,9 @@
 package com.emmaguy.todayilearned.data;
 
-import com.emmaguy.todayilearned.background.MarkAllReadResponse;
+import com.emmaguy.todayilearned.data.response.CommentResponse;
+import com.emmaguy.todayilearned.data.response.LoginResponse;
+import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
+import com.emmaguy.todayilearned.data.response.SubscriptionResponse;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.util.List;
@@ -31,6 +34,9 @@ public interface Reddit {
     Observable<List<Post>> latestPosts(@Path("subreddit") String subreddit,
                                        @Path("sort") String sort,
                                        @Query("limit") Integer limit);
+
+    @POST("/api/vote")
+    Observable<Void> vote(@Query("id") String fullname, @Query("dir") Integer voteDirection);
 
     @POST("/api/read_all_messages")
     Observable<MarkAllReadResponse> markAllMessagesRead();

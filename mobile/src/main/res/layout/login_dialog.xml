@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.emmaguy.todayilearned.FloatLabelLayout
+    <com.emmaguy.todayilearned.ui.FloatLabelLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
@@ -15,15 +15,17 @@
             android:id="@+id/username_edittext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
             android:hint="@string/username"
             android:imeOptions="actionNext"
             android:inputType="textNoSuggestions"
             android:nextFocusDown="@+id/edit_color_value"
             android:singleLine="true" />
 
-    </com.emmaguy.todayilearned.FloatLabelLayout>
+    </com.emmaguy.todayilearned.ui.FloatLabelLayout>
 
-    <com.emmaguy.todayilearned.FloatLabelLayout
+    <com.emmaguy.todayilearned.ui.FloatLabelLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
@@ -33,12 +35,14 @@
             android:id="@+id/password_edittext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
             android:hint="@string/password"
             android:imeOptions="actionNext"
             android:inputType="textNoSuggestions"
             android:password="true"
             android:singleLine="true" />
 
-    </com.emmaguy.todayilearned.FloatLabelLayout>
+    </com.emmaguy.todayilearned.ui.FloatLabelLayout>
 
 </LinearLayout>

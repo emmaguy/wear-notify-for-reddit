@@ -9,16 +9,17 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.SubredditPreference;
-import com.emmaguy.todayilearned.data.ListingJsonDeserializer;
+import com.emmaguy.todayilearned.Utils;
+import com.emmaguy.todayilearned.data.PostsDeseraliser;
 import com.emmaguy.todayilearned.data.Reddit;
+import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
+import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
+import com.emmaguy.todayilearned.ui.SubredditPreference;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -29,7 +30,6 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,6 +40,7 @@ import java.net.URL;
 import java.util.List;
 
 import retrofit.RestAdapter;
+import retrofit.android.AndroidLog;
 import retrofit.converter.ConversionException;
 import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
@@ -84,7 +85,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(new TypeToken<List<Post>>() {}.getType(), new ListingJsonDeserializer()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeseraliser()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);
@@ -124,7 +125,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             if (messages.size() > 0) {
                                 sendNewPostsData(messages);
 
-                                getRestAdapter()
+                                getRedditRestAdapter(getCookie(), getModhash())
                                         .create(Reddit.class)
                                         .markAllMessagesRead()
                                         .subscribeOn(Schedulers.io())
@@ -161,7 +162,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     public Boolean call(Post post) {
                         // Check that this post is new (i.e. we haven't retrieved it before)
                         // In debug, never ignore posts - we want content to test with
-                        return (post.getCreatedUtc() > getCreatedUtcOfRetrievedPosts()) || BuildConfig.DEBUG;
+                        return (post.getCreatedUtc() > getCreatedUtcOfRetrievedPosts()) || Utils.sIsDebug;
                     }
                 })
                 .doOnNext(new Action1<Post>() {
@@ -219,20 +220,20 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         };
     }
 
-    private RestAdapter getRestAdapter() {
+    private RestAdapter getRedditRestAdapter(String cookie, String modhash) {
         return new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
                 .setConverter(new Converter() {
                     @Override
                     public Object fromBody(TypedInput body, Type type) throws ConversionException {
                         try {
                             java.util.Scanner s = new java.util.Scanner(body.in()).useDelimiter("\\A");
                             String bodyText = s.hasNext() ? s.next() : "";
+
                             boolean isSuccessResponse = bodyText.startsWith("202 Accepted");
 
                             MarkAllReadResponse markAllReadResponse = new MarkAllReadResponse();
-
                             if (!isSuccessResponse) {
                                 markAllReadResponse.setErrors(bodyText);
                             }
@@ -291,6 +292,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             }
 
             mapRequest.getDataMap().putBoolean(Constants.KEY_POCKET_INSTALLED, PocketUtil.isPocketInstalled(this));
+            mapRequest.getDataMap().putBoolean(Constants.KEY_IS_LOGGED_IN, isLoggedIn());
             mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
             PutDataRequest request = mapRequest.asPutDataRequest();

@@ -3,6 +3,11 @@ package com.emmaguy.todayilearned.sharedlib;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Post {
     @Expose
@@ -136,7 +141,11 @@ public class Post {
         if (TextUtils.isEmpty(description)) {
             return title;
         }
-        
+
         return title + "\n\n" + description;
+    }
+
+    public static Type getPostsListTypeToken() {
+        return new TypeToken<List<Post>>() {}.getType();
     }
 }

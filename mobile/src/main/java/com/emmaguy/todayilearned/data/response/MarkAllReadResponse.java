@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned.background;
+package com.emmaguy.todayilearned.data.response;
 
 public class MarkAllReadResponse {
     private boolean mHasErrors;

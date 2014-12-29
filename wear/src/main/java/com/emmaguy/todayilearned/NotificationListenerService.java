@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.wearable.activity.ConfirmationActivity;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -29,7 +30,6 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,6 +42,12 @@ public class NotificationListenerService extends WearableListenerService {
     private static final String ACTION_RESPONSE = "com.emmaguy.todayilearned.Reply";
 
     private static final long TIMEOUT_MS = 30 * 1000;
+
+    private static final int REQUEST_CODE_VOTE_UP = 0;
+    private static final int REQUEST_CODE_VOTE_DOWN = 1;
+    private static final int REQUEST_CODE_OPEN_ON_PHONE = 2;
+    private static final int REQUEST_CODE_SAVE_TO_POCKET = 3;
+    private static final int REQUEST_CODE_REPLY = 4;
 
     private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
@@ -71,6 +77,10 @@ public class NotificationListenerService extends WearableListenerService {
             message = getString(R.string.saving_to_pocket_succeeded);
         } else if (messageEvent.getPath().equals(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED)) {
             message = getString(R.string.saving_to_pocket_failed_sad_face);
+        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_VOTE_RESULT_FAILED)) {
+            message = getString(R.string.voting_failed);
+        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_VOTE_RESULT_SUCCESS)) {
+            message = getString(R.string.voting_succeded);
         }
 
         if (!TextUtils.isEmpty(message)) {
@@ -109,7 +119,7 @@ public class NotificationListenerService extends WearableListenerService {
         if (!mGoogleApiClient.isConnected()) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Logger.Log("Service failed to connect: " + connectionResult);
+                Logger.Log("NotifListenerService, service failed to connect: " + connectionResult);
                 return;
             }
         }
@@ -120,10 +130,11 @@ public class NotificationListenerService extends WearableListenerService {
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                     final String latestPosts = dataMapItem.getDataMap().getString(Constants.KEY_REDDIT_POSTS);
+                    final boolean isLoggedIn = dataMapItem.getDataMap().getBoolean(Constants.KEY_IS_LOGGED_IN);
                     final boolean canSaveToPocket = dataMapItem.getDataMap().getBoolean(Constants.KEY_POCKET_INSTALLED);
 
                     Gson gson = new Gson();
-                    ArrayList<Post> posts = gson.fromJson(latestPosts, new TypeToken<ArrayList<Post>>() {}.getType());
+                    ArrayList<Post> posts = gson.fromJson(latestPosts, Post.getPostsListTypeToken());
 
                     Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.theme_blue)}, 1, 1, Bitmap.Config.ARGB_8888);
                     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -140,15 +151,6 @@ public class NotificationListenerService extends WearableListenerService {
 
                         int notificationId = (int) post.getCreatedUtc();
 
-                        Notification.Action replyAction = new Notification.Action.Builder(
-                                R.drawable.ic_full_reply, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(notificationId, post))
-                                .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
-                                .build();
-
-                        Notification.Action openOnPhoneAction = new Notification.Action.Builder(
-                                R.drawable.go_to_phone_00156, getString(R.string.open_on_phone), getOpenOnPhonePendingIntent(notificationId, post.getPermalink()))
-                                .build();
-
                         Notification.Builder builder = new Notification.Builder(this)
                                 .setContentTitle(post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit())
                                 .setContentText((post.isDirectMessage() ? post.getDescription() : post.getPostContents()))
@@ -156,7 +158,7 @@ public class NotificationListenerService extends WearableListenerService {
 
                         if (backgroundBitmap != null) {
                             builder.setLargeIcon(backgroundBitmap);
-                            Logger.Log("Post: " + post.getId() + ", service failed to connect");
+                            Logger.Log("Post: " + post.getId() + ", setting background");
                         } else {
                             Logger.Log("Post: " + post.getId() + ", grouping, no image found");
 
@@ -169,15 +171,23 @@ public class NotificationListenerService extends WearableListenerService {
                             builder.extend(extender);
                         }
 
-                        builder.addAction(replyAction);
-
-                        if (canSaveToPocket) {
-                            builder.addAction(new Notification.Action.Builder(
-                                    R.drawable.ic_pocket, getString(R.string.save_to_pocket), getSaveToPocketPendingIntent(notificationId, post.getPermalink()))
+                        if (isLoggedIn) {
+                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post))
+                                    .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
                                     .build());
+                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP)).build());
+                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN)).build());
                         }
 
-                        builder.addAction(openOnPhoneAction);
+                        if (canSaveToPocket) {
+                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_pocket,
+                                    getString(R.string.save_to_pocket),
+                                    getSaveToPocketPendingIntent(post.getPermalink())).build());
+                        }
+
+                        builder.addAction(new Notification.Action.Builder(R.drawable.go_to_phone_00156,
+                                getString(R.string.open_on_phone),
+                                getOpenOnPhonePendingIntent(post.getPermalink())).build());
 
                         notificationManager.notify(notificationId, builder.build());
                     }
@@ -225,24 +235,40 @@ public class NotificationListenerService extends WearableListenerService {
                 });
     }
 
-    private PendingIntent getOpenOnPhonePendingIntent(int notificationId, String permalink) {
-        Intent openOnPhone = new Intent(this, OpenOnPhoneReceiver.class);
+    private PendingIntent getVotePendingIntent(Post post, int voteDirection, int requestCode) {
+        Intent vote = new Intent(this, ActionReceiver.class);
+        vote.putExtra(Constants.KEY_PATH, Constants.PATH_VOTE);
+        vote.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.vote));
+        vote.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
+        vote.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
+        vote.putExtra(Constants.KEY_POST_VOTE_DIRECTION, voteDirection);
+        return PendingIntent.getBroadcast(this, requestCode, vote, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private PendingIntent getOpenOnPhonePendingIntent(String permalink) {
+        Intent openOnPhone = new Intent(this, ActionReceiver.class);
+        openOnPhone.putExtra(Constants.KEY_PATH, Constants.PATH_OPEN_ON_PHONE);
+        openOnPhone.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.open_on_phone));
+        openOnPhone.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.OPEN_ON_PHONE_ANIMATION);
         openOnPhone.putExtra(Constants.KEY_POST_PERMALINK, permalink);
-        return PendingIntent.getBroadcast(this, notificationId, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this, REQUEST_CODE_OPEN_ON_PHONE, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getSaveToPocketPendingIntent(int notificationId, String permalink) {
-        Intent saveToPocket = new Intent(this, SaveToPocketReceiver.class);
+    private PendingIntent getSaveToPocketPendingIntent(String permalink) {
+        Intent saveToPocket = new Intent(this, ActionReceiver.class);
+        saveToPocket.putExtra(Constants.KEY_PATH, Constants.PATH_SAVE_TO_POCKET);
+        saveToPocket.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.save_to_pocket));
+        saveToPocket.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
         saveToPocket.putExtra(Constants.KEY_POST_PERMALINK, permalink);
-        return PendingIntent.getBroadcast(this, notificationId, saveToPocket, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this, REQUEST_CODE_SAVE_TO_POCKET, saveToPocket, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getReplyPendingIntent(int notificationId, Post post) {
+    private PendingIntent getReplyPendingIntent(Post post) {
         Intent intent = new Intent(ACTION_RESPONSE);
         intent.putExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE, post.isDirectMessage());
         intent.putExtra(Constants.PATH_KEY_MESSAGE_TO_USER, post.getAuthor());
         intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getDescription());
         intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
-        return PendingIntent.getService(this, notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getService(this, REQUEST_CODE_REPLY, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

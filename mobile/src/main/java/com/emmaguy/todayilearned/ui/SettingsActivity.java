@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned;
+package com.emmaguy.todayilearned.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -20,10 +20,14 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.Logger;
+import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.background.AppListener;
-import com.emmaguy.todayilearned.data.LoginResponse;
+import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
+import com.emmaguy.todayilearned.data.response.LoginResponse;
 import com.emmaguy.todayilearned.data.Reddit;
-import com.emmaguy.todayilearned.data.SubscriptionResponse;
+import com.emmaguy.todayilearned.data.response.SubscriptionResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.gson.GsonBuilder;
 
@@ -122,7 +126,7 @@ public class SettingsActivity extends Activity {
             final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.syncing_subreddits));
 
             final RestAdapter restAdapter = new RestAdapter.Builder()
-                    .setEndpoint("https://www.reddit.com/")
+                    .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                     .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                     .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(SubscriptionResponse.class, new SubscriptionResponse.SubscriptionResponseJsonDeserializer()).create()))
                     .build();

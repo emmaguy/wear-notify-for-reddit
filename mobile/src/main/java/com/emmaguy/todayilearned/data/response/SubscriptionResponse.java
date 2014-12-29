@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned.data;
+package com.emmaguy.todayilearned.data.response;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;

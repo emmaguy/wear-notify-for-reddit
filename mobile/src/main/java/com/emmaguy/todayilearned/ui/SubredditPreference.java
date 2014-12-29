@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned;
+package com.emmaguy.todayilearned.ui;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.util.AttributeSet;
 import android.widget.EditText;
+
+import com.emmaguy.todayilearned.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
