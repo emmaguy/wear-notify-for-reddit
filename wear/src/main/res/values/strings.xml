@@ -14,9 +14,9 @@
     <string name="reply">Reply</string>
 
     <string name="message_from_x">Message from %1$s</string>
-    <string name="reply_to_x">Reply to %1$s</string>
-    <string name="upvote_x">Upvote %1$s</string>
-    <string name="downvote_x">Downvote %1$s</string>
+    <string name="reply_to_x">Reply to \'%1$s\'</string>
+    <string name="upvote_x">Upvote \'%1$s\'</string>
+    <string name="downvote_x">Downvote \'%1$s\'</string>
 
     <string name="reply_successful">Reply successful!</string>
     <string name="reply_failed_sad_face">Reply failed :(</string>
