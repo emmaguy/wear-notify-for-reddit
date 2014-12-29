@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned;
+package com.emmaguy.todayilearned.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import com.emmaguy.todayilearned.R;
 
 /*
  * Copyright (C) 2014 Chris Banes

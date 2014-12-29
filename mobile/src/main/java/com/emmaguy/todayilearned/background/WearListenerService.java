@@ -3,15 +3,15 @@ package com.emmaguy.todayilearned.background;
 import android.content.Intent;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.data.CommentResponse;
 import com.emmaguy.todayilearned.data.Reddit;
+import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
+import com.emmaguy.todayilearned.data.response.CommentResponse;
+import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -32,9 +32,12 @@ import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class TriggerRefreshListenerService extends WearableListenerService {
+public class WearListenerService extends WearableListenerService {
+    public static final String REDDIT_URL = "http://www.reddit.com";
     private GoogleApiClient mGoogleApiClient;
 
     @Override
@@ -65,6 +68,8 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                 DataMap dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
 
                 String path = event.getDataItem().getUri().getPath();
+                Logger.Log("Path: " + path);
+
                 if (Constants.PATH_REPLY.equals(path)) {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
                     String message = dataMap.getString(Constants.PATH_KEY_MESSAGE);
@@ -80,12 +85,12 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                     }
                 } else if (Constants.PATH_OPEN_ON_PHONE.equals(path)) {
                     String permalink = dataMap.getString(Constants.KEY_POST_PERMALINK);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.reddit.com" + permalink));
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(REDDIT_URL + permalink));
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 } else if (Constants.PATH_SAVE_TO_POCKET.equals(path)) {
                     String permalink = dataMap.getString(Constants.KEY_POST_PERMALINK);
-                    String url = "http://www.reddit.com" + permalink;
+                    String url = REDDIT_URL + permalink;
 
                     Intent intent = PocketUtil.newAddToPocketIntent(url, "", this);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -97,35 +102,46 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_SUCCESS);
                         sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS);
                     }
+                } else if (Constants.PATH_VOTE.equals(path)) {
+                    String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
+                    int voteDirection = dataMap.getInt(Constants.KEY_POST_VOTE_DIRECTION);
+                    vote(fullname, voteDirection);
                 }
             }
         }
     }
 
-    private String getModhash() {
-        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_modhash), "");
-    }
-
-    private String getCookie() {
-        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_cookie), "");
-    }
-
-    private void replyToDirectMessage(String subject, String message, String toUser) {
-        String cookie = getCookie();
-        String modhash = getModhash();
-
-        if (TextUtils.isEmpty(cookie) || TextUtils.isEmpty(modhash)) {
-            Logger.Log("Not logged in, can't reply to message");
-            return;
-        }
-
-        final RestAdapter restAdapter = new RestAdapter.Builder()
+    private void vote(String fullname, final int voteDirection) {
+        RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(CommentResponse.class, new CommentResponse.CommentResponseJsonDeserializer()).create()))
+                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .build();
 
         final Reddit redditEndpoint = restAdapter.create(Reddit.class);
+        redditEndpoint.vote(fullname, voteDirection)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void v) {
+
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable e) {
+                        Logger.sendThrowable(getApplicationContext(), "Failed to vote", e);
+                        sendReplyResult(Constants.PATH_KEY_VOTE_RESULT_FAILED);
+                    }
+                }, new Action0() {
+                    @Override
+                    public void call() {
+                        sendReplyResult(Constants.PATH_KEY_VOTE_RESULT_SUCCESS);
+                    }
+                });
+    }
+
+    private void replyToDirectMessage(String subject, String message, String toUser) {
+        final Reddit redditEndpoint = getRestAdapter().create(Reddit.class);
         redditEndpoint.replyToDirectMessage(subject, message, toUser)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -153,21 +169,7 @@ public class TriggerRefreshListenerService extends WearableListenerService {
     }
 
     private void replyToRedditPost(String fullname, String message) {
-        String cookie = getCookie();
-        String modhash = getModhash();
-
-        if (TextUtils.isEmpty(cookie) || TextUtils.isEmpty(modhash)) {
-            Logger.Log("Not logged in, can't post reply");
-            return;
-        }
-
-        final RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(CommentResponse.class, new CommentResponse.CommentResponseJsonDeserializer()).create()))
-                .build();
-
-        final Reddit redditEndpoint = restAdapter.create(Reddit.class);
+        final Reddit redditEndpoint = getRestAdapter().create(Reddit.class);
         redditEndpoint.commentOnPost(message, fullname)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -192,6 +194,23 @@ public class TriggerRefreshListenerService extends WearableListenerService {
                         sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
+    }
+
+    private RestAdapter getRestAdapter() {
+        return new RestAdapter.Builder()
+                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
+                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(CommentResponse.class, new CommentResponse.CommentResponseJsonDeserializer()).create()))
+                .build();
+    }
+
+
+    private String getModhash() {
+        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_modhash), "");
+    }
+
+    private String getCookie() {
+        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_cookie), "");
     }
 
     private void sendReplyResult(final String result) {

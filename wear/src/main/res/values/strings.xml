@@ -15,12 +15,18 @@
 
     <string name="message_from_x">Message from %1$s</string>
     <string name="reply_to_x">Reply to %1$s</string>
+    <string name="upvote_x">Upvote %1$s</string>
+    <string name="downvote_x">Downvote %1$s</string>
+
     <string name="reply_successful">Reply successful!</string>
     <string name="reply_failed_sad_face">Reply failed :(</string>
 
     <string name="save_to_pocket">Save to Pocket</string>
-    <string name="saving_to_pocket">Saving to Pocket...</string>
     <string name="saving_to_pocket_succeeded">Saving to Pocket succeeded</string>
     <string name="saving_to_pocket_failed_sad_face">Failed to save to Pocket :(</string>
+    <string name="failed_to_retrieve">Failed to retrieve posts</string>
+    <string name="vote">Vote</string>
+    <string name="voting_succeded">Voting succeeded</string>
+    <string name="voting_failed">Voting failed</string>
 
 </resources>

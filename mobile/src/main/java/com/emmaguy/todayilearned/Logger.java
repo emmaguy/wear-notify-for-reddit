@@ -11,7 +11,6 @@ import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
 import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 public class Logger {
     public static final String LOG_EVENT_SYNC_SUBREDDITS = "SyncSubreddits";
@@ -27,7 +26,7 @@ public class Logger {
     private static Tracker mTracker;
 
     public static void Log(String message) {
-        if (BuildConfig.DEBUG) {
+        if (Utils.sIsDebug) {
             Log.d("RedditWear", message);
         }
     }
@@ -39,7 +38,7 @@ public class Logger {
     }
 
     public static void sendThrowable(Context c, String message, Throwable t) {
-        if (BuildConfig.DEBUG) {
+        if (Utils.sIsDebug) {
             Log.e("RedditWear", message, t);
         } else {
             String description = "Exception: " + new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t);
@@ -59,7 +58,7 @@ public class Logger {
     }
 
     public static void sendEvent(Context c, String action, String label) {
-        if (BuildConfig.DEBUG) {
+        if (Utils.sIsDebug) {
             Log("Sending event: " + action + " " + label);
         } else {
             getTracker(c)
@@ -74,7 +73,7 @@ public class Logger {
     private static synchronized Tracker getTracker(Context c) {
         if (mTracker == null) {
             mTracker = GoogleAnalytics.getInstance(c).newTracker(R.xml.google_analytics);
-            if (BuildConfig.DEBUG) {
+            if (Utils.sIsDebug) {
                 GoogleAnalytics.getInstance(c).getLogger().setLogLevel(com.google.android.gms.analytics.Logger.LogLevel.VERBOSE);
             }
         }

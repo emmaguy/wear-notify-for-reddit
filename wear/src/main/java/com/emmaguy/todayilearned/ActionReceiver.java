@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.wearable.activity.ConfirmationActivity;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -16,10 +17,10 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.util.concurrent.TimeUnit;
 
-public class SaveToPocketReceiver extends BroadcastReceiver {
+public class ActionReceiver extends BroadcastReceiver {
     private GoogleApiClient mGoogleApiClient;
 
-    public SaveToPocketReceiver() {
+    public ActionReceiver() {
     }
 
     @Override
@@ -28,50 +29,80 @@ public class SaveToPocketReceiver extends BroadcastReceiver {
                 .addApi(Wearable.API)
                 .build();
 
-        new ConnectTask(context, intent.getStringExtra(Constants.KEY_POST_PERMALINK)).execute();
+        new ConnectTask(context, intent.getExtras()).execute();
     }
 
-    private void showConfirmation(Context context) {
+    private void showConfirmation(Context context, String message, int animation) {
         Intent confirmationActivity = new Intent(context, ConfirmationActivity.class)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                .putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE, ConfirmationActivity.OPEN_ON_PHONE_ANIMATION)
-                .putExtra(ConfirmationActivity.EXTRA_MESSAGE, context.getString(R.string.saving_to_pocket));
+                .putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE, animation)
+                .putExtra(ConfirmationActivity.EXTRA_MESSAGE, message);
         context.startActivity(confirmationActivity);
     }
 
     private class ConnectTask extends AsyncTask<Void, Void, Void> {
         private final Context mContext;
-        private final String mPermalink;
+        private final Bundle mBundle;
 
-        public ConnectTask(Context context, String permalink) {
+        public ConnectTask(Context context, Bundle bundle) {
             mContext = context;
-            mPermalink = permalink;
+            mBundle = bundle;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Logger.Log("Service failed to connect");
+                Logger.Log("Action receiver, service failed to connect: " + connectionResult);
                 return null;
             }
 
-            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(Constants.PATH_SAVE_TO_POCKET);
+            final String path = getStringAndRemoveKey(Constants.KEY_PATH);
+            final String message = getStringAndRemoveKey(Constants.KEY_CONFIRMATION_MESSAGE);
+            final int animation = getIntAndRemoveKey(Constants.KEY_CONFIRMATION_ANIMATION);
+
+            Logger.Log("Path: " + path);
+
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(path);
+
+            for (String key : mBundle.keySet()) {
+                Object value = mBundle.get(key);
+                if (value instanceof Integer) {
+                    Logger.Log("Putting int: " + key);
+                    Integer i = (Integer) value;
+                    putDataMapRequest.getDataMap().putInt(key, i);
+                } else { // assume String
+                    Logger.Log("Putting String: " + key);
+                    putDataMapRequest.getDataMap().putString(key, value.toString());
+                }
+            }
+
             putDataMapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
-            putDataMapRequest.getDataMap().putString(Constants.KEY_POST_PERMALINK, mPermalink);
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, putDataMapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Logger.Log("Save to pocket putDataItem status: " + dataItemResult.getStatus().toString());
+                            Logger.Log("Action receiver '" + message + "' putDataItem status: " + dataItemResult.getStatus().toString());
                             if (dataItemResult.getStatus().isSuccess()) {
-                                showConfirmation(mContext);
+                                showConfirmation(mContext, message, animation);
                             }
                         }
                     });
 
             return null;
+        }
+
+        private int getIntAndRemoveKey(String key) {
+            int i = mBundle.getInt(key);
+            mBundle.remove(key);
+            return i;
+        }
+
+        private String getStringAndRemoveKey(String key) {
+            String s = mBundle.getString(key);
+            mBundle.remove(key);
+            return s;
         }
     }
 }
