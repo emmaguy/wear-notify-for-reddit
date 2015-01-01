@@ -1,5 +1,6 @@
 package com.emmaguy.todayilearned;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -60,6 +61,8 @@ public class ActionReceiver extends BroadcastReceiver {
             final String path = getStringAndRemoveKey(Constants.KEY_PATH);
             final String message = getStringAndRemoveKey(Constants.KEY_CONFIRMATION_MESSAGE);
             final int animation = getIntAndRemoveKey(Constants.KEY_CONFIRMATION_ANIMATION);
+            final int notificationId = getIntAndRemoveKey(Constants.KEY_NOTIFICATION_ID);
+            final boolean dismissAfterAction = getBooleanAndRemoveKey(Constants.KEY_DISMISS_AFTER_ACTION);
 
             Logger.Log("Path: " + path);
 
@@ -68,11 +71,11 @@ public class ActionReceiver extends BroadcastReceiver {
             for (String key : mBundle.keySet()) {
                 Object value = mBundle.get(key);
                 if (value instanceof Integer) {
-                    Logger.Log("Putting int: " + key);
+                    Logger.Log("Putting int: " + key + " value: " + value);
                     Integer i = (Integer) value;
                     putDataMapRequest.getDataMap().putInt(key, i);
                 } else { // assume String
-                    Logger.Log("Putting String: " + key);
+                    Logger.Log("Putting String: " + key + " value: " + value);
                     putDataMapRequest.getDataMap().putString(key, value.toString());
                 }
             }
@@ -86,6 +89,12 @@ public class ActionReceiver extends BroadcastReceiver {
                             Logger.Log("Action receiver '" + message + "' putDataItem status: " + dataItemResult.getStatus().toString());
                             if (dataItemResult.getStatus().isSuccess()) {
                                 showConfirmation(mContext, message, animation);
+
+                                Logger.Log("DismissAfterAction: " + dismissAfterAction + " notificationId " + notificationId);
+                                if (dismissAfterAction) {
+                                    NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+                                    manager.cancel(notificationId);
+                                }
                             }
                         }
                     });
@@ -103,6 +112,12 @@ public class ActionReceiver extends BroadcastReceiver {
             String s = mBundle.getString(key);
             mBundle.remove(key);
             return s;
+        }
+
+        private boolean getBooleanAndRemoveKey(String key) {
+            boolean b = mBundle.getBoolean(key);
+            mBundle.remove(key);
+            return b;
         }
     }
 }

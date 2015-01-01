@@ -25,6 +25,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -40,7 +41,6 @@ import java.net.URL;
 import java.util.List;
 
 import retrofit.RestAdapter;
-import retrofit.android.AndroidLog;
 import retrofit.converter.ConversionException;
 import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
@@ -280,20 +280,22 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
             PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
-            mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, latestPosts);
+            DataMap dataMap = mapRequest.getDataMap();
+            dataMap.putString(Constants.KEY_REDDIT_POSTS, latestPosts);
 
             for (Post p : posts) {
                 if (p.hasThumbnail() && p.getThumbnailImage() != null) {
                     Asset asset = Asset.createFromBytes(p.getThumbnailImage());
 
                     Logger.Log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
-                    mapRequest.getDataMap().putAsset(p.getId(), asset);
+                    dataMap.putAsset(p.getId(), asset);
                 }
             }
 
-            mapRequest.getDataMap().putBoolean(Constants.KEY_POCKET_INSTALLED, PocketUtil.isPocketInstalled(this));
-            mapRequest.getDataMap().putBoolean(Constants.KEY_IS_LOGGED_IN, isLoggedIn());
-            mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
+            dataMap.putBoolean(Constants.KEY_POCKET_INSTALLED, PocketUtil.isPocketInstalled(this));
+            dataMap.putBoolean(Constants.KEY_IS_LOGGED_IN, isLoggedIn());
+            dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION, getSharedPreferences().getBoolean(getString(R.string.prefs_key_open_on_phone_dismisses), false));
+            dataMap.putLong("timestamp", System.currentTimeMillis());
 
             PutDataRequest request = mapRequest.asPutDataRequest();
             Logger.Log("Sending request: " + request);

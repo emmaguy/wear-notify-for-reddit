@@ -24,6 +24,7 @@ import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.PutDataMapRequest;
@@ -48,6 +49,9 @@ public class NotificationListenerService extends WearableListenerService {
     private static final int REQUEST_CODE_OPEN_ON_PHONE = 2;
     private static final int REQUEST_CODE_SAVE_TO_POCKET = 3;
     private static final int REQUEST_CODE_REPLY = 4;
+
+    private static final int NOTIFICATION_ID_INCREMENT = 10;
+    private static int sNotificationId = 0;
 
     private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
@@ -129,9 +133,12 @@ public class NotificationListenerService extends WearableListenerService {
                 String path = event.getDataItem().getUri().getPath();
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
-                    final String latestPosts = dataMapItem.getDataMap().getString(Constants.KEY_REDDIT_POSTS);
-                    final boolean isLoggedIn = dataMapItem.getDataMap().getBoolean(Constants.KEY_IS_LOGGED_IN);
-                    final boolean canSaveToPocket = dataMapItem.getDataMap().getBoolean(Constants.KEY_POCKET_INSTALLED);
+                    DataMap dataMap = dataMapItem.getDataMap();
+
+                    final String latestPosts = dataMap.getString(Constants.KEY_REDDIT_POSTS);
+                    final boolean isLoggedIn = dataMap.getBoolean(Constants.KEY_IS_LOGGED_IN);
+                    final boolean canSaveToPocket = dataMap.getBoolean(Constants.KEY_POCKET_INSTALLED);
+                    final boolean openOnPhoneDismisses = dataMap.getBoolean(Constants.KEY_DISMISS_AFTER_ACTION);
 
                     Gson gson = new Gson();
                     ArrayList<Post> posts = gson.fromJson(latestPosts, Post.getPostsListTypeToken());
@@ -143,16 +150,18 @@ public class NotificationListenerService extends WearableListenerService {
 
                         Bitmap backgroundBitmap = null;
                         if (post.hasThumbnail()) {
-                            Asset a = dataMapItem.getDataMap().getAsset(post.getId());
+                            Asset a = dataMap.getAsset(post.getId());
                             if (a != null) {
                                 backgroundBitmap = loadBitmapFromAsset(a);
                             }
                         }
 
-                        int notificationId = (int) post.getCreatedUtc();
+                        int notificationId = sNotificationId;
+
+                        String title = post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit();
 
                         Notification.Builder builder = new Notification.Builder(this)
-                                .setContentTitle(post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit())
+                                .setContentTitle(title)
                                 .setContentText((post.isDirectMessage() ? post.getDescription() : post.getPostContents()))
                                 .setSmallIcon(R.drawable.ic_launcher);
 
@@ -172,24 +181,26 @@ public class NotificationListenerService extends WearableListenerService {
                         }
 
                         if (isLoggedIn) {
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post))
+                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
                                     .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
                                     .build());
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP)).build());
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN)).build());
+                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
+                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
                         }
 
                         if (canSaveToPocket) {
                             builder.addAction(new Notification.Action.Builder(R.drawable.ic_pocket,
                                     getString(R.string.save_to_pocket),
-                                    getSaveToPocketPendingIntent(post.getPermalink())).build());
+                                    getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
                         }
 
                         builder.addAction(new Notification.Action.Builder(R.drawable.go_to_phone_00156,
                                 getString(R.string.open_on_phone),
-                                getOpenOnPhonePendingIntent(post.getPermalink())).build());
+                                getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
 
                         notificationManager.notify(notificationId, builder.build());
+
+                        sNotificationId += NOTIFICATION_ID_INCREMENT;
                     }
                 }
             }
@@ -245,30 +256,32 @@ public class NotificationListenerService extends WearableListenerService {
         return PendingIntent.getBroadcast(this, requestCode, vote, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getOpenOnPhonePendingIntent(String permalink) {
+    private PendingIntent getOpenOnPhonePendingIntent(String permalink, boolean openOnPhoneDismisses, int notificationId) {
         Intent openOnPhone = new Intent(this, ActionReceiver.class);
         openOnPhone.putExtra(Constants.KEY_PATH, Constants.PATH_OPEN_ON_PHONE);
         openOnPhone.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.open_on_phone));
         openOnPhone.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.OPEN_ON_PHONE_ANIMATION);
         openOnPhone.putExtra(Constants.KEY_POST_PERMALINK, permalink);
-        return PendingIntent.getBroadcast(this, REQUEST_CODE_OPEN_ON_PHONE, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
+        openOnPhone.putExtra(Constants.KEY_DISMISS_AFTER_ACTION, openOnPhoneDismisses);
+        openOnPhone.putExtra(Constants.KEY_NOTIFICATION_ID, notificationId);
+        return PendingIntent.getBroadcast(this, REQUEST_CODE_OPEN_ON_PHONE + notificationId, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getSaveToPocketPendingIntent(String permalink) {
+    private PendingIntent getSaveToPocketPendingIntent(String permalink, int notificationId) {
         Intent saveToPocket = new Intent(this, ActionReceiver.class);
         saveToPocket.putExtra(Constants.KEY_PATH, Constants.PATH_SAVE_TO_POCKET);
         saveToPocket.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.save_to_pocket));
         saveToPocket.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
         saveToPocket.putExtra(Constants.KEY_POST_PERMALINK, permalink);
-        return PendingIntent.getBroadcast(this, REQUEST_CODE_SAVE_TO_POCKET, saveToPocket, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this, REQUEST_CODE_SAVE_TO_POCKET + notificationId, saveToPocket, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getReplyPendingIntent(Post post) {
+    private PendingIntent getReplyPendingIntent(Post post, int notificationId) {
         Intent intent = new Intent(ACTION_RESPONSE);
         intent.putExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE, post.isDirectMessage());
         intent.putExtra(Constants.PATH_KEY_MESSAGE_TO_USER, post.getAuthor());
         intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getDescription());
         intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
-        return PendingIntent.getService(this, REQUEST_CODE_REPLY, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getService(this, REQUEST_CODE_REPLY + notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

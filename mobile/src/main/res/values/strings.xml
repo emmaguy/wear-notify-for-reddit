@@ -68,5 +68,7 @@
     <string name="submit">Submit</string>
     <string name="feedback_android_version">Feedback Android v</string>
     <string name="settings">Settings</string>
+    <string name="open_on_phone_also_dismisses">Open on Phone also dismisses</string>
+    <string name="open_on_phone_summary">Dismiss the notification when \'Open on Phone\' action is performed</string>
 
 </resources>

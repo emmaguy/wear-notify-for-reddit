@@ -30,6 +30,10 @@
             android:defaultValue="new"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
+        <CheckBoxPreference
+            android:key="@string/prefs_key_open_on_phone_dismisses"
+            android:title="@string/open_on_phone_also_dismisses"
+            android:summary="@string/open_on_phone_summary"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/reddit_account">
