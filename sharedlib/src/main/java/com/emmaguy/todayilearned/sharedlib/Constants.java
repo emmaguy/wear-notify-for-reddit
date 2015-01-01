@@ -9,6 +9,7 @@ public class Constants {
     public static final String PATH_REPLY = "/replytopost";
     public static final String PATH_SAVE_TO_POCKET = "/send_to_pocket";
     public static final String PATH_VOTE = "/vote";
+    public static final String PATH_COMMENTS = "/comments";
 
     public static final String KEY_REDDIT_POSTS = "posts";
     public static final String KEY_POST_PERMALINK = "post_permalink";
@@ -28,6 +29,7 @@ public class Constants {
 
     public static final String PATH_KEY_VOTE_RESULT_SUCCESS = "vote_success";
     public static final String PATH_KEY_VOTE_RESULT_FAILED = "vote_failed";
+    public static final String PATH_KEY_GETTING_COMMENTS_RESULT_FAILED = "getting comments";
 
     public static final String KEY_CONFIRMATION_MESSAGE = "confirm_message";
     public static final String KEY_PATH = "receiver_path";
@@ -36,4 +38,5 @@ public class Constants {
     public static final String KEY_CONFIRMATION_ANIMATION = "key_confirm_animation";
     public static final String KEY_DISMISS_AFTER_ACTION = "open_on_phone_dismisses";
     public static final String KEY_NOTIFICATION_ID = "notification_id";
+    public static final String KEY_COMMENTS = "comments";
 }

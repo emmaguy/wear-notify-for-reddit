@@ -32,12 +32,15 @@ public class Post {
     // When we serialise the Post to send to the wearable, don't include the thumbnail - it will be added as an asset
     private byte[] mThumbnailImage;
 
+    @Expose
+    private List<Post> mComments;
+
     public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
         mPermalink = permalink;
-        mAuthor = author;
+        mAuthor = String.format("/u/%s", author);
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
         mThumbnail = thumbnail;

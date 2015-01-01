@@ -29,7 +29,7 @@ public class ActionReceiver extends BroadcastReceiver {
         mGoogleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Wearable.API)
                 .build();
-
+        Logger.Log("onReceive in ActionReceiver");
         new ConnectTask(context, intent.getExtras()).execute();
     }
 

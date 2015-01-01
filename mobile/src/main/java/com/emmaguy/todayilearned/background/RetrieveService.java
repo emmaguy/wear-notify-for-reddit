@@ -13,7 +13,7 @@ import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.Utils;
-import com.emmaguy.todayilearned.data.PostsDeseraliser;
+import com.emmaguy.todayilearned.data.PostsDeserialiser;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
@@ -85,7 +85,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeseraliser()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeserialiser()).create()))
                 .build();
 
         final Reddit reddit = restAdapter.create(Reddit.class);

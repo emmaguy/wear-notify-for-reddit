@@ -2,7 +2,6 @@ package com.emmaguy.todayilearned.data;
 
 import android.text.TextUtils;
 
-import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -14,11 +13,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostsDeseraliser implements JsonDeserializer<List<Post>> {
+public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
     @Override
     public List<Post> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        Logger.Log(json.toString());
-
         List<Post> l = new ArrayList<Post>();
         if (json.isJsonObject()) {
             JsonObject dataObject = json.getAsJsonObject().get("data").getAsJsonObject();
@@ -40,12 +37,25 @@ public class PostsDeseraliser implements JsonDeserializer<List<Post>> {
                             getEmptyStringOrValue(data, "author"),
                             getEmptyStringOrValue(data, "id"),
                             getEmptyStringOrValue(data, "thumbnail"),
-                            data.get("created_utc").getAsLong()));
+                            getAsLong(getEmptyStringOrValue(data, "created_utc"))));
                 }
             }
         }
 
         return l;
+    }
+
+    // Sometimes the api returns invalid longs, e.g. 1420079792.0
+    private long getAsLong(String longValue) {
+        if (TextUtils.isEmpty(longValue)) {
+            return 0;
+        }
+
+        if (longValue.endsWith(".0")) {
+            longValue = longValue.replace(".0", "");
+        }
+
+        return Long.valueOf(longValue);
     }
 
     private String getEmptyStringOrValue(JsonObject data, String key) {

@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 public class Utils {
-    public static final boolean sIsDebug = BuildConfig.DEBUG;
+    public static final boolean sIsDebug = true;//BuildConfig.DEBUG;
 
     public static final String FEEDBACK_EMAIL_ADDRESS = "ringthebellapp@gmail.com";
 

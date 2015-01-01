@@ -49,12 +49,14 @@ public class NotificationListenerService extends WearableListenerService {
     private static final int REQUEST_CODE_OPEN_ON_PHONE = 2;
     private static final int REQUEST_CODE_SAVE_TO_POCKET = 3;
     private static final int REQUEST_CODE_REPLY = 4;
+    private static final int REQUEST_VIEW_COMMENTS = 5;
 
     private static final int NOTIFICATION_ID_INCREMENT = 10;
     private static int sNotificationId = 0;
 
     private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
+    private final Gson mGson = new Gson();
 
     @Override
     public void onCreate() {
@@ -85,6 +87,8 @@ public class NotificationListenerService extends WearableListenerService {
             message = getString(R.string.voting_failed);
         } else if (messageEvent.getPath().equals(Constants.PATH_KEY_VOTE_RESULT_SUCCESS)) {
             message = getString(R.string.voting_succeded);
+        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED)) {
+            message = getString(R.string.retrieving_comments_failed);
         }
 
         if (!TextUtils.isEmpty(message)) {
@@ -131,6 +135,8 @@ public class NotificationListenerService extends WearableListenerService {
         for (DataEvent event : events) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 String path = event.getDataItem().getUri().getPath();
+                Logger.Log("NotificationListenerService path: " + path);
+
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                     DataMap dataMap = dataMapItem.getDataMap();
@@ -140,8 +146,7 @@ public class NotificationListenerService extends WearableListenerService {
                     final boolean canSaveToPocket = dataMap.getBoolean(Constants.KEY_POCKET_INSTALLED);
                     final boolean openOnPhoneDismisses = dataMap.getBoolean(Constants.KEY_DISMISS_AFTER_ACTION);
 
-                    Gson gson = new Gson();
-                    ArrayList<Post> posts = gson.fromJson(latestPosts, Post.getPostsListTypeToken());
+                    ArrayList<Post> posts = mGson.fromJson(latestPosts, Post.getPostsListTypeToken());
 
                     Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.theme_blue)}, 1, 1, Bitmap.Config.ARGB_8888);
                     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -180,6 +185,10 @@ public class NotificationListenerService extends WearableListenerService {
                             builder.extend(extender);
                         }
 
+                        builder.addAction(new Notification.Action.Builder(R.drawable.ic_launcher,
+                                getString(R.string.view_comments),
+                                getViewCommentsPendingIntent(post, notificationId)).build());
+
                         if (isLoggedIn) {
                             builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
                                     .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
@@ -201,6 +210,19 @@ public class NotificationListenerService extends WearableListenerService {
                         notificationManager.notify(notificationId, builder.build());
 
                         sNotificationId += NOTIFICATION_ID_INCREMENT;
+                    }
+                } else if (path.equals(Constants.PATH_COMMENTS)) {
+                    DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+                    DataMap dataMap = dataMapItem.getDataMap();
+
+                    final String comments = dataMap.getString(Constants.KEY_REDDIT_POSTS);
+                    Logger.Log("Received comments " + comments);
+
+                    if (!TextUtils.isEmpty(comments)) {
+                        Intent intent = new Intent(this, CommentsActivity.class);
+                        intent.putExtra(Constants.KEY_REDDIT_POSTS, comments);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
                     }
                 }
             }
@@ -283,5 +305,14 @@ public class NotificationListenerService extends WearableListenerService {
         intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getDescription());
         intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
         return PendingIntent.getService(this, REQUEST_CODE_REPLY + notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private PendingIntent getViewCommentsPendingIntent(Post post, int notificationId) {
+        Intent intent = new Intent(this, ActionReceiver.class);
+        intent.putExtra(Constants.KEY_PATH, Constants.PATH_COMMENTS);
+        intent.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.retriving_comments));
+        intent.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
+        intent.putExtra(Constants.KEY_POST_PERMALINK, post.getPermalink());
+        return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }
