@@ -133,7 +133,7 @@ public class WearListenerService extends WearableListenerService {
                 .build();
 
         final Reddit redditEndpoint = restAdapter.create(Reddit.class);
-        redditEndpoint.comments(permalink, "best", 10)
+        redditEndpoint.comments(permalink, "best")
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<Post>>() {

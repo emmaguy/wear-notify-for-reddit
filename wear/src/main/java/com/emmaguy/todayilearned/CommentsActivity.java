@@ -25,8 +25,6 @@ public class CommentsActivity extends Activity {
 
         String stringComments = getIntent().getStringExtra(Constants.KEY_REDDIT_POSTS);
 
-        Logger.Log("str cmments: " + stringComments);
-
         final ArrayList<Post> comments = mGson.fromJson(stringComments, Post.getPostsListTypeToken());
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {

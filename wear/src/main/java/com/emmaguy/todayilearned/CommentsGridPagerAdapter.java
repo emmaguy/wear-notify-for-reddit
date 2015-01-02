@@ -3,14 +3,13 @@ package com.emmaguy.todayilearned;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.support.wearable.view.CardFragment;
 import android.support.wearable.view.FragmentGridPagerAdapter;
 
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
@@ -22,15 +21,33 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
 
         mContext = context;
         mRows = new ArrayList<CommentsGridPagerAdapter.Row>();
-        Logger.Log("comments " + comments.size());
+
         for (Post p : comments) {
-            Logger.Log("adding " + p.getAuthor());
-            mRows.add(new Row(cardFragment(p.getAuthor(), p.getDescription())));
+            mRows.add(new Row(buildRow(p)));
         }
     }
 
-    private Fragment cardFragment(String title, String text) {
-        CardFragment fragment = CardFragment.create(title, text);
+    private Fragment[] buildRow(Post p) {
+        ArrayList<Fragment> fragments = new ArrayList<Fragment>();
+
+        Fragment f = buildCommentFragment(p);
+        fragments.add(f);
+
+        if (p.getReplies() != null && !p.getReplies().isEmpty()) {
+            for (Post reply : p.getReplies()) {
+                fragments.addAll(Arrays.asList(buildRow(reply)));
+            }
+        }
+
+        return fragments.toArray(new Fragment[fragments.size()]);
+    }
+
+    private Fragment buildCommentFragment(Post p) {
+        return cardFragment(p.getAuthor(), p.getDescription(), p.getUps(), p.getDowns());
+    }
+
+    private Fragment cardFragment(String title, String text, long ups, long downs) {
+        CardFragment fragment = RedditCommentCardFragment.create(title, text, ups, downs);
         // Add some extra bottom margin to leave room for the page indicator
         fragment.setCardMarginBottom(mContext.getResources().getDimensionPixelSize(R.dimen.card_margin_bottom));
         return fragment;

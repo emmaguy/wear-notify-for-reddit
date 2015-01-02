@@ -21,6 +21,10 @@ public class Post {
     @Expose
     private final String mPermalink;
     @Expose
+    private final long mUps;
+    @Expose
+    private final long mDowns;
+    @Expose
     private final String mAuthor;
     @Expose
     private final String mId;
@@ -35,11 +39,16 @@ public class Post {
     @Expose
     private List<Post> mComments;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc) {
+    @Expose
+    private List<Post> mReplies;
+
+    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc, long ups, long downs) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
         mPermalink = permalink;
+        mUps = ups;
+        mDowns = downs;
         mAuthor = String.format("/u/%s", author);
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
@@ -150,5 +159,21 @@ public class Post {
 
     public static Type getPostsListTypeToken() {
         return new TypeToken<List<Post>>() {}.getType();
+    }
+
+    public long getUps() {
+        return mUps;
+    }
+
+    public long getDowns() {
+        return mDowns;
+    }
+
+    public void setReplies(List<Post> replies) {
+        mReplies = replies;
+    }
+
+    public List<Post> getReplies() {
+        return mReplies;
     }
 }

@@ -32,8 +32,7 @@ public interface Reddit {
 
     @GET("/{permalink}.json")
     Observable<List<Post>> comments(@Path(value = "permalink", encode = false) String permalink,
-                                    @Query("sort") String sort,
-                                    @Query("limit") Integer limit);
+                                    @Query("sort") String sort);
 
     @GET("/r/{subreddit}/{sort}.json")
     Observable<List<Post>> latestPosts(@Path("subreddit") String subreddit,

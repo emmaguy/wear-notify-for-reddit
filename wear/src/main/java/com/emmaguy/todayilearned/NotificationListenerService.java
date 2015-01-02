@@ -185,7 +185,7 @@ public class NotificationListenerService extends WearableListenerService {
                             builder.extend(extender);
                         }
 
-                        builder.addAction(new Notification.Action.Builder(R.drawable.ic_launcher,
+                        builder.addAction(new Notification.Action.Builder(R.drawable.ic_message_white_48dp,
                                 getString(R.string.view_comments),
                                 getViewCommentsPendingIntent(post, notificationId)).build());
 

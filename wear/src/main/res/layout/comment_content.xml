@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              tools:background="@android:color/white">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:id="@+id/vote_info"
+            android:layout_alignParentRight="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/upvote_count"
+                android:textSize="12dp"
+                android:textColor="@color/black"
+                android:drawablePadding="2dp"
+                android:drawableLeft="@drawable/upvote_orange"
+                tools:text="123" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/downvote_count"
+                android:textSize="12dp"
+                android:textColor="@color/black"
+                android:drawablePadding="2dp"
+                android:drawableLeft="@drawable/downvote_blue"
+                tools:text="23" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/title"
+            android:textColor="@color/dark_grey"
+            android:textSize="12dp"
+            android:textStyle="normal"
+            android:layout_toLeftOf="@id/vote_info"
+            android:gravity="left|center_vertical"
+            android:text="/u/blah" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/text"
+        android:paddingTop="3dp"
+        android:textColor="@color/black"
+        android:text="blahblahblahblahblahblahblahblahblahblah" />
+
+</LinearLayout>

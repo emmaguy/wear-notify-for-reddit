@@ -2,6 +2,7 @@ package com.emmaguy.todayilearned.data;
 
 import android.text.TextUtils;
 
+import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -20,6 +21,12 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
         if (json.isJsonObject()) {
             JsonObject dataObject = json.getAsJsonObject().get("data").getAsJsonObject();
             for (JsonElement e : dataObject.get("children").getAsJsonArray()) {
+                String kind = e.getAsJsonObject().get("kind").getAsString();
+                if(!kind.equals("t1") && !kind.equals("t3")) {
+                    // only allow comments or links
+                    continue;
+                }
+
                 JsonObject data = e.getAsJsonObject().get("data").getAsJsonObject();
 
                 boolean stickied = false;
@@ -29,7 +36,7 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
                 if (!stickied) {
                     String title = getEmptyStringOrValue(data, "title");
                     String selftext = getEmptyStringOrValue(data, "selftext");
-                    l.add(new Post(title,
+                    Post post = new Post(title,
                             getEmptyStringOrValue(data, "subreddit"),
                             TextUtils.isEmpty(selftext) ? getEmptyStringOrValue(data, "subject") + "\n" + getEmptyStringOrValue(data, "body") : selftext,
                             getEmptyStringOrValue(data, "name"),
@@ -37,7 +44,19 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
                             getEmptyStringOrValue(data, "author"),
                             getEmptyStringOrValue(data, "id"),
                             getEmptyStringOrValue(data, "thumbnail"),
-                            getAsLong(getEmptyStringOrValue(data, "created_utc"))));
+                            getAsLong(getEmptyStringOrValue(data, "created_utc")),
+                            getAsLong(getEmptyStringOrValue(data, "ups")),
+                            getAsLong(getEmptyStringOrValue(data, "downs")));
+
+                    Logger.Log("json " + data);
+                    if(data.has("replies") && data.get("replies").isJsonObject()) {
+                        List<Post> replies = deserialize(data.get("replies").getAsJsonObject(), typeOfT, context);
+                        Logger.Log("replies " + replies.size());
+                        Logger.Log("reply 0: " + replies.get(0).getDescription());
+                        post.setReplies(replies);
+                    }
+
+                    l.add(post);
                 }
             }
         }

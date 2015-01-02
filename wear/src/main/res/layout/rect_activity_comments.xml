@@ -4,17 +4,24 @@
              android:layout_height="match_parent"
              android:background="@color/theme_blue">
 
-    <android.support.wearable.view.GridViewPager
-        android:id="@+id/pager"
-        android:layout_width="match_parent"
+    <android.support.wearable.view.WearableListView
+        android:id="@+id/wearable_list"
         android:layout_height="match_parent"
-        android:keepScreenOn="true" />
+        android:layout_width="match_parent"
+        android:keepScreenOn="true">
+    </android.support.wearable.view.WearableListView>
 
-    <android.support.wearable.view.DotsPageIndicator
-        android:id="@+id/page_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:layout_gravity="center_horizontal|bottom" />
+    <!--<android.support.wearable.view.GridViewPager-->
+        <!--android:id="@+id/pager"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:keepScreenOn="true" />-->
+
+    <!--<android.support.wearable.view.DotsPageIndicator-->
+        <!--android:id="@+id/page_indicator"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginBottom="4dp"-->
+        <!--android:layout_gravity="center_horizontal|bottom" />-->
 
 </FrameLayout>
