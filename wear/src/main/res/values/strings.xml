@@ -29,5 +29,6 @@
     <string name="view_comments">View Comments</string>
     <string name="retrieving_comments_failed">Retrieving comments failed</string>
     <string name="retriving_comments">Retrieving comments</string>
+    <string name="view_replies">View replies</string>
 
 </resources>

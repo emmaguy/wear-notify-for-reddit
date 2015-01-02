@@ -9,7 +9,6 @@ import android.support.wearable.view.FragmentGridPagerAdapter;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
@@ -23,27 +22,15 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
         mRows = new ArrayList<CommentsGridPagerAdapter.Row>();
 
         for (Post p : comments) {
-            mRows.add(new Row(buildRow(p)));
-        }
-    }
+            Fragment cardFragment = cardFragment(p.getAuthor(), p.getDescription(), p.getUps(), p.getDowns());
 
-    private Fragment[] buildRow(Post p) {
-        ArrayList<Fragment> fragments = new ArrayList<Fragment>();
-
-        Fragment f = buildCommentFragment(p);
-        fragments.add(f);
-
-        if (p.getReplies() != null && !p.getReplies().isEmpty()) {
-            for (Post reply : p.getReplies()) {
-                fragments.addAll(Arrays.asList(buildRow(reply)));
+            if (p.getReplies() != null && !p.getReplies().isEmpty()) {
+                Fragment actionFragment = ActionFragment.create(p.getReplies());
+                mRows.add(new Row(cardFragment, actionFragment));
+            } else {
+                mRows.add(new Row(cardFragment));
             }
         }
-
-        return fragments.toArray(new Fragment[fragments.size()]);
-    }
-
-    private Fragment buildCommentFragment(Post p) {
-        return cardFragment(p.getAuthor(), p.getDescription(), p.getUps(), p.getDowns());
     }
 
     private Fragment cardFragment(String title, String text, long ups, long downs) {

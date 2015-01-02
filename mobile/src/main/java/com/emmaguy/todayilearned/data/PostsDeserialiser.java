@@ -48,11 +48,8 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
                             getAsLong(getEmptyStringOrValue(data, "ups")),
                             getAsLong(getEmptyStringOrValue(data, "downs")));
 
-                    Logger.Log("json " + data);
                     if(data.has("replies") && data.get("replies").isJsonObject()) {
                         List<Post> replies = deserialize(data.get("replies").getAsJsonObject(), typeOfT, context);
-                        Logger.Log("replies " + replies.size());
-                        Logger.Log("reply 0: " + replies.get(0).getDescription());
                         post.setReplies(replies);
                     }
 

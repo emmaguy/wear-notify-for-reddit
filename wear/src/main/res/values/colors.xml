@@ -6,4 +6,5 @@
 
     <color name="upvote_orange">#ff8b5a</color>
     <color name="downvote_blue">#9491ff</color>
+    <color name="theme_blue_with_dark_overlay">#3c4356</color>
 </resources>
