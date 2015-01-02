@@ -216,9 +216,8 @@ public class NotificationListenerService extends WearableListenerService {
                     DataMap dataMap = dataMapItem.getDataMap();
 
                     final String comments = dataMap.getString(Constants.KEY_REDDIT_POSTS);
-                    Logger.Log("Received comments " + comments);
 
-                    if (!TextUtils.isEmpty(comments)) {
+                    if (!TextUtils.isEmpty(comments) && !comments.equals("[]")) {
                         Intent intent = new Intent(this, CommentsActivity.class);
                         intent.putExtra(Constants.KEY_REDDIT_POSTS, comments);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

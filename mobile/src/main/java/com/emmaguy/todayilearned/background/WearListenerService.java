@@ -139,10 +139,13 @@ public class WearListenerService extends WearableListenerService {
                 .subscribe(new Action1<List<Post>>() {
                     @Override
                     public void call(List<Post> posts) {
-                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
-                        Logger.Log("got comments: " + posts.size());
-
-                        sendComments(posts);
+                        if(posts != null && posts.size() > 0) {
+                            sendComments(posts);
+                            Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
+                        } else {
+                            Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
+                            sendReplyResult(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                        }
                     }
                 }, new Action1<Throwable>() {
                     @Override

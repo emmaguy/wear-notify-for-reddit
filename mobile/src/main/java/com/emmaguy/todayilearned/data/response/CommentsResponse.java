@@ -1,6 +1,5 @@
 package com.emmaguy.todayilearned.data.response;
 
-import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.data.PostsDeserialiser;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonArray;
