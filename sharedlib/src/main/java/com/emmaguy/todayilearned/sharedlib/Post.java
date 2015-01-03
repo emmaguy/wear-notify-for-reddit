@@ -51,7 +51,7 @@ public class Post {
         mScoreHidden = scoreHidden;
         mAuthor = author;
         mCreatedUtc = createdUtc;
-        mSubreddit = String.format("/r/%s", subreddit);
+        mSubreddit = subreddit;
         mThumbnail = thumbnail;
         mId = id;
         mScore = score;
