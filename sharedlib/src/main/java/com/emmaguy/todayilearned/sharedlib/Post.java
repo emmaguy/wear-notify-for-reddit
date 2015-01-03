@@ -6,7 +6,6 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Post {
@@ -21,9 +20,11 @@ public class Post {
     @Expose
     private final String mPermalink;
     @Expose
-    private final long mUps;
+    private final boolean mScoreHidden;
     @Expose
-    private final long mDowns;
+    private final int mScore;
+    @Expose
+    private final int mGilded;
     @Expose
     private final String mAuthor;
     @Expose
@@ -37,23 +38,24 @@ public class Post {
     private byte[] mThumbnailImage;
 
     @Expose
-    private List<Post> mComments;
-
-    @Expose
     private List<Post> mReplies;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc, long ups, long downs) {
+    @Expose
+    private int mLevel;
+
+    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc, int score, boolean scoreHidden, int gilded) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
         mPermalink = permalink;
-        mUps = ups;
-        mDowns = downs;
+        mScoreHidden = scoreHidden;
         mAuthor = String.format("/u/%s", author);
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
         mThumbnail = thumbnail;
         mId = id;
+        mScore = score;
+        mGilded = gilded;
     }
 
     public String getTitle() {
@@ -157,23 +159,35 @@ public class Post {
         return title + "\n\n" + description;
     }
 
-    public static Type getPostsListTypeToken() {
-        return new TypeToken<List<Post>>() {}.getType();
-    }
-
-    public long getUps() {
-        return mUps;
-    }
-
-    public long getDowns() {
-        return mDowns;
-    }
-
     public void setReplies(List<Post> replies) {
         mReplies = replies;
     }
 
     public List<Post> getReplies() {
         return mReplies;
+    }
+
+    public int getReplyLevel() {
+        return mLevel;
+    }
+
+    public void setReplyLevel(int level) {
+        mLevel = level;
+    }
+
+    public int getScore() {
+        return mScore;
+    }
+
+    public int getGilded() {
+        return mGilded;
+    }
+
+    public boolean isScoreHidden() {
+        return mScoreHidden;
+    }
+
+    public static Type getPostsListTypeToken() {
+        return new TypeToken<List<Post>>() {}.getType();
     }
 }

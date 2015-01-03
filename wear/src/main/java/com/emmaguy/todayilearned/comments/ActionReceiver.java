@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned;
+package com.emmaguy.todayilearned.comments;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.wearable.activity.ConfirmationActivity;
 
+import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;

@@ -1,8 +1,7 @@
-package com.emmaguy.todayilearned;
+package com.emmaguy.todayilearned.comments;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.wearable.view.DotsPageIndicator;
 import android.support.wearable.view.GridViewPager;
@@ -10,6 +9,7 @@ import android.support.wearable.view.WatchViewStub;
 import android.view.View;
 import android.view.WindowInsets;
 
+import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.Gson;

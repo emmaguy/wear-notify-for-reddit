@@ -21,7 +21,7 @@
         </service>
 
         <receiver
-            android:name=".ActionReceiver"
+            android:name=".comments.ActionReceiver"
             android:enabled="true"
             android:exported="true" />
 
@@ -36,7 +36,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CommentsActivity"
+            android:name=".comments.CommentsActivity"
             android:label="@string/title_activity_comments"
             android:exported="true"
             android:allowEmbedded="true"

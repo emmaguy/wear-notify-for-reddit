@@ -2,7 +2,6 @@ package com.emmaguy.todayilearned.data;
 
 import android.text.TextUtils;
 
-import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -15,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
+
     @Override
     public List<Post> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         List<Post> l = new ArrayList<Post>();
@@ -22,7 +22,7 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
             JsonObject dataObject = json.getAsJsonObject().get("data").getAsJsonObject();
             for (JsonElement e : dataObject.get("children").getAsJsonArray()) {
                 String kind = e.getAsJsonObject().get("kind").getAsString();
-                if(!kind.equals("t1") && !kind.equals("t3")) {
+                if (!kind.equals("t1") && !kind.equals("t3")) {
                     // only allow comments or links
                     continue;
                 }
@@ -45,10 +45,12 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
                             getEmptyStringOrValue(data, "id"),
                             getEmptyStringOrValue(data, "thumbnail"),
                             getAsLong(getEmptyStringOrValue(data, "created_utc")),
-                            getAsLong(getEmptyStringOrValue(data, "ups")),
-                            getAsLong(getEmptyStringOrValue(data, "downs")));
+                            getAsInt(data, "score"),
+                            getAsBoolean(data, "score_hidden"),
+                            getAsInt(data, "gilded")
+                    );
 
-                    if(data.has("replies") && data.get("replies").isJsonObject()) {
+                    if (data.has("replies") && data.get("replies").isJsonObject()) {
                         List<Post> replies = deserialize(data.get("replies").getAsJsonObject(), typeOfT, context);
                         post.setReplies(replies);
                     }
@@ -58,7 +60,37 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
             }
         }
 
+        setReplyLevels(l, 0);
+
         return l;
+    }
+
+    private boolean getAsBoolean(JsonObject data, String key) {
+        if (!data.has(key)) {
+            return false;
+        }
+
+        return data.get(key).getAsBoolean();
+    }
+
+    private int getAsInt(JsonObject data, String key) {
+        if (!data.has(key)) {
+            return 0;
+        }
+
+        return data.get(key).getAsInt();
+    }
+
+    private void setReplyLevels(List<Post> l, int level) {
+        level++;
+
+        for (Post p : l) {
+            p.setReplyLevel(level);
+
+            if (p.getReplies() != null) {
+                setReplyLevels(p.getReplies(), level);
+            }
+        }
     }
 
     // Sometimes the api returns invalid longs, e.g. 1420079792.0

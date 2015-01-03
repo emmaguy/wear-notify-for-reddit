@@ -14,6 +14,8 @@ import android.support.wearable.activity.ConfirmationActivity;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.emmaguy.todayilearned.comments.ActionReceiver;
+import com.emmaguy.todayilearned.comments.CommentsActivity;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.ConnectionResult;

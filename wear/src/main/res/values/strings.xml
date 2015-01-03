@@ -3,11 +3,6 @@
 
     <string name="app_name">Reddit for Wear</string>
 
-    <plurals name="x_new_posts">
-        <item quantity="one">1 new post</item>
-        <item quantity="other">%d new posts</item>
-    </plurals>
-
     <string name="dismiss_all">Dismiss All</string>
     <string name="loading">Loading...</string>
     <string name="open_on_phone">Open on phone</string>
@@ -31,5 +26,11 @@
     <string name="getting_comments">Getting comments</string>
     <string name="view_replies">View replies</string>
     <string name="thread_has_no_comments_yet">Thread has no comments yet</string>
+    <string name="score_hidden">[hidden]</string>
 
+    <plurals name="points">
+        <item quantity="one">pt</item>
+        <item quantity="zero">pts</item>
+        <item quantity="other">pts</item>
+    </plurals>
 </resources>

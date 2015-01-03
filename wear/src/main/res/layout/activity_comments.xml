@@ -7,5 +7,5 @@
                                              android:layout_height="match_parent"
                                              app:rectLayout="@layout/rect_activity_comments"
                                              app:roundLayout="@layout/rect_activity_comments"
-                                             tools:context="com.emmaguy.todayilearned.CommentsActivity"
+                                             tools:context="com.emmaguy.todayilearned.comments.CommentsActivity"
                                              tools:deviceIds="wear" />
