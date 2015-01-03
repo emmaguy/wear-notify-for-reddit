@@ -3,8 +3,15 @@ package com.emmaguy.todayilearned.comments;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
+import android.os.AsyncTask;
 import android.support.wearable.view.CardFragment;
 import android.support.wearable.view.FragmentGridPagerAdapter;
+import android.support.wearable.view.GridPagerAdapter;
+import android.util.LruCache;
 
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Post;
@@ -13,8 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
+    private static final int TRANSITION_DURATION_MILLIS = 100;
+
     private final Context mContext;
-    private List<Row> mRows;
+
+    private final List<Row> mRows;
 
     public CommentsGridPagerAdapter(Context context, FragmentManager fm, ArrayList<Post> comments) {
         super(fm);
@@ -61,6 +71,29 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
         public int getColumnCount() {
             return columns.size();
         }
+    }
+
+    LruCache<Point, Drawable> mPageBackgrounds = new LruCache<Point, Drawable>(1) {
+        @Override
+        protected Drawable create(final Point page) {
+            TransitionDrawable background = new TransitionDrawable(new Drawable[]{
+                    new ColorDrawable(R.color.theme_blue),
+                    new ColorDrawable(R.color.theme_blue_with_dark_overlay)
+            });
+            mPageBackgrounds.put(page, background);
+            notifyPageBackgroundChanged(page.y, page.x);
+            background.startTransition(TRANSITION_DURATION_MILLIS);
+
+            return background;
+        }
+    };
+
+    @Override
+    public Drawable getBackgroundForPage(final int row, final int column) {
+        if (column != 0) {
+            return mPageBackgrounds.get(new Point(column, row));
+        }
+        return GridPagerAdapter.BACKGROUND_NONE;
     }
 
     @Override
