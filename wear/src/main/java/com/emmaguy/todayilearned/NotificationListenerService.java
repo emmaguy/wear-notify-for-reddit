@@ -217,11 +217,15 @@ public class NotificationListenerService extends WearableListenerService {
 
                     final String comments = dataMap.getString(Constants.KEY_REDDIT_POSTS);
 
-                    if (!TextUtils.isEmpty(comments) && !comments.equals("[]")) {
-                        Intent intent = new Intent(this, CommentsActivity.class);
-                        intent.putExtra(Constants.KEY_REDDIT_POSTS, comments);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                    if (!TextUtils.isEmpty(comments)) {
+                        if (comments.equals("[]")) {
+                            Toast.makeText(NotificationListenerService.this, R.string.thread_has_no_comments_yet, Toast.LENGTH_LONG).show();
+                        } else {
+                            Intent intent = new Intent(this, CommentsActivity.class);
+                            intent.putExtra(Constants.KEY_REDDIT_POSTS, comments);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }
                     }
                 }
             }
@@ -309,7 +313,7 @@ public class NotificationListenerService extends WearableListenerService {
     private PendingIntent getViewCommentsPendingIntent(Post post, int notificationId) {
         Intent intent = new Intent(this, ActionReceiver.class);
         intent.putExtra(Constants.KEY_PATH, Constants.PATH_COMMENTS);
-        intent.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.retriving_comments));
+        intent.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.getting_comments));
         intent.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
         intent.putExtra(Constants.KEY_POST_PERMALINK, post.getPermalink());
         return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);

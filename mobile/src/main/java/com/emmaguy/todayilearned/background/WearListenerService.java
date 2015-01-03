@@ -124,8 +124,6 @@ public class WearListenerService extends WearableListenerService {
     }
 
     private void getComments(String permalink) {
-        Logger.Log("getComments permalink: " + permalink);
-
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
@@ -139,7 +137,7 @@ public class WearListenerService extends WearableListenerService {
                 .subscribe(new Action1<List<Post>>() {
                     @Override
                     public void call(List<Post> posts) {
-                        if(posts != null && posts.size() > 0) {
+                        if(posts != null) {
                             sendComments(posts);
                             Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
                         } else {
@@ -160,8 +158,6 @@ public class WearListenerService extends WearableListenerService {
     private void sendComments(List<Post> posts) {
         final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         final String comments = gson.toJson(posts);
-
-        Logger.Log("comments: " + comments);
 
         PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_COMMENTS);
         mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, comments);
