@@ -49,7 +49,7 @@ public class Post {
         mFullname = fullname;
         mPermalink = permalink;
         mScoreHidden = scoreHidden;
-        mAuthor = String.format("/u/%s", author);
+        mAuthor = author;
         mCreatedUtc = createdUtc;
         mSubreddit = String.format("/r/%s", subreddit);
         mThumbnail = thumbnail;
