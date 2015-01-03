@@ -1,22 +1,31 @@
 Reddit for Wear
 =================================
 
-Periodically retrieves the latest top posts from selected subreddits, e.g. /r/todayilearned and /r/worldnews
+Get notifications from your favourite subreddits right on your android wearable.
 
-Stores the latest created utc of the posts retrieved, so when we makes the next request we only show the user new posts. Previously attempted to use 'before' param with the fullname of a post, but when a post is deleted or removed, this caused the request to continually retrieve nothing.
+Features include (some may require sign in with your reddit account):
+- View Comments
+- Reply with voice
+- Upvote/downvote
+- Save to Pocket (requires the Pocket app to be installed on your phone)
+- Get Direct messages and Reply with voice
+- Open on Phone
 
-Requires an Android wearable - the posts are presented in a notification, 1 post per page, and can be scrolled through, left to right. There's an action at the end of the posts to dismiss them
+Choose:
+- What subreddits to get posts from
+- How often to get updates
+- How many posts to get per update
+- What sorting order to use (e.g. 'hot', 'new' or 'controversial') 
+
 
 |  ![wear1](https://raw.githubusercontent.com/emmaguy/til/master/images/home.png) | ![wear2](https://raw.githubusercontent.com/emmaguy/til/master/images/images.png) | ![wear3](https://raw.githubusercontent.com/emmaguy/til/master/images/all.png) | ![wear4](https://raw.githubusercontent.com/emmaguy/til/master/images/reply.png)  |
 |---|---|---|---|
-
-There's a short settings page where the subreddits, sync refresh interval, ordering and number of posts to retrieve can be configured.
 
 ![phone1](https://raw.githubusercontent.com/emmaguy/til/master/images/phone_settings.png)
 
 Available on the Play Store: https://play.google.com/store/apps/details?id=com.emmaguy.todayilearned
 
-Note: this used to just be a 'Today I Learned' thing (hence the package name), but decided to expand it to other subreddits.
+Note: this used to just be a 'Today I Learned' only thing (hence the package name), but it has grown considerably since then.
 
 License
 --------
