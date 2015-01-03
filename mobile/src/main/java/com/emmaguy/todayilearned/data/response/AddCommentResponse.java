@@ -10,7 +10,7 @@ import com.google.gson.JsonParseException;
 
 import java.lang.reflect.Type;
 
-public class CommentResponse {
+public class AddCommentResponse {
     private boolean mHasErrors;
     private String mErrors;
 
@@ -31,14 +31,14 @@ public class CommentResponse {
         // if BAD_CAPTCHA user needs to verify their account on web first
     }
 
-    public static class CommentResponseJsonDeserializer implements JsonDeserializer<CommentResponse> {
+    public static class CommentResponseJsonDeserializer implements JsonDeserializer<AddCommentResponse> {
         @Override
-        public CommentResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public AddCommentResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject jsonContents = json.getAsJsonObject().get("json").getAsJsonObject();
             JsonArray errors = jsonContents.get("errors").getAsJsonArray();
 
             Logger.Log("CommentResponse json: " + json);
-            CommentResponse response = new CommentResponse();
+            AddCommentResponse response = new AddCommentResponse();
 
             if(errors.size() > 0) {
                 response.setErrors(errors.toString());

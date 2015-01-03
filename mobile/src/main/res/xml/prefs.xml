@@ -27,7 +27,7 @@
             android:title="@string/sort_order"
             android:entries="@array/pref_sort_order"
             android:entryValues="@array/pref_sort_order"
-            android:defaultValue="new"
+            android:defaultValue="hot"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
         <CheckBoxPreference

@@ -3,6 +3,7 @@ package com.emmaguy.todayilearned.background;
 import android.content.Intent;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.Logger;
@@ -10,24 +11,31 @@ import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.data.response.CommentResponse;
+import com.emmaguy.todayilearned.data.response.AddCommentResponse;
+import com.emmaguy.todayilearned.data.response.CommentsResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.data.FreezableUtils;
+import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
 import retrofit.RestAdapter;
+import retrofit.android.AndroidLog;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -105,9 +113,64 @@ public class WearListenerService extends WearableListenerService {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
                     int voteDirection = dataMap.getInt(Constants.KEY_POST_VOTE_DIRECTION);
                     vote(fullname, voteDirection);
+                } else if(Constants.PATH_COMMENTS.equals(path)) {
+                    String permalink = dataMap.getString(Constants.KEY_POST_PERMALINK);
+                    if(!TextUtils.isEmpty(permalink)) {
+                        getComments(permalink);
+                    }
                 }
             }
         }
+    }
+
+    private void getComments(String permalink) {
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
+                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new CommentsResponse.CommentsResponseJsonDeserialiser()).create()))
+                .build();
+
+        final Reddit redditEndpoint = restAdapter.create(Reddit.class);
+        redditEndpoint.comments(permalink, "best")
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<List<Post>>() {
+                    @Override
+                    public void call(List<Post> posts) {
+                        if(posts != null) {
+                            sendComments(posts);
+                            Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
+                        } else {
+                            Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
+                            sendReplyResult(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Logger.sendThrowable(getApplicationContext(), "Failed to get comments", throwable);
+                        Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
+                        sendReplyResult(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                    }
+                });
+    }
+
+    private void sendComments(List<Post> posts) {
+        final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        final String comments = gson.toJson(posts);
+
+        PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_COMMENTS);
+        mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, comments);
+        mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
+
+        PutDataRequest request = mapRequest.asPutDataRequest();
+        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                    @Override
+                    public void onResult(DataApi.DataItemResult dataItemResult) {
+                        Logger.Log("Sent comments onResult: " + dataItemResult.getStatus());
+                    }
+                });
     }
 
     private void vote(String fullname, final int voteDirection) {
@@ -150,9 +213,9 @@ public class WearListenerService extends WearableListenerService {
         redditEndpoint.replyToDirectMessage(subject, message, toUser)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<CommentResponse>() {
+                .subscribe(new Observer<AddCommentResponse>() {
                     @Override
-                    public void onNext(CommentResponse response) {
+                    public void onNext(AddCommentResponse response) {
                         if (response.hasErrors()) {
                             throw new RuntimeException("Failed to reply to DM: " + response);
                         }
@@ -178,9 +241,9 @@ public class WearListenerService extends WearableListenerService {
         redditEndpoint.commentOnPost(message, fullname)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<CommentResponse>() {
+                .subscribe(new Observer<AddCommentResponse>() {
                     @Override
-                    public void onNext(CommentResponse response) {
+                    public void onNext(AddCommentResponse response) {
                         if (response.hasErrors()) {
                             throw new RuntimeException("Failed to comment on post: " + response);
                         }
@@ -205,7 +268,7 @@ public class WearListenerService extends WearableListenerService {
         return new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
                 .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
-                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(CommentResponse.class, new CommentResponse.CommentResponseJsonDeserializer()).create()))
+                .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(AddCommentResponse.class, new AddCommentResponse.CommentResponseJsonDeserializer()).create()))
                 .build();
     }
 

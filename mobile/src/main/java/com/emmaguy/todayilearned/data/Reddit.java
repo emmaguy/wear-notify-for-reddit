@@ -1,6 +1,6 @@
 package com.emmaguy.todayilearned.data;
 
-import com.emmaguy.todayilearned.data.response.CommentResponse;
+import com.emmaguy.todayilearned.data.response.AddCommentResponse;
 import com.emmaguy.todayilearned.data.response.LoginResponse;
 import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.data.response.SubscriptionResponse;
@@ -20,7 +20,7 @@ public interface Reddit {
                                     @Query("passwd") String password);
 
     @POST("/api/comment?api_type=json")
-    Observable<CommentResponse> commentOnPost(@Query("text") String comment,
+    Observable<AddCommentResponse> commentOnPost(@Query("text") String comment,
                                               @Query("thing_id") String postId);
 
     @GET("/subreddits/mine/subscriber.json")
@@ -29,6 +29,10 @@ public interface Reddit {
 
     @GET("/message/unread.json")
     Observable<List<Post>> unreadMessages();
+
+    @GET("/{permalink}.json")
+    Observable<List<Post>> comments(@Path(value = "permalink", encode = false) String permalink,
+                                    @Query("sort") String sort);
 
     @GET("/r/{subreddit}/{sort}.json")
     Observable<List<Post>> latestPosts(@Path("subreddit") String subreddit,
@@ -42,7 +46,7 @@ public interface Reddit {
     Observable<MarkAllReadResponse> markAllMessagesRead();
 
     @POST("/api/compose?api_type=json")
-    Observable<CommentResponse> replyToDirectMessage(@Query("subject") String subject,
+    Observable<AddCommentResponse> replyToDirectMessage(@Query("subject") String subject,
                                                      @Query("text") String message,
                                                      @Query("to") String toUser);
 }
