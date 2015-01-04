@@ -31,6 +31,9 @@
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
         <CheckBoxPreference
+            android:key="@string/prefs_key_full_image"
+            android:title="@string/download_fullsized_image"/>
+        <CheckBoxPreference
             android:key="@string/prefs_key_open_on_phone_dismisses"
             android:title="@string/open_on_phone_also_dismisses"
             android:summary="@string/open_on_phone_summary"/>

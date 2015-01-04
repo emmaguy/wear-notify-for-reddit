@@ -72,5 +72,6 @@
     <string name="settings">Settings</string>
     <string name="open_on_phone_also_dismisses">Open on Phone also dismisses</string>
     <string name="open_on_phone_summary">Dismiss the notification when \'Open on Phone\' action is performed</string>
+    <string name="download_fullsized_image">Download high res images</string>
 
 </resources>

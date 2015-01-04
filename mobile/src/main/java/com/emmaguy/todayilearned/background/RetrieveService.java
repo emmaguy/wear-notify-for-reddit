@@ -173,9 +173,21 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             Logger.Log("Updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
                         }
 
-                        if (post.hasThumbnail()) {
+                        // Default to just getting the thumbnail, if available
+                        String imageUrl = post.getThumbnail();
+                        boolean hasHighResAvailable = false;
+
+                        // If user has chosen to get full images, only do so if we actually have a image based url
+                        if (getSharedPreferences().getBoolean(getString(R.string.prefs_key_full_image), false)) {
+                            if (Utils.isImage(post.getUrl())) {
+                                imageUrl = post.getUrl();
+                                hasHighResAvailable = true;
+                            }
+                        }
+
+                        if (post.hasThumbnail() || hasHighResAvailable) {
                             try {
-                                URL url = new URL(post.getThumbnail());
+                                URL url = new URL(imageUrl);
                                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                                 connection.setDoInput(true);
                                 connection.connect();
@@ -184,7 +196,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                 final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
                                 Bitmap bitmap = BitmapFactory.decodeStream(input);
                                 bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
-                                post.setThumbnailImage(byteStream.toByteArray());
+                                post.setImage(byteStream.toByteArray());
+                                post.setHasHighResImage(hasHighResAvailable);
                             } catch (Exception e) {
                                 Logger.sendThrowable(getApplicationContext(), "Failed to download image", e);
                             }
@@ -284,8 +297,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             dataMap.putString(Constants.KEY_REDDIT_POSTS, latestPosts);
 
             for (Post p : posts) {
-                if (p.hasThumbnail() && p.getThumbnailImage() != null) {
-                    Asset asset = Asset.createFromBytes(p.getThumbnailImage());
+                if (p.hasThumbnail() && p.getImage() != null) {
+                    Asset asset = Asset.createFromBytes(p.getImage());
 
                     Logger.Log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
                     dataMap.putAsset(p.getId(), asset);

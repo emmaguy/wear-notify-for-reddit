@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 public class Utils {
-    public static final boolean sIsDebug = BuildConfig.DEBUG;
+    public static final boolean sIsDebug = true;//BuildConfig.DEBUG;
 
     public static final String FEEDBACK_EMAIL_ADDRESS = "ringthebellapp@gmail.com";
 
@@ -14,6 +14,12 @@ public class Utils {
         intent.putExtra(Intent.EXTRA_EMAIL, FEEDBACK_EMAIL_ADDRESS);
         intent.putExtra(Intent.EXTRA_SUBJECT, c.getString(R.string.feedback_android_version) + Utils.getVersionName(c, c.getApplicationContext().getPackageName()));
         return intent;
+    }
+
+    public static boolean isImage(String pictureFileName) {
+        return pictureFileName.endsWith(".png")
+                || pictureFileName.endsWith(".jpg")
+                || pictureFileName.endsWith(".jpeg");
     }
 
     public static String getVersionName(Context c, String packageName) {

@@ -191,6 +191,10 @@ public class NotificationListenerService extends WearableListenerService {
                                 getString(R.string.view_comments),
                                 getViewCommentsPendingIntent(post, notificationId)).build());
 
+                        if(post.hasHighResImage()) {
+
+                        }
+
                         if (isLoggedIn) {
                             builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
                                     .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
