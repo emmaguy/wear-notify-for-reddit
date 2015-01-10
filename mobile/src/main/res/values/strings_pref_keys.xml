@@ -9,6 +9,7 @@
     <string name="prefs_key_created_utc">created_utc</string>
     <string name="prefs_key_messages_enabled">messages_enabled</string>
     <string name="prefs_key_open_on_phone_dismisses">open_on_phone_dismisses</string>
+    <string name="prefs_key_actions_order">actions_order</string>
 
     <string name="prefs_key_account_info">account_info</string>
     <string name="prefs_key_sync_subreddits">sync_subreddits</string>

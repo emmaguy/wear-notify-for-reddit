@@ -10,7 +10,6 @@ import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.Logger;
-import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.PostsDeserialiser;
@@ -19,6 +18,7 @@ import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
+import com.emmaguy.todayilearned.ui.DragReorderActionsPreference;
 import com.emmaguy.todayilearned.ui.SubredditPreference;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -83,9 +83,12 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private void retrieveLatestPostsFromReddit() {
+        final String cookie = Utils.getCookie(getSharedPreferences(), this);
+        final String modhash = Utils.getModhash(getSharedPreferences(), this);
+
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeserialiser()).create()))
                 .build();
 
@@ -114,7 +117,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 });
 
-        if (isLoggedIn() && messagesEnabled()) {
+        if (Utils.isLoggedIn(getSharedPreferences(), this) && messagesEnabled()) {
             reddit.unreadMessages()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -126,7 +129,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             if (messages.size() > 0) {
                                 sendNewPostsData(messages);
 
-                                getRedditRestAdapter(getCookie(), getModhash())
+                                getRedditRestAdapter(cookie, modhash)
                                         .create(Reddit.class)
                                         .markAllMessagesRead()
                                         .subscribeOn(Schedulers.io())
@@ -257,18 +260,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return getSharedPreferences().getBoolean(getString(R.string.prefs_key_messages_enabled), true);
     }
 
-    private boolean isLoggedIn() {
-        return !TextUtils.isEmpty(getCookie());
-    }
-
-    private String getModhash() {
-        return getSharedPreferences().getString(getString(R.string.prefs_key_modhash), "");
-    }
-
-    private String getCookie() {
-        return getSharedPreferences().getString(getString(R.string.prefs_key_cookie), "");
-    }
-
     private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
             Logger.Log("sendNewPostsData: " + posts.size());
@@ -292,7 +283,12 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     dataMap.putAsset(p.getId(), asset);
                 }
             }
-            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, getActionOrder());
+            ArrayList<Integer> actions = DragReorderActionsPreference.getSelectedActionsOrDefault(
+                    getSharedPreferences(),
+                    getString(R.string.prefs_key_actions_order),
+                    this);
+
+            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, actions);
             dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION, getSharedPreferences().getBoolean(getString(R.string.prefs_key_open_on_phone_dismisses), false));
             dataMap.putLong("timestamp", System.currentTimeMillis());
 
@@ -312,24 +308,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         }
                     });
         }
-    }
-
-    private ArrayList<Integer> getActionOrder() {
-        ArrayList<Integer> defaultOrder = new ArrayList<>();
-        defaultOrder.add(Constants.ACTION_ORDER_VIEW_COMMENTS);
-
-        if (isLoggedIn()) {
-            defaultOrder.add(Constants.ACTION_ORDER_REPLY);
-            defaultOrder.add(Constants.ACTION_ORDER_UPVOTE);
-            defaultOrder.add(Constants.ACTION_ORDER_DOWNVOTE);
-        }
-
-        if (PocketUtil.isPocketInstalled(this)) {
-            defaultOrder.add(Constants.ACTION_ORDER_SAVE_TO_POCKET);
-        }
-
-        defaultOrder.add(Constants.ACTION_ORDER_OPEN_ON_PHONE);
-        return defaultOrder;
     }
 
     private SharedPreferences getSharedPreferences() {

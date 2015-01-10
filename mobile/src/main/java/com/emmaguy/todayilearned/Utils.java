@@ -2,7 +2,9 @@ package com.emmaguy.todayilearned;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.text.TextUtils;
 
 public class Utils {
     public static final boolean sIsDebug = BuildConfig.DEBUG;
@@ -24,5 +26,17 @@ public class Utils {
         }
 
         return "";
+    }
+
+    public static boolean isLoggedIn(SharedPreferences prefs, Context context) {
+        return !TextUtils.isEmpty(getCookie(prefs, context));
+    }
+
+    public static String getModhash(SharedPreferences prefs, Context context) {
+        return prefs.getString(context.getString(R.string.prefs_key_modhash), "");
+    }
+
+    public static String getCookie(SharedPreferences prefs, Context context) {
+        return prefs.getString(context.getString(R.string.prefs_key_cookie), "");
     }
 }

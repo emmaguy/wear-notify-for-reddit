@@ -9,6 +9,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.data.response.AddCommentResponse;
@@ -274,11 +275,11 @@ public class WearListenerService extends WearableListenerService {
 
 
     private String getModhash() {
-        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_modhash), "");
+        return Utils.getModhash(PreferenceManager.getDefaultSharedPreferences(this), this);
     }
 
     private String getCookie() {
-        return PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.prefs_key_cookie), "");
+        return Utils.getCookie(PreferenceManager.getDefaultSharedPreferences(this), this);
     }
 
     private void sendReplyResult(final String result) {
