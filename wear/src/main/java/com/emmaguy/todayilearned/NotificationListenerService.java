@@ -144,9 +144,8 @@ public class NotificationListenerService extends WearableListenerService {
                     DataMap dataMap = dataMapItem.getDataMap();
 
                     final String latestPosts = dataMap.getString(Constants.KEY_REDDIT_POSTS);
-                    final boolean isLoggedIn = dataMap.getBoolean(Constants.KEY_IS_LOGGED_IN);
-                    final boolean canSaveToPocket = dataMap.getBoolean(Constants.KEY_POCKET_INSTALLED);
                     final boolean openOnPhoneDismisses = dataMap.getBoolean(Constants.KEY_DISMISS_AFTER_ACTION);
+                    final ArrayList<Integer> actionOrder = dataMap.getIntegerArrayList(Constants.KEY_ACTION_ORDER);
 
                     ArrayList<Post> posts = mGson.fromJson(latestPosts, Post.getPostsListTypeToken());
 
@@ -187,27 +186,7 @@ public class NotificationListenerService extends WearableListenerService {
                             builder.extend(extender);
                         }
 
-                        builder.addAction(new Notification.Action.Builder(R.drawable.ic_message_white_48dp,
-                                getString(R.string.view_comments),
-                                getViewCommentsPendingIntent(post, notificationId)).build());
-
-                        if (isLoggedIn) {
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
-                                    .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
-                                    .build());
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
-                        }
-
-                        if (canSaveToPocket) {
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_pocket,
-                                    getString(R.string.save_to_pocket),
-                                    getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
-                        }
-
-                        builder.addAction(new Notification.Action.Builder(R.drawable.go_to_phone_00156,
-                                getString(R.string.open_on_phone),
-                                getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
+                        addActions(actionOrder, openOnPhoneDismisses, post, notificationId, builder);
 
                         notificationManager.notify(notificationId, builder.build());
 
@@ -230,6 +209,42 @@ public class NotificationListenerService extends WearableListenerService {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // Add the actions to the builder, based on the given actionOrder list
+    private void addActions(ArrayList<Integer> actionOrder, boolean openOnPhoneDismisses, Post post, int notificationId, Notification.Builder builder) {
+        for (int i = 0; i < actionOrder.size(); i++) {
+            int order = actionOrder.get(i);
+
+            switch (order) {
+                case Constants.ACTION_ORDER_VIEW_COMMENTS:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_message_white_48dp,
+                            getString(R.string.view_comments),
+                            getViewCommentsPendingIntent(post, notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_REPLY:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
+                            .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
+                            .build());
+                    break;
+                case Constants.ACTION_ORDER_UPVOTE:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_DOWNVOTE:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_SAVE_TO_POCKET:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_pocket,
+                            getString(R.string.save_to_pocket),
+                            getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_OPEN_ON_PHONE:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.go_to_phone_00156,
+                            getString(R.string.open_on_phone),
+                            getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
+                    break;
             }
         }
     }

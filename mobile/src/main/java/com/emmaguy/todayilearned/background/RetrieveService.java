@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.RestAdapter;
@@ -291,9 +292,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     dataMap.putAsset(p.getId(), asset);
                 }
             }
-
-            dataMap.putBoolean(Constants.KEY_POCKET_INSTALLED, PocketUtil.isPocketInstalled(this));
-            dataMap.putBoolean(Constants.KEY_IS_LOGGED_IN, isLoggedIn());
+            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, getActionOrder());
             dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION, getSharedPreferences().getBoolean(getString(R.string.prefs_key_open_on_phone_dismisses), false));
             dataMap.putLong("timestamp", System.currentTimeMillis());
 
@@ -313,6 +312,24 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         }
                     });
         }
+    }
+
+    private ArrayList<Integer> getActionOrder() {
+        ArrayList<Integer> defaultOrder = new ArrayList<>();
+        defaultOrder.add(Constants.ACTION_ORDER_VIEW_COMMENTS);
+
+        if (isLoggedIn()) {
+            defaultOrder.add(Constants.ACTION_ORDER_REPLY);
+            defaultOrder.add(Constants.ACTION_ORDER_UPVOTE);
+            defaultOrder.add(Constants.ACTION_ORDER_DOWNVOTE);
+        }
+
+        if (PocketUtil.isPocketInstalled(this)) {
+            defaultOrder.add(Constants.ACTION_ORDER_SAVE_TO_POCKET);
+        }
+
+        defaultOrder.add(Constants.ACTION_ORDER_OPEN_ON_PHONE);
+        return defaultOrder;
     }
 
     private SharedPreferences getSharedPreferences() {
