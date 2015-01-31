@@ -34,6 +34,9 @@ import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +55,7 @@ public class NotificationListenerService extends WearableListenerService {
     private static final int REQUEST_CODE_SAVE_TO_POCKET = 3;
     private static final int REQUEST_CODE_REPLY = 4;
     private static final int REQUEST_VIEW_COMMENTS = 5;
+    private static final int REQUEST_VIEW_FULLSCREEN_IMAGE = 6;
 
     private static final int NOTIFICATION_ID_INCREMENT = 10;
     private static int sNotificationId = 0;
@@ -144,9 +148,8 @@ public class NotificationListenerService extends WearableListenerService {
                     DataMap dataMap = dataMapItem.getDataMap();
 
                     final String latestPosts = dataMap.getString(Constants.KEY_REDDIT_POSTS);
-                    final boolean isLoggedIn = dataMap.getBoolean(Constants.KEY_IS_LOGGED_IN);
-                    final boolean canSaveToPocket = dataMap.getBoolean(Constants.KEY_POCKET_INSTALLED);
                     final boolean openOnPhoneDismisses = dataMap.getBoolean(Constants.KEY_DISMISS_AFTER_ACTION);
+                    final ArrayList<Integer> actionOrder = dataMap.getIntegerArrayList(Constants.KEY_ACTION_ORDER);
 
                     ArrayList<Post> posts = mGson.fromJson(latestPosts, Post.getPostsListTypeToken());
 
@@ -156,7 +159,7 @@ public class NotificationListenerService extends WearableListenerService {
                         Post post = posts.get(i);
 
                         Bitmap backgroundBitmap = null;
-                        if (post.hasThumbnail()) {
+                        if (post.hasThumbnail() || post.hasHighResImage()) {
                             Asset a = dataMap.getAsset(post.getId());
                             if (a != null) {
                                 backgroundBitmap = loadBitmapFromAsset(a);
@@ -172,48 +175,33 @@ public class NotificationListenerService extends WearableListenerService {
                                 .setContentText((post.isDirectMessage() ? post.getDescription() : post.getPostContents()))
                                 .setSmallIcon(R.drawable.ic_launcher);
 
+                        boolean hasCachedImage;
                         if (backgroundBitmap != null) {
-                            builder.setLargeIcon(backgroundBitmap);
-                            Logger.Log("Post: " + post.getId() + ", setting background");
+                            if(post.hasThumbnail()) {
+                                // If the post has a thumbnail, use it - this will filter out nfsw etc thumbnails
+                                // but will still allow the user to see the full image if they like
+                                builder.setLargeIcon(backgroundBitmap);
+                            } else {
+                                setBlueBackground(themeBlueBitmap, builder);
+                            }
+                            hasCachedImage = cacheBackgroundToDisk(post, backgroundBitmap);
                         } else {
-                            Logger.Log("Post: " + post.getId() + ", grouping, no image found");
-
-                            // if it's not got an image we can group it with the other text based ones
-                            builder.setGroup(GROUP_KEY_SUBREDDIT_POSTS);
-
-                            // and set a themeBlueBitmap on it
-                            Notification.WearableExtender extender = new Notification.WearableExtender();
-                            extender.setBackground(themeBlueBitmap);
-                            builder.extend(extender);
+                            hasCachedImage = false;
+                            setBlueBackground(themeBlueBitmap, builder);
                         }
 
-                        builder.addAction(new Notification.Action.Builder(R.drawable.ic_message_white_48dp,
-                                getString(R.string.view_comments),
-                                getViewCommentsPendingIntent(post, notificationId)).build());
+                        addActions(actionOrder, openOnPhoneDismisses, hasCachedImage, post, notificationId, builder);
 
-                        if(post.hasHighResImage()) {
-
+                        if(hasCachedImage) {
+                            // When the notification is dismissed, we will remove this image from the file cache
+                            builder.setDeleteIntent(getDeletePendingIntent(post, notificationId));
                         }
-
-                        if (isLoggedIn) {
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
-                                    .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
-                                    .build());
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
-                        }
-
-                        if (canSaveToPocket) {
-                            builder.addAction(new Notification.Action.Builder(R.drawable.ic_pocket,
-                                    getString(R.string.save_to_pocket),
-                                    getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
-                        }
-
-                        builder.addAction(new Notification.Action.Builder(R.drawable.go_to_phone_00156,
-                                getString(R.string.open_on_phone),
-                                getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
 
                         notificationManager.notify(notificationId, builder.build());
+
+                        if(backgroundBitmap != null) {
+                            backgroundBitmap.recycle();
+                        }
 
                         sNotificationId += NOTIFICATION_ID_INCREMENT;
                     }
@@ -234,6 +222,83 @@ public class NotificationListenerService extends WearableListenerService {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private void setBlueBackground(Bitmap themeBlueBitmap, Notification.Builder builder) {
+        // if it's not got an image we can group it with the other text based ones
+        builder.setGroup(GROUP_KEY_SUBREDDIT_POSTS);
+
+        // and set a themeBlueBitmap on it
+        Notification.WearableExtender extender = new Notification.WearableExtender();
+        extender.setBackground(themeBlueBitmap);
+        builder.extend(extender);
+    }
+
+    private boolean cacheBackgroundToDisk(Post post, Bitmap backgroundBitmap) {
+        boolean isCached = false;
+
+        File localCache = new File(getCacheDir(), post.getImageCacheId());
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(localCache);
+            backgroundBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+        } catch (IOException e) {
+            Logger.Log("Error writing local cache", e);
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+                isCached = true;
+            } catch (IOException e) {
+                Logger.Log("Error closing local cache file", e);
+            }
+        }
+
+        return isCached;
+    }
+
+    // Add the actions to the builder, based on the given actionOrder list
+    private void addActions(ArrayList<Integer> actionOrder, boolean openOnPhoneDismisses, boolean hasCachedImage, Post post, int notificationId, Notification.Builder builder) {
+        for (int i = 0; i < actionOrder.size(); i++) {
+            int order = actionOrder.get(i);
+
+            switch (order) {
+                case Constants.ACTION_ORDER_VIEW_COMMENTS:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_message_white_48dp,
+                            getString(R.string.view_comments),
+                            getViewCommentsPendingIntent(post, notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_REPLY:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
+                            .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
+                            .build());
+                    break;
+                case Constants.ACTION_ORDER_UPVOTE:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_DOWNVOTE:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_SAVE_TO_POCKET:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_pocket,
+                            getString(R.string.save_to_pocket),
+                            getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_OPEN_ON_PHONE:
+                    builder.addAction(new Notification.Action.Builder(R.drawable.go_to_phone_00156,
+                            getString(R.string.open_on_phone),
+                            getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
+                    break;
+                case Constants.ACTION_ORDER_VIEW_IMAGE:
+                    if (hasCachedImage) {
+                        builder.addAction(new Notification.Action.Builder(R.drawable.ic_image_white_48dp,
+                                getString(R.string.view_image),
+                                getViewImagePendingIntent(post, notificationId)).build());
+                    }
+                    break;
             }
         }
     }
@@ -322,6 +387,19 @@ public class NotificationListenerService extends WearableListenerService {
         intent.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.getting_comments));
         intent.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
         intent.putExtra(Constants.KEY_POST_PERMALINK, post.getPermalink());
+        return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private PendingIntent getViewImagePendingIntent(Post post, int notificationId) {
+        Intent intent = new Intent(this, ViewImageActivity.class);
+        intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, post.getImageCacheId());
+        return PendingIntent.getActivity(this, REQUEST_VIEW_FULLSCREEN_IMAGE + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private PendingIntent getDeletePendingIntent(Post post, int notificationId) {
+        Intent intent = new Intent(this, DeleteCachedImageReceiver.class);
+        intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, post.getImageCacheId());
+        intent.putExtra(Constants.PATH_KEY_MESSAGE, post.getTitle());
         return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

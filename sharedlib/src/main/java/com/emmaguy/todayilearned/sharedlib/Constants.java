@@ -13,7 +13,6 @@ public class Constants {
 
     public static final String KEY_REDDIT_POSTS = "posts";
     public static final String KEY_POST_PERMALINK = "post_permalink";
-    public static final String KEY_POCKET_INSTALLED = "pocket_installed";
 
     public static final String PATH_POST_REPLY_RESULT_SUCCESS = "post_reply_success";
     public static final String PATH_POST_REPLY_RESULT_FAILURE = "post_reply_failure";
@@ -33,10 +32,18 @@ public class Constants {
 
     public static final String KEY_CONFIRMATION_MESSAGE = "confirm_message";
     public static final String KEY_PATH = "receiver_path";
-    public static final String KEY_IS_LOGGED_IN = "is_logged_in";
     public static final String KEY_POST_VOTE_DIRECTION = "vote_direction";
     public static final String KEY_CONFIRMATION_ANIMATION = "key_confirm_animation";
     public static final String KEY_DISMISS_AFTER_ACTION = "open_on_phone_dismisses";
     public static final String KEY_NOTIFICATION_ID = "notification_id";
-    public static final String KEY_COMMENTS = "comments";
+    public static final String KEY_ACTION_ORDER = "action_order";
+    public static final String KEY_HIGHRES_IMAGE_NAME = "view_image";
+
+    public static final int ACTION_ORDER_VIEW_COMMENTS = 0;
+    public static final int ACTION_ORDER_REPLY = 1;
+    public static final int ACTION_ORDER_UPVOTE = 2;
+    public static final int ACTION_ORDER_DOWNVOTE = 3;
+    public static final int ACTION_ORDER_SAVE_TO_POCKET = 4;
+    public static final int ACTION_ORDER_OPEN_ON_PHONE = 5;
+    public static final int ACTION_ORDER_VIEW_IMAGE = 6;
 }

@@ -11,7 +11,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -113,7 +112,7 @@ public class SettingsActivity extends Activity {
             } else if (preference.getKey().equals(getString(R.string.prefs_key_account_info))) {
                 showLoginDialog();
             } else if (preference.getKey().equals(getString(R.string.prefs_key_sync_subreddits))) {
-                if (isLoggedIn()) {
+                if (Utils.isLoggedIn(getPreferenceScreen().getSharedPreferences(), getActivity())) {
                     syncSubreddits();
                 } else {
                     Toast.makeText(getActivity(), R.string.you_need_to_sign_in_to_sync_subreddits, Toast.LENGTH_SHORT).show();
@@ -127,7 +126,7 @@ public class SettingsActivity extends Activity {
 
             final RestAdapter restAdapter = new RestAdapter.Builder()
                     .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                    .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                    .setRequestInterceptor(new RedditRequestInterceptor(Utils.getCookie(getPreferenceScreen().getSharedPreferences(), getActivity()), Utils.getModhash(getPreferenceScreen().getSharedPreferences(), getActivity())))
                     .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(SubscriptionResponse.class, new SubscriptionResponse.SubscriptionResponseJsonDeserializer()).create()))
                     .build();
 
@@ -234,18 +233,6 @@ public class SettingsActivity extends Activity {
             updatePrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
         }
 
-        private boolean isLoggedIn() {
-            return !TextUtils.isEmpty(getCookie());
-        }
-
-        private String getModhash() {
-            return getPreferenceManager().getSharedPreferences().getString(getString(R.string.prefs_key_modhash), "");
-        }
-
-        private String getCookie() {
-            return getPreferenceManager().getSharedPreferences().getString(getString(R.string.prefs_key_cookie), "");
-        }
-
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             updatePrefsSummary(findPreference(key));
@@ -257,6 +244,18 @@ public class SettingsActivity extends Activity {
                 WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
             } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();
+            }
+
+            sendEvents(sharedPreferences, key);
+        }
+
+        private void sendEvents(SharedPreferences sharedPreferences, String key) {
+            if (key.equals(getString(R.string.prefs_key_sort_order))) {
+                Logger.sendEvent(getActivity(), Logger.LOG_EVENT_SORT_ORDER, sharedPreferences.getString(key, ""));
+            } else if (key.equals(getString(R.string.prefs_key_open_on_phone_dismisses))) {
+                Logger.sendEvent(getActivity(), Logger.LOG_EVENT_OPEN_ON_PHONE_DISMISSES, sharedPreferences.getBoolean(key, false) + "");
+            } else if (key.equals(getString(R.string.prefs_key_full_image))) {
+                Logger.sendEvent(getActivity(), Logger.LOG_EVENT_HIGH_RES_IMAGE, sharedPreferences.getBoolean(key, false) + "");
             }
         }
 
@@ -299,10 +298,12 @@ public class SettingsActivity extends Activity {
                 PreferenceScreen screen = (PreferenceScreen) pref;
 
                 if (screen.getKey().equals(getString(R.string.prefs_key_account_info))) {
-                    if (isLoggedIn()) {
+                    if (Utils.isLoggedIn(getPreferenceScreen().getSharedPreferences(), getActivity())) {
                         screen.setSummary(getString(R.string.logged_in_as_x, getUsername()));
                     }
                 }
+            } else if (pref instanceof DragReorderActionsPreference) {
+                pref.setSummary(pref.getSummary());
             }
         }
 

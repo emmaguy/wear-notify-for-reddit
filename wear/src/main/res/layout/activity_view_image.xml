@@ -6,8 +6,7 @@
     android:id="@+id/watch_view_stub"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:rectLayout="@layout/rect_activity_reply"
-    app:roundLayout="@layout/round_activity_reply"
-    tools:context="com.emmaguy.todayilearned.ReplyActivity"
-    tools:deviceIds="wear">
-</android.support.wearable.view.WatchViewStub>
+    app:rectLayout="@layout/shared_activity_view_image"
+    app:roundLayout="@layout/shared_activity_view_image"
+    tools:context="com.emmaguy.todayilearned.ViewImageActivity"
+    tools:deviceIds="wear" />

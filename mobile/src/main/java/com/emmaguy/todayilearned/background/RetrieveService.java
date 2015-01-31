@@ -10,7 +10,6 @@ import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.Logger;
-import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.PostsDeserialiser;
@@ -19,6 +18,7 @@ import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
 import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
+import com.emmaguy.todayilearned.ui.DragReorderActionsPreference;
 import com.emmaguy.todayilearned.ui.SubredditPreference;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,10 +34,10 @@ import com.google.gson.GsonBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.RestAdapter;
@@ -54,6 +54,9 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    private static final int WATCH_SCREEN_SIZE = 320;
+    private static final int MARKER = 65536;
+
     private GoogleApiClient mGoogleApiClient;
 
     private long mLatestCreatedUtc = 0;
@@ -82,9 +85,12 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private void retrieveLatestPostsFromReddit() {
+        final String cookie = Utils.getCookie(getSharedPreferences(), this);
+        final String modhash = Utils.getModhash(getSharedPreferences(), this);
+
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
+                .setRequestInterceptor(new RedditRequestInterceptor(cookie, modhash))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeserialiser()).create()))
                 .build();
 
@@ -113,7 +119,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 });
 
-        if (isLoggedIn() && messagesEnabled()) {
+        if (Utils.isLoggedIn(getSharedPreferences(), this) && messagesEnabled()) {
             reddit.unreadMessages()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -125,7 +131,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             if (messages.size() > 0) {
                                 sendNewPostsData(messages);
 
-                                getRedditRestAdapter(getCookie(), getModhash())
+                                getRedditRestAdapter(cookie, modhash)
                                         .create(Reddit.class)
                                         .markAllMessagesRead()
                                         .subscribeOn(Schedulers.io())
@@ -191,11 +197,23 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                                 connection.setDoInput(true);
                                 connection.connect();
-                                InputStream input = connection.getInputStream();
+
+                                MarkableInputStream markStream = new MarkableInputStream(connection.getInputStream());
+                                long mark = markStream.savePosition(MARKER);
+
+                                final BitmapFactory.Options options = new BitmapFactory.Options();
+                                options.inJustDecodeBounds = true;
+                                BitmapFactory.decodeStream(markStream, null, options);
+
+                                options.inSampleSize = calculateInSampleSize(options, WATCH_SCREEN_SIZE, WATCH_SCREEN_SIZE);
+                                options.inJustDecodeBounds = false;
+
+                                markStream.reset(mark);
 
                                 final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                                Bitmap bitmap = BitmapFactory.decodeStream(input);
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
+                                Bitmap bitmap = BitmapFactory.decodeStream(markStream, null, options);
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+
                                 post.setImage(byteStream.toByteArray());
                                 post.setHasHighResImage(hasHighResAvailable);
                             } catch (Exception e) {
@@ -205,6 +223,27 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 })
                 .toList();
+    }
+
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        Logger.Log("inSampleSize: " + inSampleSize);
+        return inSampleSize;
     }
 
     private static <T> Observable.Operator<T, List<T>> flattenList() {
@@ -269,18 +308,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return getSharedPreferences().getBoolean(getString(R.string.prefs_key_messages_enabled), true);
     }
 
-    private boolean isLoggedIn() {
-        return !TextUtils.isEmpty(getCookie());
-    }
-
-    private String getModhash() {
-        return getSharedPreferences().getString(getString(R.string.prefs_key_modhash), "");
-    }
-
-    private String getCookie() {
-        return getSharedPreferences().getString(getString(R.string.prefs_key_cookie), "");
-    }
-
     private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
             Logger.Log("sendNewPostsData: " + posts.size());
@@ -297,16 +324,19 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             dataMap.putString(Constants.KEY_REDDIT_POSTS, latestPosts);
 
             for (Post p : posts) {
-                if (p.hasThumbnail() && p.getImage() != null) {
+                if (p.hasThumbnail() || p.hasHighResImage()) {
                     Asset asset = Asset.createFromBytes(p.getImage());
 
                     Logger.Log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
                     dataMap.putAsset(p.getId(), asset);
                 }
             }
+            ArrayList<Integer> actions = DragReorderActionsPreference.getSelectedActionsOrDefault(
+                    getSharedPreferences(),
+                    getString(R.string.prefs_key_actions_order),
+                    this);
 
-            dataMap.putBoolean(Constants.KEY_POCKET_INSTALLED, PocketUtil.isPocketInstalled(this));
-            dataMap.putBoolean(Constants.KEY_IS_LOGGED_IN, isLoggedIn());
+            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, actions);
             dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION, getSharedPreferences().getBoolean(getString(R.string.prefs_key_open_on_phone_dismisses), false));
             dataMap.putLong("timestamp", System.currentTimeMillis());
 

@@ -5,15 +5,18 @@
 
     <string name="dismiss_all">Dismiss All</string>
     <string name="loading">Loading...</string>
+
     <string name="open_on_phone">Open on phone</string>
-    <string name="reply">Reply</string>
-    <string name="message_from_x">Message from %1$s</string>
+    <string name="view_comments">View Comments</string>
+    <string name="save_to_pocket">Save to Pocket</string>
     <string name="reply_to_x">Reply to \'%1$s\'</string>
     <string name="upvote_x">Upvote \'%1$s\'</string>
     <string name="downvote_x">Downvote \'%1$s\'</string>
+
+    <string name="reply">Reply</string>
+    <string name="message_from_x">Message from %1$s</string>
     <string name="reply_successful">Reply successful!</string>
     <string name="reply_failed_sad_face">Reply failed :(</string>
-    <string name="save_to_pocket">Save to Pocket</string>
     <string name="saving_to_pocket_succeeded">Saving to Pocket succeeded</string>
     <string name="saving_to_pocket_failed_sad_face">Failed to save to Pocket :(</string>
     <string name="failed_to_retrieve">Failed to retrieve posts</string>
@@ -21,16 +24,17 @@
     <string name="voting_succeded">Voting succeeded</string>
     <string name="voting_failed">Voting failed</string>
     <string name="title_activity_comments">Comments</string>
-    <string name="view_comments">View Comments</string>
     <string name="retrieving_comments_failed">Retrieving comments failed</string>
     <string name="getting_comments">Getting comments</string>
     <string name="view_replies">View replies</string>
     <string name="thread_has_no_comments_yet">Thread has no comments yet</string>
     <string name="score_hidden">[hidden]</string>
+    <string name="view_image">View Image</string>
 
     <plurals name="points">
         <item quantity="one">pt</item>
         <item quantity="zero">pts</item>
         <item quantity="other">pts</item>
     </plurals>
+
 </resources>

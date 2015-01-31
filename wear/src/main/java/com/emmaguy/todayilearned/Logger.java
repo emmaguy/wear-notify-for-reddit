@@ -8,4 +8,10 @@ public class Logger {
             Log.d("RedditWear", message);
         }
     }
+
+    public static void Log(String message, Throwable t) {
+        if (BuildConfig.DEBUG) {
+            Log.e("RedditWear", message, t);
+        }
+    }
 }
