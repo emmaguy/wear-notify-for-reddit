@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 public class ViewImageActivity extends Activity implements LoaderManager.LoaderCallbacks<Bitmap> {
-    private PanView mImageView;
+    private PanView mPanView;
     private ProgressBar mProgressBar;
     private DismissOverlayView mDismissOverlay;
 
@@ -35,25 +35,28 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
 
         mImageName = getIntent().getStringExtra(Constants.KEY_HIGHRES_IMAGE_NAME);
 
-        mImageView = (PanView) findViewById(R.id.view_image_panview);
+        mPanView = (PanView) findViewById(R.id.view_image_panview);
         mProgressBar = (ProgressBar) findViewById(R.id.view_image_progressbar);
-
-        getLoaderManager().initLoader(0, null, ViewImageActivity.this);
 
         mDismissOverlay = (DismissOverlayView) findViewById(R.id.view_image_dismiss_overlay);
         mDismissOverlay.setIntroText(R.string.long_press_information);
         mDismissOverlay.showIntroIfNecessary();
 
+        mPanView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return mDetector.onTouchEvent(event);
+            }
+        });
+
         mDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
             public void onLongPress(MotionEvent ev) {
                 mDismissOverlay.show();
             }
         });
-    }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        return mDetector.onTouchEvent(ev) || super.onTouchEvent(ev);
+        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -85,12 +88,12 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
     @Override
     public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
         mProgressBar.setVisibility(View.GONE);
-        mImageView.setVisibility(View.VISIBLE);
-        mImageView.setImage(data);
+        mPanView.setVisibility(View.VISIBLE);
+        mPanView.setImage(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Bitmap> loader) {
-        mImageView.setImage(null);
+        mPanView.setImage(null);
     }
 }

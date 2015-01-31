@@ -399,7 +399,6 @@ public class NotificationListenerService extends WearableListenerService {
     private PendingIntent getDeletePendingIntent(Post post, int notificationId) {
         Intent intent = new Intent(this, DeleteCachedImageReceiver.class);
         intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, post.getImageCacheId());
-        intent.putExtra(Constants.PATH_KEY_MESSAGE, post.getTitle());
         return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }
