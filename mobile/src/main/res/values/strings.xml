@@ -73,7 +73,7 @@
     <string name="open_on_phone_also_dismisses">\'Open on phone\' also dismisses</string>
     <string name="open_on_phone_summary">Dismiss the notification when \'Open on phone\' action is performed</string>
     <string name="watch_actions_order">Actions on watch</string>
-    <string name="download_fullsized_image">Download high res images</string>
+    <string name="download_fullsized_image">Download high res images (if available)</string>
 
     <string name="action_order_description">Choose the actions which appear on your android wearable. \n\nRe-order by long pressing on the item you wish to move, and dragging in to your preferred position.</string>
     <string name="action_open_on_phone">Open on phone</string>

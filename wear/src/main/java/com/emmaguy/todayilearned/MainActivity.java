@@ -50,7 +50,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             public void run() {
                 finish();
             }
-        }, TimeUnit.SECONDS.toMillis(3));
+        }, TimeUnit.SECONDS.toMillis(8));
     }
 
     @Override
