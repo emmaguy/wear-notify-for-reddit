@@ -88,5 +88,6 @@
     <string name="none">None</string>
     <string name="requires_login">(requires login)</string>
     <string name="requires_pocket_app_installed">(requires Pocket app to be installed)</string>
+    <string name="hint_dialog_subreddit">subreddit name, e.g. showerthoughts</string>
 
 </resources>

@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 
 import com.emmaguy.todayilearned.R;
@@ -137,13 +139,15 @@ public class SubredditPreference extends Preference {
     }
 
     private void showAddSubredditDialog() {
-        final EditText input = new EditText(getContext());
+        final View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_subreddit, null, false);
 
         new AlertDialog.Builder(getContext())
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        final EditText input = (EditText) view.findViewById(R.id.subreddit_edittext);
+
                         String subreddit = input.getText().toString().trim();
                         if (subreddit.length() > 0) {
                             addSubreddit(subreddit);
@@ -153,7 +157,7 @@ public class SubredditPreference extends Preference {
                 })
                 .setTitle(R.string.add_subreddit)
                 .setMessage(R.string.enter_subreddit_name)
-                .setView(input)
+                .setView(view)
                 .create()
                 .show();
     }
