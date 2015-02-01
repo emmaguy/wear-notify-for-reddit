@@ -18,6 +18,12 @@ public class Utils {
         return intent;
     }
 
+    public static boolean isImage(String pictureFileName) {
+        return pictureFileName.endsWith(".png")
+                || pictureFileName.endsWith(".jpg")
+                || pictureFileName.endsWith(".jpeg");
+    }
+
     public static String getVersionName(Context c, String packageName) {
         try {
             return c.getPackageManager().getPackageInfo(packageName, 0).versionName;

@@ -29,10 +29,13 @@
     <string name="view_replies">View replies</string>
     <string name="thread_has_no_comments_yet">Thread has no comments yet</string>
     <string name="score_hidden">[hidden]</string>
+    <string name="view_image">View Image</string>
+    <string name="long_press_information">Long press anywhere to exit</string>
 
     <plurals name="points">
         <item quantity="one">pt</item>
         <item quantity="zero">pts</item>
         <item quantity="other">pts</item>
     </plurals>
+
 </resources>

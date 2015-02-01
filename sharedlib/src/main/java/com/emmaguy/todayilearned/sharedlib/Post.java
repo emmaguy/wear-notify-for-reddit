@@ -20,6 +20,8 @@ public class Post {
     @Expose
     private final String mPermalink;
     @Expose
+    private final String mUrl;
+    @Expose
     private final boolean mScoreHidden;
     @Expose
     private final int mScore;
@@ -33,21 +35,23 @@ public class Post {
     private final String mThumbnail;
     @Expose
     private final long mCreatedUtc;
-
-    // When we serialise the Post to send to the wearable, don't include the thumbnail - it will be added as an asset
-    private byte[] mThumbnailImage;
-
     @Expose
     private List<Post> mReplies;
-
     @Expose
     private int mLevel;
+    @Expose
+    private boolean mHasHighResImage;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, long createdUtc, int score, boolean scoreHidden, int gilded) {
+    // When we serialise the Post to send to the wearable, don't include the image - it will be added as an asset
+    // This field can contain a low res thumbnail, or a high res full image
+    private byte[] mImage;
+
+    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, String url, long createdUtc, int score, boolean scoreHidden, int gilded) {
         mTitle = title;
         mDescription = selftext;
         mFullname = fullname;
         mPermalink = permalink;
+        mUrl = url;
         mScoreHidden = scoreHidden;
         mAuthor = author;
         mCreatedUtc = createdUtc;
@@ -132,12 +136,12 @@ public class Post {
         return mThumbnail;
     }
 
-    public void setThumbnailImage(byte[] thumbnailImage) {
-        mThumbnailImage = thumbnailImage;
+    public void setImage(byte[] image) {
+        mImage = image;
     }
 
-    public byte[] getThumbnailImage() {
-        return mThumbnailImage;
+    public byte[] getImage() {
+        return mImage;
     }
 
     public String getId() {
@@ -185,6 +189,18 @@ public class Post {
 
     public boolean isScoreHidden() {
         return mScoreHidden;
+    }
+
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public void setHasHighResImage(boolean hasHighResAvailable) {
+        mHasHighResImage = hasHighResAvailable;
+    }
+
+    public boolean hasHighResImage() {
+        return mHasHighResImage;
     }
 
     public static Type getPostsListTypeToken() {

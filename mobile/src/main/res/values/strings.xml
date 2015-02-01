@@ -68,11 +68,13 @@
     <string name="message">Message</string>
     <string name="feedback_info">Having an issue? Got an idea for an awesome new feature? Send us some feedback!</string>
     <string name="submit">Submit</string>
-    <string name="feedback_android_version">Feedback Android v</string>
+    <string name="feedback_android_version">Reddit for Wear Feedback v</string>
     <string name="settings">Settings</string>
     <string name="open_on_phone_also_dismisses">\'Open on phone\' also dismisses</string>
     <string name="open_on_phone_summary">Dismiss the notification when \'Open on phone\' action is performed</string>
     <string name="watch_actions_order">Actions on watch</string>
+    <string name="high_resolution_images">High resolution images</string>
+    <string name="download_fullsized_image">Downloads high res images (if available)</string>
 
     <string name="action_order_description">Choose the actions which appear on your android wearable. \n\nRe-order by long pressing on the item you wish to move, and dragging in to your preferred position.</string>
     <string name="action_open_on_phone">Open on phone</string>
@@ -81,6 +83,8 @@
     <string name="action_reply">Reply to post</string>
     <string name="action_upvote">Upvote</string>
     <string name="action_downvote">Downvote</string>
+    <string name="action_view_image">View image</string>
+
     <string name="none">None</string>
     <string name="requires_login">(requires login)</string>
     <string name="requires_pocket_app_installed">(requires Pocket app to be installed)</string>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.wearable.view.BoxInsetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/theme_blue"
+    tools:context="com.emmaguy.todayilearned.ViewImageActivity">
+
+    <com.emmaguy.todayilearned.PanView
+        android:id="@+id/view_image_panview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible" />
+
+    <ProgressBar
+        android:id="@+id/view_image_progressbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:indeterminate="true"
+        android:minWidth="96dp"
+        android:minHeight="96dp"
+        android:indeterminateDrawable="@drawable/indeterminate_drawable" />
+
+    <android.support.wearable.view.DismissOverlayView
+        android:id="@+id/view_image_dismiss_overlay"
+        android:background="@color/black"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent" />
+
+</android.support.wearable.view.BoxInsetLayout>

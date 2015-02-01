@@ -25,6 +25,7 @@ public class Logger {
     public static final String LOG_EVENT_CUSTOMISE_ACTIONS = "CustomiseActions";
     public static final String LOG_EVENT_SORT_ORDER = "SortOrder";
     public static final String LOG_EVENT_OPEN_ON_PHONE_DISMISSES = "OpenOnPhoneDismisses";
+    public static final String LOG_EVENT_HIGH_RES_IMAGE = "HighResImage";
 
     public static final String LOG_EVENT_SUCCESS = "Success";
     public static final String LOG_EVENT_FAILURE = "Failure";

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.wearable.view.DotsPageIndicator;
 import android.support.wearable.view.GridViewPager;
-import android.support.wearable.view.WatchViewStub;
 import android.view.View;
 import android.view.WindowInsets;
 
@@ -34,31 +33,25 @@ public class CommentsActivity extends Activity implements ActionFragment.OnActio
             return;
         }
 
-        final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
-        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
+        mGridViewPager = (GridViewPager) findViewById(R.id.pager);
+        mGridViewPager.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @Override
-            public void onLayoutInflated(WatchViewStub watchViewStub) {
-                mGridViewPager = (GridViewPager) findViewById(R.id.pager);
-                mGridViewPager.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                    @Override
-                    public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-                        // A little extra horizontal spacing between pages looks a bit less crowded on a round display
-                        int rowMargin = getResources().getDimensionPixelOffset(R.dimen.page_row_margin);
-                        int colMargin = getResources().getDimensionPixelOffset(insets.isRound() ? R.dimen.page_column_margin_round : R.dimen.page_column_margin);
-                        mGridViewPager.setPageMargins(rowMargin, colMargin);
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                // A little extra horizontal spacing between pages looks a bit less crowded on a round display
+                int rowMargin = getResources().getDimensionPixelOffset(R.dimen.page_row_margin);
+                int colMargin = getResources().getDimensionPixelOffset(insets.isRound() ? R.dimen.page_column_margin_round : R.dimen.page_column_margin);
+                mGridViewPager.setPageMargins(rowMargin, colMargin);
 
-                        // GridViewPager relies on insets to properly handle layout for round displays
-                        // They must be explicitly applied since this listener has taken them over
-                        mGridViewPager.onApplyWindowInsets(insets);
-                        return insets;
-                    }
-                });
-                mGridViewPager.setAdapter(new CommentsGridPagerAdapter(CommentsActivity.this, getFragmentManager(), comments));
-
-                DotsPageIndicator dotsPageIndicator = (DotsPageIndicator) findViewById(R.id.page_indicator);
-                dotsPageIndicator.setPager(mGridViewPager);
+                // GridViewPager relies on insets to properly handle layout for round displays
+                // They must be explicitly applied since this listener has taken them over
+                mGridViewPager.onApplyWindowInsets(insets);
+                return insets;
             }
         });
+        mGridViewPager.setAdapter(new CommentsGridPagerAdapter(CommentsActivity.this, getFragmentManager(), comments));
+
+        DotsPageIndicator dotsPageIndicator = (DotsPageIndicator) findViewById(R.id.page_indicator);
+        dotsPageIndicator.setPager(mGridViewPager);
     }
 
     @Override

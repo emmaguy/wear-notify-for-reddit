@@ -37,6 +37,7 @@ public class Constants {
     public static final String KEY_DISMISS_AFTER_ACTION = "open_on_phone_dismisses";
     public static final String KEY_NOTIFICATION_ID = "notification_id";
     public static final String KEY_ACTION_ORDER = "action_order";
+    public static final String KEY_HIGHRES_IMAGE_NAME = "view_image";
 
     public static final int ACTION_ORDER_VIEW_COMMENTS = 0;
     public static final int ACTION_ORDER_REPLY = 1;
@@ -44,4 +45,5 @@ public class Constants {
     public static final int ACTION_ORDER_DOWNVOTE = 3;
     public static final int ACTION_ORDER_SAVE_TO_POCKET = 4;
     public static final int ACTION_ORDER_OPEN_ON_PHONE = 5;
+    public static final int ACTION_ORDER_VIEW_IMAGE = 6;
 }

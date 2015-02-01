@@ -44,6 +44,7 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
                             getEmptyStringOrValue(data, "author"),
                             getEmptyStringOrValue(data, "id"),
                             getEmptyStringOrValue(data, "thumbnail"),
+                            parseUrl(data),
                             getAsLong(getEmptyStringOrValue(data, "created_utc")),
                             getAsInt(data, "score"),
                             getAsBoolean(data, "score_hidden"),
@@ -63,6 +64,28 @@ public class PostsDeserialiser implements JsonDeserializer<List<Post>> {
         setReplyLevels(l, 0);
 
         return l;
+    }
+
+    private String parseUrl(JsonObject data) {
+        String url = getEmptyStringOrValue(data, "url");
+
+        // Some imgur urls submitted don't end with .jpg but are jpgs, e.g. http://imgur.com/iBYHBA3
+        if (url.contains("imgur.com") && !url.endsWith(".jpg")) {
+            url += ".jpg";
+        }
+
+        // Will get thumbnails for imgur albums, other sources classed as media
+        if (data.has("media") && data.get("media").isJsonObject()) {
+            JsonObject media = data.get("media").getAsJsonObject();
+            if (media.has("oembed")) {
+                JsonObject oembed = media.get("oembed").getAsJsonObject();
+                if (oembed.has("thumbnail_url")) {
+                    url = oembed.get("thumbnail_url").getAsString();
+                }
+            }
+        }
+
+        return url;
     }
 
     private boolean getAsBoolean(JsonObject data, String key) {

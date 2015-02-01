@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.emmaguy.todayilearned">
+    package="com.emmaguy.todayilearned">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -25,6 +25,11 @@
             android:enabled="true"
             android:exported="true" />
 
+        <receiver
+            android:name=".DeleteCachedImageReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity android:name="android.support.wearable.activity.ConfirmationActivity" />
         <activity
             android:name=".MainActivity"
@@ -35,13 +40,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".comments.CommentsActivity"
-            android:label="@string/title_activity_comments"
-            android:exported="true"
             android:allowEmbedded="true"
+            android:exported="true"
+            android:label="@string/title_activity_comments"
             android:taskAffinity=""
             android:theme="@android:style/Theme.DeviceDefault.Light" />
+        <activity
+            android:name=".ViewImageActivity"
+            android:label="@string/view_image"
+            android:theme="@style/NoSwipeToDismiss" />
+
     </application>
 
 </manifest>

@@ -70,20 +70,31 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         List<Integer> actions = parseActionsFromString(commaSeparatedOrderedActions);
         List<Integer> selectedActions = parseActionsFromString(commaSeparatedActions);
 
+        final LinkedHashMap<Integer, Action> allActions = getAllActions();
+
         if (actions == null) {
-            actions = toActionIdsList(getAllActions(), false);
+            actions = toActionIdsList(allActions, false);
         }
 
         if (selectedActions == null) {
-            selectedActions = toActionIdsList(getAllActions(), true);
+            selectedActions = toActionIdsList(allActions, true);
         }
 
         for (Integer integer : actions) {
-            mActions.add(getAllActions().get(integer));
+            mActions.add(allActions.get(integer));
         }
 
         for (Integer integer : selectedActions) {
-            mSelectedActions.put(integer, getAllActions().get(integer));
+            mSelectedActions.put(integer, allActions.get(integer));
+        }
+
+        if (actions.size() != allActions.size()) {
+            // Find the missing action(s) and add them
+            for (Integer action : allActions.keySet()) {
+                if (!actions.contains(action)) {
+                    mActions.add(allActions.get(action));
+                }
+            }
         }
     }
 
@@ -176,6 +187,7 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         addToAllActions(actions, new Action(Constants.ACTION_ORDER_SAVE_TO_POCKET, context.getString(R.string.action_save_to_pocket), PocketUtil.isPocketInstalled(context), context.getString(R.string.requires_pocket_app_installed)));
 
         addToAllActions(actions, new Action(Constants.ACTION_ORDER_OPEN_ON_PHONE, context.getString(R.string.action_open_on_phone)));
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_IMAGE, context.getString(R.string.action_view_image)));
 
         return actions;
     }
@@ -255,9 +267,12 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         String commaSeparatedActions = sharedPreferences.getString(key, "");
         ArrayList<Integer> actions = parseActionsFromString(commaSeparatedActions);
 
+        LinkedHashMap<Integer, Action> allActions = getAllActions(sharedPreferences, context);
+
         if (actions == null) {
-            return toActionIdsList(getAllActions(sharedPreferences, context), true);
+            return toActionIdsList(allActions, true);
         }
+
         return actions;
     }
 

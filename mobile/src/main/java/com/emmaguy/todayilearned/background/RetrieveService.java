@@ -34,7 +34,6 @@ import com.google.gson.GsonBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -55,6 +54,9 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    private static final int WATCH_SCREEN_SIZE = 320;
+    private static final int MARKER = 65536;
+
     private GoogleApiClient mGoogleApiClient;
 
     private long mLatestCreatedUtc = 0;
@@ -177,18 +179,45 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             Logger.Log("Updating mLatestCreatedUtc to: " + mLatestCreatedUtc);
                         }
 
-                        if (post.hasThumbnail()) {
+                        // Default to just getting the thumbnail, if available
+                        String imageUrl = post.getThumbnail();
+                        boolean hasHighResAvailable = false;
+
+                        // If user has chosen to get full images, only do so if we actually have a image based url
+                        if (getSharedPreferences().getBoolean(getString(R.string.prefs_key_full_image), false)) {
+                            if (Utils.isImage(post.getUrl())) {
+                                imageUrl = post.getUrl();
+                                hasHighResAvailable = true;
+                            }
+                        }
+
+                        if (post.hasThumbnail() || hasHighResAvailable) {
                             try {
-                                URL url = new URL(post.getThumbnail());
+                                URL url = new URL(imageUrl);
                                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                                 connection.setDoInput(true);
                                 connection.connect();
-                                InputStream input = connection.getInputStream();
+
+                                MarkableInputStream markStream = new MarkableInputStream(connection.getInputStream());
+                                long mark = markStream.savePosition(MARKER);
+
+                                final BitmapFactory.Options options = new BitmapFactory.Options();
+                                options.inJustDecodeBounds = true;
+                                BitmapFactory.decodeStream(markStream, null, options);
+
+                                options.inSampleSize = calculateInSampleSize(options, WATCH_SCREEN_SIZE, WATCH_SCREEN_SIZE);
+                                options.inJustDecodeBounds = false;
+
+                                markStream.reset(mark);
 
                                 final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                                Bitmap bitmap = BitmapFactory.decodeStream(input);
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 85, byteStream);
-                                post.setThumbnailImage(byteStream.toByteArray());
+                                Bitmap bitmap = BitmapFactory.decodeStream(markStream, null, options);
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+
+                                post.setImage(byteStream.toByteArray());
+                                post.setHasHighResImage(hasHighResAvailable);
+
+                                bitmap.recycle();
                             } catch (Exception e) {
                                 Logger.sendThrowable(getApplicationContext(), "Failed to download image", e);
                             }
@@ -196,6 +225,27 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 })
                 .toList();
+    }
+
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        Logger.Log("inSampleSize: " + inSampleSize);
+        return inSampleSize;
     }
 
     private static <T> Observable.Operator<T, List<T>> flattenList() {
@@ -276,8 +326,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             dataMap.putString(Constants.KEY_REDDIT_POSTS, latestPosts);
 
             for (Post p : posts) {
-                if (p.hasThumbnail() && p.getThumbnailImage() != null) {
-                    Asset asset = Asset.createFromBytes(p.getThumbnailImage());
+                if (p.hasThumbnail() || p.hasHighResImage()) {
+                    Asset asset = Asset.createFromBytes(p.getImage());
 
                     Logger.Log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
                     dataMap.putAsset(p.getId(), asset);

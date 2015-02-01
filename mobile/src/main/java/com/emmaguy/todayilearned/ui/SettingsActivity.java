@@ -254,6 +254,8 @@ public class SettingsActivity extends Activity {
                 Logger.sendEvent(getActivity(), Logger.LOG_EVENT_SORT_ORDER, sharedPreferences.getString(key, ""));
             } else if (key.equals(getString(R.string.prefs_key_open_on_phone_dismisses))) {
                 Logger.sendEvent(getActivity(), Logger.LOG_EVENT_OPEN_ON_PHONE_DISMISSES, sharedPreferences.getBoolean(key, false) + "");
+            } else if (key.equals(getString(R.string.prefs_key_full_image))) {
+                Logger.sendEvent(getActivity(), Logger.LOG_EVENT_HIGH_RES_IMAGE, sharedPreferences.getBoolean(key, false) + "");
             }
         }
 
