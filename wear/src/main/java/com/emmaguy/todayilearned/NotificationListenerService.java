@@ -177,29 +177,31 @@ public class NotificationListenerService extends WearableListenerService {
 
                         boolean hasCachedImage;
                         if (backgroundBitmap != null) {
-                            if(post.hasThumbnail()) {
+                            if (post.hasThumbnail()) {
                                 // If the post has a thumbnail, use it - this will filter out nfsw etc thumbnails
                                 // but will still allow the user to see the full image if they like
                                 builder.setLargeIcon(backgroundBitmap);
                             } else {
                                 setBlueBackground(themeBlueBitmap, builder);
+                                enableNotificationGrouping(builder);
                             }
-                            hasCachedImage = cacheBackgroundToDisk(post, backgroundBitmap);
+                            hasCachedImage = cacheBackgroundToDisk(notificationId, backgroundBitmap);
                         } else {
                             hasCachedImage = false;
                             setBlueBackground(themeBlueBitmap, builder);
+                            enableNotificationGrouping(builder);
                         }
 
                         addActions(actionOrder, openOnPhoneDismisses, hasCachedImage, post, notificationId, builder);
 
-                        if(hasCachedImage) {
+                        if (hasCachedImage) {
                             // When the notification is dismissed, we will remove this image from the file cache
-                            builder.setDeleteIntent(getDeletePendingIntent(post, notificationId));
+                            builder.setDeleteIntent(getDeletePendingIntent(notificationId));
                         }
 
                         notificationManager.notify(notificationId, builder.build());
 
-                        if(backgroundBitmap != null) {
+                        if (backgroundBitmap != null) {
                             backgroundBitmap.recycle();
                         }
 
@@ -226,20 +228,21 @@ public class NotificationListenerService extends WearableListenerService {
         }
     }
 
-    private void setBlueBackground(Bitmap themeBlueBitmap, Notification.Builder builder) {
+    private void enableNotificationGrouping(Notification.Builder builder) {
         // if it's not got an image we can group it with the other text based ones
         builder.setGroup(GROUP_KEY_SUBREDDIT_POSTS);
+    }
 
-        // and set a themeBlueBitmap on it
+    private void setBlueBackground(Bitmap themeBlueBitmap, Notification.Builder builder) {
         Notification.WearableExtender extender = new Notification.WearableExtender();
         extender.setBackground(themeBlueBitmap);
         builder.extend(extender);
     }
 
-    private boolean cacheBackgroundToDisk(Post post, Bitmap backgroundBitmap) {
+    private boolean cacheBackgroundToDisk(int notificationId, Bitmap backgroundBitmap) {
         boolean isCached = false;
 
-        File localCache = new File(getCacheDir(), post.getImageCacheId());
+        File localCache = new File(getCacheDir(), getCachedImageName(notificationId));
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(localCache);
@@ -296,7 +299,7 @@ public class NotificationListenerService extends WearableListenerService {
                     if (hasCachedImage) {
                         builder.addAction(new Notification.Action.Builder(R.drawable.ic_image_white_48dp,
                                 getString(R.string.view_image),
-                                getViewImagePendingIntent(post, notificationId)).build());
+                                getViewImagePendingIntent(notificationId)).build());
                     }
                     break;
             }
@@ -390,15 +393,21 @@ public class NotificationListenerService extends WearableListenerService {
         return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getViewImagePendingIntent(Post post, int notificationId) {
+    private PendingIntent getViewImagePendingIntent(int notificationId) {
+        Logger.Log("getViewImagePendingIntent: " + getCachedImageName(notificationId));
+
         Intent intent = new Intent(this, ViewImageActivity.class);
-        intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, post.getImageCacheId());
-        return PendingIntent.getActivity(this, REQUEST_VIEW_FULLSCREEN_IMAGE + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, getCachedImageName(notificationId));
+        return PendingIntent.getActivity(this, REQUEST_VIEW_FULLSCREEN_IMAGE + notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
-    private PendingIntent getDeletePendingIntent(Post post, int notificationId) {
+    private PendingIntent getDeletePendingIntent(int notificationId) {
         Intent intent = new Intent(this, DeleteCachedImageReceiver.class);
-        intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, post.getImageCacheId());
+        intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, getCachedImageName(notificationId));
         return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private String getCachedImageName(int notificationId) {
+        return notificationId + ".png";
     }
 }

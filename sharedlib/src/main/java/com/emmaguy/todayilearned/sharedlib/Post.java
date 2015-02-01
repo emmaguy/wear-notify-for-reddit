@@ -203,10 +203,6 @@ public class Post {
         return mHasHighResImage;
     }
 
-    public String getImageCacheId() {
-        return getId() + ".png";
-    }
-
     public static Type getPostsListTypeToken() {
         return new TypeToken<List<Post>>() {}.getType();
     }

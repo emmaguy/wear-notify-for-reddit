@@ -216,6 +216,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
                                 post.setImage(byteStream.toByteArray());
                                 post.setHasHighResImage(hasHighResAvailable);
+
+                                bitmap.recycle();
                             } catch (Exception e) {
                                 Logger.sendThrowable(getApplicationContext(), "Failed to download image", e);
                             }

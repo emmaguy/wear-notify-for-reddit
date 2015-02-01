@@ -35,7 +35,8 @@
             android:title="@string/watch_actions_order" />
         <CheckBoxPreference
             android:key="@string/prefs_key_full_image"
-            android:title="@string/download_fullsized_image"/>
+            android:summary="@string/download_fullsized_image"
+            android:title="@string/high_resolution_images" />
         <CheckBoxPreference
             android:key="@string/prefs_key_open_on_phone_dismisses"
             android:title="@string/open_on_phone_also_dismisses"

@@ -12,7 +12,7 @@ public class Logger {
     }
 
     public static void Log(String message, Throwable t) {
-        if (BuildConfig.DEBUG) {
+        if (sIsDebug) {
             Log.e("RedditWear", message, t);
         }
     }

@@ -33,8 +33,6 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
 
         setContentView(R.layout.activity_view_image);
 
-        mImageName = getIntent().getStringExtra(Constants.KEY_HIGHRES_IMAGE_NAME);
-
         mPanView = (PanView) findViewById(R.id.view_image_panview);
         mProgressBar = (ProgressBar) findViewById(R.id.view_image_progressbar);
 
@@ -56,7 +54,18 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
             }
         });
 
+        mImageName = getIntent().getStringExtra(Constants.KEY_HIGHRES_IMAGE_NAME);
+
         getLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // If the activity goes off screen for any reason (e.g. screen time out), end it
+        // We want to go back to the notification, not have an activity floating around
+        finish();
     }
 
     @Override
@@ -95,5 +104,7 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
     @Override
     public void onLoaderReset(Loader<Bitmap> loader) {
         mPanView.setImage(null);
+        mPanView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.VISIBLE);
     }
 }

@@ -51,7 +51,7 @@
         <activity
             android:name=".ViewImageActivity"
             android:label="@string/view_image"
-            android:theme="@style/NoSwipeToDismiss"/>
+            android:theme="@style/NoSwipeToDismiss" />
 
     </application>
 
