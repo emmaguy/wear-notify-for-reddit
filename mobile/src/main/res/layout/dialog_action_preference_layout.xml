@@ -19,6 +19,6 @@
     <com.emmaguy.todayilearned.ui.ReorderRecyclerView
         android:id="@+id/actions_reorder_recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="350dp" />
+        android:layout_height="410dp" />
 
 </LinearLayout>
