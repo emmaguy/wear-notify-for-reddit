@@ -1,9 +1,12 @@
+![banner](https://raw.githubusercontent.com/emmaguy/til/master/images/banner.png)
+
 Reddit for Wear
 =================================
 
 Get notifications from your favourite subreddits right on your android wearable.
 
 Features include (some may require sign in with your reddit account):
+- View Image
 - View Comments
 - Reply with voice
 - Upvote/downvote
@@ -11,21 +14,21 @@ Features include (some may require sign in with your reddit account):
 - Get Direct messages and Reply with voice
 - Open on Phone
 
+|  ![preview](https://raw.githubusercontent.com/emmaguy/til/master/images/preview.png) |  ![view image](https://raw.githubusercontent.com/emmaguy/til/master/images/action_view_image.png) | ![view comments](https://raw.githubusercontent.com/emmaguy/til/master/images/action_view_comments.png) | ![save to Pocket](https://raw.githubusercontent.com/emmaguy/til/master/images/action_save_to_pocket.png) | ![upvote](https://raw.githubusercontent.com/emmaguy/til/master/images/action_upvote.png)  |
+|---|---|---|---|---|
+
 Choose:
 - What subreddits to get posts from
+- How to order the actions (view image, comments, upvote etc) on the watch
 - How often to get updates
 - How many posts to get per update
 - What sorting order to use (e.g. 'hot', 'new' or 'controversial') 
-
-
-|  ![wear1](https://raw.githubusercontent.com/emmaguy/til/master/images/home.png) | ![wear2](https://raw.githubusercontent.com/emmaguy/til/master/images/images.png) | ![wear3](https://raw.githubusercontent.com/emmaguy/til/master/images/all.png) | ![wear4](https://raw.githubusercontent.com/emmaguy/til/master/images/reply.png)  |
-|---|---|---|---|
 
 ![phone1](https://raw.githubusercontent.com/emmaguy/til/master/images/phone_settings.png)
 
 Available on the Play Store: https://play.google.com/store/apps/details?id=com.emmaguy.todayilearned
 
-Note: this used to just be a 'Today I Learned' only thing (hence the package name), but it has grown considerably since then.
+Note: this used to just be a 'Today I Learned' only thing (hence the package name!), but it has grown considerably since then.
 
 License
 --------
