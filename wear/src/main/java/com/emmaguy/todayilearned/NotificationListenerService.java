@@ -394,8 +394,6 @@ public class NotificationListenerService extends WearableListenerService {
     }
 
     private PendingIntent getViewImagePendingIntent(int notificationId) {
-        Logger.Log("getViewImagePendingIntent: " + getCachedImageName(notificationId));
-
         Intent intent = new Intent(this, ViewImageActivity.class);
         intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, getCachedImageName(notificationId));
         return PendingIntent.getActivity(this, REQUEST_VIEW_FULLSCREEN_IMAGE + notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
