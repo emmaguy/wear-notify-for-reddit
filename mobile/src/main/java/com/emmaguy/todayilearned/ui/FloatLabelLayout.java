@@ -101,6 +101,13 @@ public final class FloatLabelLayout extends FrameLayout {
         super.addView(child, index, params);
     }
 
+    /**
+     * @return the {@link android.widget.EditText} text input
+     */
+    public EditText getEditText() {
+        return mEditText;
+    }
+
     private void setEditText(EditText editText) {
         mEditText = editText;
 
@@ -142,13 +149,6 @@ public final class FloatLabelLayout extends FrameLayout {
         });
 
         mLabel.setText(mEditText.getHint());
-    }
-
-    /**
-     * @return the {@link android.widget.EditText} text input
-     */
-    public EditText getEditText() {
-        return mEditText;
     }
 
     /**

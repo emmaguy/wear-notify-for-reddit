@@ -19,14 +19,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:indeterminate="true"
-        android:minWidth="96dp"
+        android:indeterminateDrawable="@drawable/indeterminate_drawable"
         android:minHeight="96dp"
-        android:indeterminateDrawable="@drawable/indeterminate_drawable" />
+        android:minWidth="96dp" />
 
     <android.support.wearable.view.DismissOverlayView
         android:id="@+id/view_image_dismiss_overlay"
-        android:background="@color/black"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_width="match_parent" />
+        android:background="@color/black" />
 
 </android.support.wearable.view.BoxInsetLayout>

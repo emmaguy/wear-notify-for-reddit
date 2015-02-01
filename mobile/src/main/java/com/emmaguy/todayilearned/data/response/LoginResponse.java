@@ -34,12 +34,12 @@ public class LoginResponse {
         return mModhash;
     }
 
-    public String getCookie() {
-        return mCookie;
-    }
-
     public void setModhash(String modhash) {
         mModhash = modhash;
+    }
+
+    public String getCookie() {
+        return mCookie;
     }
 
     public void setCookie(String cookie) {

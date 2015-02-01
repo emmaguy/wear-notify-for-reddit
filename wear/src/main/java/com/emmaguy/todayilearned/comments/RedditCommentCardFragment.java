@@ -64,7 +64,7 @@ public class RedditCommentCardFragment extends CardFragment {
 
         title.setText(mTitle);
         text.setText(mText);
-        if(mIsScoreHidden) {
+        if (mIsScoreHidden) {
             score.setText(getString(R.string.score_hidden));
         } else {
             score.setText(mScore + " " + getResources().getQuantityString(R.plurals.points, mScore));
@@ -75,7 +75,7 @@ public class RedditCommentCardFragment extends CardFragment {
             gilded.setVisibility(View.GONE);
         } else {
             gilded.setVisibility(View.VISIBLE);
-            if(mGildedCount > 1) {
+            if (mGildedCount > 1) {
                 gilded.setText("x" + mGildedCount);
             }
         }

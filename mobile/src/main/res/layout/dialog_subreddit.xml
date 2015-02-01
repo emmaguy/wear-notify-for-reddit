@@ -6,10 +6,10 @@
 
     <EditText
         android:id="@+id/subreddit_edittext"
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/hint_dialog_subreddit"
+        android:orientation="vertical"
         android:paddingLeft="@dimen/edittext_padding"
         android:paddingRight="@dimen/edittext_padding" />
 

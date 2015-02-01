@@ -7,7 +7,6 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
-import android.os.AsyncTask;
 import android.support.wearable.view.CardFragment;
 import android.support.wearable.view.FragmentGridPagerAdapter;
 import android.support.wearable.view.GridPagerAdapter;
@@ -21,9 +20,21 @@ import java.util.List;
 
 public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
     private static final int TRANSITION_DURATION_MILLIS = 100;
+    LruCache<Point, Drawable> mPageBackgrounds = new LruCache<Point, Drawable>(1) {
+        @Override
+        protected Drawable create(final Point page) {
+            TransitionDrawable background = new TransitionDrawable(new Drawable[]{
+                    new ColorDrawable(R.color.theme_blue),
+                    new ColorDrawable(R.color.theme_blue_with_dark_overlay)
+            });
+            mPageBackgrounds.put(page, background);
+            notifyPageBackgroundChanged(page.y, page.x);
+            background.startTransition(TRANSITION_DURATION_MILLIS);
 
+            return background;
+        }
+    };
     private final Context mContext;
-
     private final List<Row> mRows;
 
     public CommentsGridPagerAdapter(Context context, FragmentManager fm, ArrayList<Post> comments) {
@@ -51,43 +62,6 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
         return fragment;
     }
 
-    private class Row {
-        final List<Fragment> columns = new ArrayList<Fragment>();
-
-        public Row(Fragment... fragments) {
-            for (Fragment f : fragments) {
-                add(f);
-            }
-        }
-
-        public void add(Fragment f) {
-            columns.add(f);
-        }
-
-        Fragment getColumn(int i) {
-            return columns.get(i);
-        }
-
-        public int getColumnCount() {
-            return columns.size();
-        }
-    }
-
-    LruCache<Point, Drawable> mPageBackgrounds = new LruCache<Point, Drawable>(1) {
-        @Override
-        protected Drawable create(final Point page) {
-            TransitionDrawable background = new TransitionDrawable(new Drawable[]{
-                    new ColorDrawable(R.color.theme_blue),
-                    new ColorDrawable(R.color.theme_blue_with_dark_overlay)
-            });
-            mPageBackgrounds.put(page, background);
-            notifyPageBackgroundChanged(page.y, page.x);
-            background.startTransition(TRANSITION_DURATION_MILLIS);
-
-            return background;
-        }
-    };
-
     @Override
     public Drawable getBackgroundForPage(final int row, final int column) {
         if (column != 0) {
@@ -110,5 +84,27 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
     @Override
     public int getColumnCount(int rowNum) {
         return mRows.get(rowNum).getColumnCount();
+    }
+
+    private class Row {
+        final List<Fragment> columns = new ArrayList<Fragment>();
+
+        public Row(Fragment... fragments) {
+            for (Fragment f : fragments) {
+                add(f);
+            }
+        }
+
+        public void add(Fragment f) {
+            columns.add(f);
+        }
+
+        Fragment getColumn(int i) {
+            return columns.get(i);
+        }
+
+        public int getColumnCount() {
+            return columns.size();
+        }
     }
 }

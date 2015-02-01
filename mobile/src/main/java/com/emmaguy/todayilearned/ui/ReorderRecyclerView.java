@@ -46,23 +46,36 @@ import android.view.View;
 public class ReorderRecyclerView extends RecyclerView {
     private static final String TAG = ReorderRecyclerView.class.getSimpleName();
     private static final int INVALID_POINTER_ID = -1;
+    private int activePointerId = INVALID_POINTER_ID;
     private static final int LINE_THICKNESS = 15;
     private static final int SMOOTH_SCROLL_AMOUNT_AT_EDGE = 100;
     private static final int INVALID_ID = -1;
+    private long mobileItemId = INVALID_ID;
+    /**
+     * This TypeEvaluator is used to animate the BitmapDrawable back to its
+     * final location when the user lifts his finger by modifying the
+     * BitmapDrawable's bounds.
+     */
+    private final static TypeEvaluator<Rect> sBoundEvaluator = new TypeEvaluator<Rect>() {
+        public Rect evaluate(float fraction, Rect startValue, Rect endValue) {
+            return new Rect(interpolate(startValue.left, endValue.left, fraction),
+                    interpolate(startValue.top, endValue.top, fraction),
+                    interpolate(startValue.right, endValue.right, fraction),
+                    interpolate(startValue.bottom, endValue.bottom, fraction));
+        }
 
-    private int activePointerId = INVALID_POINTER_ID;
+        public int interpolate(int start, int end, float fraction) {
+            return (int) (start + fraction * (end - start));
+        }
+    };
     private int lastEventY, lastEventX;
     private int downX;
     private int downY;
     private int totalOffsetY, totalOffsetX;
-
     private BitmapDrawable hoverCell;
     private Rect hoverCellOriginalBounds;
     private Rect hoverCellCurrentBounds;
-
     private boolean cellIsMobile = false;
-    private long mobileItemId = INVALID_ID;
-
     private int smoothScrollAmountAtEdge;
     private boolean usWaitingForScrollFinish;
 
@@ -234,7 +247,6 @@ public class ReorderRecyclerView extends RecyclerView {
         return bitmap;
     }
 
-
     /**
      * dispatchDraw gets invoked when all the child views are about to be drawn.
      * By overriding this method, the hover cell (BitmapDrawable) can be drawn
@@ -343,24 +355,6 @@ public class ReorderRecyclerView extends RecyclerView {
         }
 
     }
-
-    /**
-     * This TypeEvaluator is used to animate the BitmapDrawable back to its
-     * final location when the user lifts his finger by modifying the
-     * BitmapDrawable's bounds.
-     */
-    private final static TypeEvaluator<Rect> sBoundEvaluator = new TypeEvaluator<Rect>() {
-        public Rect evaluate(float fraction, Rect startValue, Rect endValue) {
-            return new Rect(interpolate(startValue.left, endValue.left, fraction),
-                    interpolate(startValue.top, endValue.top, fraction),
-                    interpolate(startValue.right, endValue.right, fraction),
-                    interpolate(startValue.bottom, endValue.bottom, fraction));
-        }
-
-        public int interpolate(int start, int end, float fraction) {
-            return (int) (start + fraction * (end - start));
-        }
-    };
 
     /**
      * Resets all the appropriate fields to a default state.

@@ -40,7 +40,7 @@ public class AddCommentResponse {
             Logger.Log("CommentResponse json: " + json);
             AddCommentResponse response = new AddCommentResponse();
 
-            if(errors.size() > 0) {
+            if (errors.size() > 0) {
                 response.setErrors(errors.toString());
             }
 

@@ -24,6 +24,20 @@ public class SubscriptionResponse {
         mSubreddits.add(subreddit);
     }
 
+    @Override
+    public String toString() {
+        return "SubscriptionResponse has errors: " + mHasErrors + " " + mErrors;
+    }
+
+    public boolean hasErrors() {
+        return mHasErrors;
+    }
+
+    private void setErrors(String errors) {
+        mHasErrors = true;
+        mErrors = errors;
+    }
+
     public static class SubscriptionResponseJsonDeserializer implements JsonDeserializer<SubscriptionResponse> {
         @Override
         public SubscriptionResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
@@ -49,19 +63,5 @@ public class SubscriptionResponse {
 
             return l;
         }
-    }
-
-    @Override
-    public String toString() {
-        return "SubscriptionResponse has errors: " + mHasErrors + " " + mErrors;
-    }
-
-    public boolean hasErrors() {
-        return mHasErrors;
-    }
-
-    private void setErrors(String errors) {
-        mHasErrors = true;
-        mErrors = errors;
     }
 }

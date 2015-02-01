@@ -11,11 +11,10 @@ import android.view.View;
 import com.emmaguy.todayilearned.R;
 
 public class CommentReplyLevelView extends View {
-    private Bitmap mOnBitmap;
     private final int mBitmapHeight;
     private final int mBitmapWidth;
     private final int mHorizontalSpacing;
-
+    private Bitmap mOnBitmap;
     private int mReplyLevel;
 
     public CommentReplyLevelView(Context context, AttributeSet attrs) {
@@ -42,6 +41,7 @@ public class CommentReplyLevelView extends View {
         }
 
     }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         setMeasuredDimension(widthMeasureSpec, mBitmapHeight);

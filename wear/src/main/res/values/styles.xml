@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="NoSwipeToDismiss" parent="@android:style/Theme.DeviceDefault.Light">
         <item name="android:windowSwipeToDismiss">false</item>
     </style>

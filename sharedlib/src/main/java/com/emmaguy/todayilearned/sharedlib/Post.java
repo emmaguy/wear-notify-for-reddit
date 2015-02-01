@@ -136,12 +136,12 @@ public class Post {
         return mThumbnail;
     }
 
-    public void setImage(byte[] image) {
-        mImage = image;
-    }
-
     public byte[] getImage() {
         return mImage;
+    }
+
+    public void setImage(byte[] image) {
+        mImage = image;
     }
 
     public String getId() {
@@ -163,12 +163,12 @@ public class Post {
         return title + "\n\n" + description;
     }
 
-    public void setReplies(List<Post> replies) {
-        mReplies = replies;
-    }
-
     public List<Post> getReplies() {
         return mReplies;
+    }
+
+    public void setReplies(List<Post> replies) {
+        mReplies = replies;
     }
 
     public int getReplyLevel() {

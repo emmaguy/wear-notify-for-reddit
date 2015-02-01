@@ -2,7 +2,7 @@
 
     <style name="AppTheme" parent="android:Theme.Holo.Light"></style>
 
-     <style name="FloatLabel" parent="android:TextAppearance.Small">
+    <style name="FloatLabel" parent="android:TextAppearance.Small">
         <item name="android:textColor">@color/theme_blue</item>
         <item name="android:textSize">11sp</item>
         <item name="android:textStyle">bold</item>

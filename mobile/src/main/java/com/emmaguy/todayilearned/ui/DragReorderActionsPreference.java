@@ -47,6 +47,73 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         init(context);
     }
 
+    private static LinkedHashMap<Integer, Action> getAllActions(SharedPreferences prefs, Context context) {
+        boolean loggedIn = Utils.isLoggedIn(prefs, context);
+
+        LinkedHashMap<Integer, Action> actions = new LinkedHashMap<>();
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_COMMENTS, context.getString(R.string.action_view_comments)));
+
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_REPLY, context.getString(R.string.action_reply), loggedIn, context.getString(R.string.requires_login)));
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_UPVOTE, context.getString(R.string.action_upvote), loggedIn, context.getString(R.string.requires_login)));
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_DOWNVOTE, context.getString(R.string.action_downvote), loggedIn, context.getString(R.string.requires_login)));
+
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_SAVE_TO_POCKET, context.getString(R.string.action_save_to_pocket), PocketUtil.isPocketInstalled(context), context.getString(R.string.requires_pocket_app_installed)));
+
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_OPEN_ON_PHONE, context.getString(R.string.action_open_on_phone)));
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_IMAGE, context.getString(R.string.action_view_image)));
+
+        return actions;
+    }
+
+    private static void addToAllActions(LinkedHashMap<Integer, Action> actions, Action action) {
+        actions.put(action.mId, action);
+    }
+
+    private static ArrayList<Integer> parseActionsFromString(String commaSeparatedActions) {
+        ArrayList<Integer> actions = new ArrayList<>();
+
+        if (commaSeparatedActions.equals(NONE_SELECTED_VALUE)) {
+            return actions;
+        }
+
+        if (TextUtils.isEmpty(commaSeparatedActions)) {
+            return null;
+        }
+
+        String[] split = commaSeparatedActions.split(",");
+        for (String s : split) {
+            actions.add(Integer.parseInt(s));
+        }
+        return actions;
+    }
+
+    public static ArrayList<Integer> getSelectedActionsOrDefault(SharedPreferences sharedPreferences, String key, Context context) {
+        String commaSeparatedActions = sharedPreferences.getString(key, "");
+        ArrayList<Integer> actions = parseActionsFromString(commaSeparatedActions);
+
+        LinkedHashMap<Integer, Action> allActions = getAllActions(sharedPreferences, context);
+
+        if (actions == null) {
+            return toActionIdsList(allActions, true);
+        }
+
+        return actions;
+    }
+
+    private static ArrayList<Integer> toActionIdsList(LinkedHashMap<Integer, Action> actions, boolean excludeDisabled) {
+        ArrayList<Integer> arrayList = new ArrayList<>();
+
+        for (Action action : actions.values()) {
+            if (!excludeDisabled) {
+                arrayList.add(action.mId);
+            } else if (action.mEnabled) {
+                arrayList.add(action.mId);
+            }
+        }
+
+        return arrayList;
+    }
+
     private void init(Context context) {
         mContext = context;
     }
@@ -174,46 +241,6 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         return getAllActions(getSharedPreferences(), mContext);
     }
 
-    private static LinkedHashMap<Integer, Action> getAllActions(SharedPreferences prefs, Context context) {
-        boolean loggedIn = Utils.isLoggedIn(prefs, context);
-
-        LinkedHashMap<Integer, Action> actions = new LinkedHashMap<>();
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_COMMENTS, context.getString(R.string.action_view_comments)));
-
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_REPLY, context.getString(R.string.action_reply), loggedIn, context.getString(R.string.requires_login)));
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_UPVOTE, context.getString(R.string.action_upvote), loggedIn, context.getString(R.string.requires_login)));
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_DOWNVOTE, context.getString(R.string.action_downvote), loggedIn, context.getString(R.string.requires_login)));
-
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_SAVE_TO_POCKET, context.getString(R.string.action_save_to_pocket), PocketUtil.isPocketInstalled(context), context.getString(R.string.requires_pocket_app_installed)));
-
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_OPEN_ON_PHONE, context.getString(R.string.action_open_on_phone)));
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_IMAGE, context.getString(R.string.action_view_image)));
-
-        return actions;
-    }
-
-    private static void addToAllActions(LinkedHashMap<Integer, Action> actions, Action action) {
-        actions.put(action.mId, action);
-    }
-
-    private static ArrayList<Integer> parseActionsFromString(String commaSeparatedActions) {
-        ArrayList<Integer> actions = new ArrayList<>();
-
-        if (commaSeparatedActions.equals(NONE_SELECTED_VALUE)) {
-            return actions;
-        }
-
-        if (TextUtils.isEmpty(commaSeparatedActions)) {
-            return null;
-        }
-
-        String[] split = commaSeparatedActions.split(",");
-        for (String s : split) {
-            actions.add(Integer.parseInt(s));
-        }
-        return actions;
-    }
-
     @Override
     public void onCheckedChanged(Integer id, boolean isChecked) {
         if (isChecked) {
@@ -263,38 +290,23 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         return TextUtils.join(",", actions);
     }
 
-    public static ArrayList<Integer> getSelectedActionsOrDefault(SharedPreferences sharedPreferences, String key, Context context) {
-        String commaSeparatedActions = sharedPreferences.getString(key, "");
-        ArrayList<Integer> actions = parseActionsFromString(commaSeparatedActions);
+    private static final class InsetDecoration extends RecyclerView.ItemDecoration {
+        private final int mInsets;
 
-        LinkedHashMap<Integer, Action> allActions = getAllActions(sharedPreferences, context);
-
-        if (actions == null) {
-            return toActionIdsList(allActions, true);
+        public InsetDecoration(Context context) {
+            mInsets = context.getResources().getDimensionPixelSize(R.dimen.card_insets);
         }
 
-        return actions;
-    }
-
-    private static ArrayList<Integer> toActionIdsList(LinkedHashMap<Integer, Action> actions, boolean excludeDisabled) {
-        ArrayList<Integer> arrayList = new ArrayList<>();
-
-        for (Action action : actions.values()) {
-            if (!excludeDisabled) {
-                arrayList.add(action.mId);
-            } else if (action.mEnabled) {
-                arrayList.add(action.mId);
-            }
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            outRect.set(mInsets, mInsets, mInsets, mInsets);
         }
-
-        return arrayList;
     }
 
     private final class ActionViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
-        private CheckChangedListener mListener;
-
         public TextView mTextView;
         public CheckBox mCheckBox;
+        private CheckChangedListener mListener;
 
         public ActionViewHolder(View itemView, CheckChangedListener listener) {
             super(itemView);
@@ -312,19 +324,6 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
             if (tag != null) {
                 mListener.onCheckedChanged(tag, isChecked);
             }
-        }
-    }
-
-    private static final class InsetDecoration extends RecyclerView.ItemDecoration {
-        private final int mInsets;
-
-        public InsetDecoration(Context context) {
-            mInsets = context.getResources().getDimensionPixelSize(R.dimen.card_insets);
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            outRect.set(mInsets, mInsets, mInsets, mInsets);
         }
     }
 }

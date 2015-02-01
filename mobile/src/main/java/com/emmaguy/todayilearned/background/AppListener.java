@@ -10,7 +10,6 @@ import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.Logger;
 
 import java.util.concurrent.TimeUnit;
 

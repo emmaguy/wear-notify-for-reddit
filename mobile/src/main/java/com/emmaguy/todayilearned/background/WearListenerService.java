@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.PocketUtil;
-import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.data.Reddit;
 import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
@@ -36,7 +35,6 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import retrofit.RestAdapter;
-import retrofit.android.AndroidLog;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -47,6 +45,10 @@ import rx.schedulers.Schedulers;
 public class WearListenerService extends WearableListenerService {
     public static final String REDDIT_URL = "http://www.reddit.com";
     private GoogleApiClient mGoogleApiClient;
+
+    private static String getVoteType(int voteDirection) {
+        return voteDirection > 0 ? Logger.LOG_EVENT_VOTE_UP : Logger.LOG_EVENT_VOTE_DOWN;
+    }
 
     @Override
     public void onCreate() {
@@ -114,9 +116,9 @@ public class WearListenerService extends WearableListenerService {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
                     int voteDirection = dataMap.getInt(Constants.KEY_POST_VOTE_DIRECTION);
                     vote(fullname, voteDirection);
-                } else if(Constants.PATH_COMMENTS.equals(path)) {
+                } else if (Constants.PATH_COMMENTS.equals(path)) {
                     String permalink = dataMap.getString(Constants.KEY_POST_PERMALINK);
-                    if(!TextUtils.isEmpty(permalink)) {
+                    if (!TextUtils.isEmpty(permalink)) {
                         getComments(permalink);
                     }
                 }
@@ -138,7 +140,7 @@ public class WearListenerService extends WearableListenerService {
                 .subscribe(new Action1<List<Post>>() {
                     @Override
                     public void call(List<Post> posts) {
-                        if(posts != null) {
+                        if (posts != null) {
                             sendComments(posts);
                             Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
                         } else {
@@ -203,10 +205,6 @@ public class WearListenerService extends WearableListenerService {
                         sendReplyResult(Constants.PATH_KEY_VOTE_RESULT_SUCCESS);
                     }
                 });
-    }
-
-    private static String getVoteType(int voteDirection) {
-        return voteDirection > 0 ? Logger.LOG_EVENT_VOTE_UP : Logger.LOG_EVENT_VOTE_DOWN;
     }
 
     private void replyToDirectMessage(String subject, String message, String toUser) {

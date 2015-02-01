@@ -3,8 +3,8 @@
     android:fromDegrees="0"
     android:pivotX="50%"
     android:pivotY="50%"
-    android:toDegrees="720"
-    android:repeatCount="infinite">
+    android:repeatCount="infinite"
+    android:toDegrees="720">
 
     <shape
         android:innerRadiusRatio="5"
@@ -13,8 +13,8 @@
         android:useLevel="false">
 
         <gradient
-            android:centerY="0.5"
             android:centerColor="@color/theme_blue"
+            android:centerY="0.5"
             android:endColor="@color/theme_light_blue"
             android:startColor="@color/theme_blue"
             android:type="sweep"

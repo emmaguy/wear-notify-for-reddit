@@ -89,6 +89,63 @@ public class PanView extends View {
     private boolean mEdgeEffectBottomActive;
     private boolean mEdgeEffectLeftActive;
     private boolean mEdgeEffectRightActive;
+    private Runnable mAnimateTickRunnable = new Runnable() {
+        @Override
+        public void run() {
+            boolean needsInvalidate = false;
+
+            if (mScroller.computeScrollOffset()) {
+                // The scroller isn't finished, meaning a fling is currently active.
+                setOffset(mScroller.getCurrX(), mScroller.getCurrY());
+
+                if (mWidth != mScaledImage.getWidth() && mOffsetX < mScroller.getCurrX()
+                        && mEdgeEffectLeft.isFinished()
+                        && !mEdgeEffectLeftActive) {
+                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                        Log.v(TAG, "Left edge absorbing " + mScroller.getCurrVelocity());
+                    }
+                    mEdgeEffectLeft.onAbsorb((int) mScroller.getCurrVelocity());
+                    mEdgeEffectLeftActive = true;
+                } else if (mWidth != mScaledImage.getWidth() && mOffsetX > mScroller.getCurrX()
+                        && mEdgeEffectRight.isFinished()
+                        && !mEdgeEffectRightActive) {
+                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                        Log.v(TAG, "Right edge absorbing " + mScroller.getCurrVelocity());
+                    }
+                    mEdgeEffectRight.onAbsorb((int) mScroller.getCurrVelocity());
+                    mEdgeEffectRightActive = true;
+                }
+
+                if (mHeight != mScaledImage.getHeight() && mOffsetY < mScroller.getCurrY()
+                        && mEdgeEffectTop.isFinished()
+                        && !mEdgeEffectTopActive) {
+                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                        Log.v(TAG, "Top edge absorbing " + mScroller.getCurrVelocity());
+                    }
+                    mEdgeEffectTop.onAbsorb((int) mScroller.getCurrVelocity());
+                    mEdgeEffectTopActive = true;
+                } else if (mHeight != mScaledImage.getHeight() && mOffsetY > mScroller.getCurrY()
+                        && mEdgeEffectBottom.isFinished()
+                        && !mEdgeEffectBottomActive) {
+                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                        Log.v(TAG, "Bottom edge absorbing " + mScroller.getCurrVelocity());
+                    }
+                    mEdgeEffectBottom.onAbsorb((int) mScroller.getCurrVelocity());
+                    mEdgeEffectBottomActive = true;
+                }
+
+                if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                    Log.v(TAG, "Flinging to " + mOffsetX + ", " + mOffsetY);
+                }
+                needsInvalidate = true;
+            }
+
+            if (needsInvalidate) {
+                invalidate();
+                postAnimateTick();
+            }
+        }
+    };
 
     public PanView(Context context) {
         this(context, null, 0);
@@ -168,6 +225,12 @@ public class PanView extends View {
         drawEdgeEffects(canvas);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //     Methods and objects related to gesture handling
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Draws the overscroll "glow" at the four edges, if necessary
      *
@@ -228,12 +291,6 @@ public class PanView extends View {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //     Methods and objects related to gesture handling
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
         return mGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
@@ -252,6 +309,84 @@ public class PanView extends View {
         // mHeight - mScaledImage.getHeight() -> bottom edge visible
         // 0 -> top edge visible
         mOffsetY = Math.min(0, Math.max(mHeight - mScaledImage.getHeight(), offsetY));
+    }
+
+    private void postAnimateTick() {
+        mHandler.removeCallbacks(mAnimateTickRunnable);
+        mHandler.post(mAnimateTickRunnable);
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        SavedState ss = new SavedState(superState);
+        ss.offsetX = mOffsetX;
+        ss.offsetY = mOffsetY;
+        return ss;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //     Methods and classes related to view state persistence.
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        if (!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+        SavedState ss = (SavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+
+        mOffsetX = ss.offsetX;
+        mOffsetY = ss.offsetY;
+    }
+
+    /**
+     * Persistent state that is saved by PanView.
+     */
+    public static class SavedState extends BaseSavedState {
+        public static final Creator<SavedState> CREATOR
+                = ParcelableCompat.newCreator(new ParcelableCompatCreatorCallbacks<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel in, ClassLoader loader) {
+                return new SavedState(in);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        });
+        private float offsetX;
+        private float offsetY;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        SavedState(Parcel in) {
+            super(in);
+            offsetX = in.readFloat();
+            offsetY = in.readFloat();
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeFloat(offsetX);
+            out.writeFloat(offsetY);
+        }
+
+        @Override
+        public String toString() {
+            return "PanView.SavedState{"
+                    + Integer.toHexString(System.identityHashCode(this))
+                    + " offset=" + offsetX + ", " + offsetY + "}";
+        }
     }
 
     /**
@@ -342,143 +477,6 @@ public class PanView extends View {
             mEdgeEffectTop.onRelease();
             mEdgeEffectRight.onRelease();
             mEdgeEffectBottom.onRelease();
-        }
-    }
-
-    private void postAnimateTick() {
-        mHandler.removeCallbacks(mAnimateTickRunnable);
-        mHandler.post(mAnimateTickRunnable);
-    }
-
-    private Runnable mAnimateTickRunnable = new Runnable() {
-        @Override
-        public void run() {
-            boolean needsInvalidate = false;
-
-            if (mScroller.computeScrollOffset()) {
-                // The scroller isn't finished, meaning a fling is currently active.
-                setOffset(mScroller.getCurrX(), mScroller.getCurrY());
-
-                if (mWidth != mScaledImage.getWidth() && mOffsetX < mScroller.getCurrX()
-                        && mEdgeEffectLeft.isFinished()
-                        && !mEdgeEffectLeftActive) {
-                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "Left edge absorbing " + mScroller.getCurrVelocity());
-                    }
-                    mEdgeEffectLeft.onAbsorb((int) mScroller.getCurrVelocity());
-                    mEdgeEffectLeftActive = true;
-                } else if (mWidth != mScaledImage.getWidth() && mOffsetX > mScroller.getCurrX()
-                        && mEdgeEffectRight.isFinished()
-                        && !mEdgeEffectRightActive) {
-                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "Right edge absorbing " + mScroller.getCurrVelocity());
-                    }
-                    mEdgeEffectRight.onAbsorb((int) mScroller.getCurrVelocity());
-                    mEdgeEffectRightActive = true;
-                }
-
-                if (mHeight != mScaledImage.getHeight() && mOffsetY < mScroller.getCurrY()
-                        && mEdgeEffectTop.isFinished()
-                        && !mEdgeEffectTopActive) {
-                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "Top edge absorbing " + mScroller.getCurrVelocity());
-                    }
-                    mEdgeEffectTop.onAbsorb((int) mScroller.getCurrVelocity());
-                    mEdgeEffectTopActive = true;
-                } else if (mHeight != mScaledImage.getHeight() && mOffsetY > mScroller.getCurrY()
-                        && mEdgeEffectBottom.isFinished()
-                        && !mEdgeEffectBottomActive) {
-                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "Bottom edge absorbing " + mScroller.getCurrVelocity());
-                    }
-                    mEdgeEffectBottom.onAbsorb((int) mScroller.getCurrVelocity());
-                    mEdgeEffectBottomActive = true;
-                }
-
-                if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                    Log.v(TAG, "Flinging to " + mOffsetX + ", " + mOffsetY);
-                }
-                needsInvalidate = true;
-            }
-
-            if (needsInvalidate) {
-                invalidate();
-                postAnimateTick();
-            }
-        }
-    };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //     Methods and classes related to view state persistence.
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public Parcelable onSaveInstanceState() {
-        Parcelable superState = super.onSaveInstanceState();
-        SavedState ss = new SavedState(superState);
-        ss.offsetX = mOffsetX;
-        ss.offsetY = mOffsetY;
-        return ss;
-    }
-
-    @Override
-    public void onRestoreInstanceState(Parcelable state) {
-        if (!(state instanceof SavedState)) {
-            super.onRestoreInstanceState(state);
-            return;
-        }
-
-        SavedState ss = (SavedState) state;
-        super.onRestoreInstanceState(ss.getSuperState());
-
-        mOffsetX = ss.offsetX;
-        mOffsetY = ss.offsetY;
-    }
-
-    /**
-     * Persistent state that is saved by PanView.
-     */
-    public static class SavedState extends BaseSavedState {
-        private float offsetX;
-        private float offsetY;
-
-        public SavedState(Parcelable superState) {
-            super(superState);
-        }
-
-        @Override
-        public void writeToParcel(@NonNull Parcel out, int flags) {
-            super.writeToParcel(out, flags);
-            out.writeFloat(offsetX);
-            out.writeFloat(offsetY);
-        }
-
-        @Override
-        public String toString() {
-            return "PanView.SavedState{"
-                    + Integer.toHexString(System.identityHashCode(this))
-                    + " offset=" + offsetX + ", " + offsetY + "}";
-        }
-
-        public static final Creator<SavedState> CREATOR
-                = ParcelableCompat.newCreator(new ParcelableCompatCreatorCallbacks<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel in, ClassLoader loader) {
-                return new SavedState(in);
-            }
-
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        });
-
-        SavedState(Parcel in) {
-            super(in);
-            offsetX = in.readFloat();
-            offsetY = in.readFloat();
         }
     }
 }

@@ -21,7 +21,7 @@ public interface Reddit {
 
     @POST("/api/comment?api_type=json")
     Observable<AddCommentResponse> commentOnPost(@Query("text") String comment,
-                                              @Query("thing_id") String postId);
+                                                 @Query("thing_id") String postId);
 
     @GET("/subreddits/mine/subscriber.json")
     Observable<SubscriptionResponse> subredditSubscriptions();
@@ -47,6 +47,6 @@ public interface Reddit {
 
     @POST("/api/compose?api_type=json")
     Observable<AddCommentResponse> replyToDirectMessage(@Query("subject") String subject,
-                                                     @Query("text") String message,
-                                                     @Query("to") String toUser);
+                                                        @Query("text") String message,
+                                                        @Query("to") String toUser);
 }

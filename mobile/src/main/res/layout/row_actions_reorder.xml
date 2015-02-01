@@ -1,32 +1,32 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/light_outline"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/light_outline"
     android:minHeight="48dp">
 
     <CheckBox
+        android:id="@+id/action_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/action_checkbox"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
+        android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:layout_alignParentRight="true" />
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp" />
 
     <TextView
+        android:id="@+id/action_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
+        android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:textAppearance="?android:textAppearanceListItem"
+        android:layout_toLeftOf="@id/action_checkbox"
+        android:drawableLeft="@drawable/ic_drag_reorder"
+        android:gravity="center_vertical"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
-        android:drawableLeft="@drawable/ic_drag_reorder"
-        android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@id/action_checkbox"
+        android:textAppearance="?android:textAppearanceListItem"
         android:textColor="@android:color/black"
-        android:id="@+id/action_textview"
         tools:text="blah blah" />
 
 </RelativeLayout>

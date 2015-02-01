@@ -31,6 +31,12 @@ public class SubredditPreference extends Preference {
         super(context, attrs);
     }
 
+    public static List<String> getAllSelectedSubreddits(SharedPreferences prefs, String key) {
+        Set<String> subreddits = prefs.getStringSet(key, DefaultSelectedSubReddits);
+
+        return new ArrayList(subreddits);
+    }
+
     @Override
     protected void onClick() {
         super.onClick();
@@ -53,12 +59,6 @@ public class SubredditPreference extends Preference {
 
     public List<String> getAllSelectedSubreddits() {
         return getAllSelectedSubreddits(getSharedPreferences(), getSelectedSubredditsKey());
-    }
-
-    public static List<String> getAllSelectedSubreddits(SharedPreferences prefs, String key) {
-        Set<String> subreddits = prefs.getStringSet(key, DefaultSelectedSubReddits);
-
-        return new ArrayList(subreddits);
     }
 
     /**

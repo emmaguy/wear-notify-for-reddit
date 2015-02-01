@@ -15,12 +15,12 @@
             android:id="@+id/username_edittext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="14dp"
-            android:paddingRight="14dp"
             android:hint="@string/username"
             android:imeOptions="actionNext"
             android:inputType="textNoSuggestions"
             android:nextFocusDown="@+id/edit_color_value"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
             android:singleLine="true" />
 
     </com.emmaguy.todayilearned.ui.FloatLabelLayout>
@@ -35,11 +35,11 @@
             android:id="@+id/password_edittext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="14dp"
-            android:paddingRight="14dp"
             android:hint="@string/password"
             android:imeOptions="actionNext"
             android:inputType="textNoSuggestions"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
             android:password="true"
             android:singleLine="true" />
 

@@ -59,10 +59,9 @@ public class NotificationListenerService extends WearableListenerService {
 
     private static final int NOTIFICATION_ID_INCREMENT = 10;
     private static int sNotificationId = 0;
-
+    private final Gson mGson = new Gson();
     private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
-    private final Gson mGson = new Gson();
 
     @Override
     public void onCreate() {
