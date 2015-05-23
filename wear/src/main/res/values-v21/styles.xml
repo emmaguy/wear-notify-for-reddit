@@ -3,6 +3,7 @@
 
     <style name="NoSwipeToDismiss" parent="@android:style/Theme.DeviceDefault.Light">
         <item name="android:windowSwipeToDismiss">false</item>
-        <item name="android:colorEdgeEffect">@color/theme_blue</item>
+        <item name="android:colorEdgeEffect">@color/accent</item>
     </style>
+
 </resources>

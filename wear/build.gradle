@@ -4,7 +4,7 @@ Properties props = new Properties()
 props.load(new FileInputStream(file(project.property("signing.properties"))))
 
 android {
-    compileSdkVersion 21
+    compileSdkVersion 22
     buildToolsVersion '21.1.2'
 
     signingConfigs {
@@ -19,9 +19,9 @@ android {
         applicationId "com.emmaguy.todayilearned"
         signingConfig signingConfigs.release
         minSdkVersion 20
-        targetSdkVersion 21
-        versionCode 28
-        versionName "2.2.0"
+        targetSdkVersion 22
+        versionCode 29
+        versionName "2.3.0"
     }
     buildTypes {
         release {
@@ -32,6 +32,7 @@ android {
 
 dependencies {
     compile project(':sharedlib')
-    compile 'com.google.android.support:wearable:+'
-    compile 'com.google.android.gms:play-services-wearable:+'
+    compile 'com.google.android.gms:play-services-wearable:7.3.0'
+    compile 'com.android.support:support-v13:22.1.0'
+    compile 'com.google.android.support:wearable:1.2.0'
 }

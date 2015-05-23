@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Reddit for Wear</string>
     <string name="feedback">Feedback</string>
     <string name="number_to_retrieve">Number of posts to retrieve</string>
     <string name="pref_title_sync_frequency">Sync frequency</string>
@@ -68,7 +67,7 @@
     <string name="message">Message</string>
     <string name="feedback_info">Having an issue? Got an idea for an awesome new feature? Send us some feedback!</string>
     <string name="submit">Submit</string>
-    <string name="feedback_android_version">Reddit for Wear Feedback v</string>
+    <string name="feedback_android_version">Feedback v</string>
     <string name="settings">Settings</string>
     <string name="open_on_phone_also_dismisses">\'Open on phone\' also dismisses</string>
     <string name="open_on_phone_summary">Dismiss the notification when \'Open on phone\' action is performed</string>

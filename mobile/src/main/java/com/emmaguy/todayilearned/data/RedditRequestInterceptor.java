@@ -15,6 +15,6 @@ public class RedditRequestInterceptor implements RequestInterceptor {
     public void intercept(RequestFacade request) {
         request.addHeader("X-Modhash", mModhash);
         request.addHeader("Cookie", "reddit_session=" + mCookie);
-        request.addHeader("User-Agent", "reddit for wear by /u/jellyfishsuck");
+        request.addHeader("User-Agent", "android wear app by /u/jellyfishsuck");
     }
 }
