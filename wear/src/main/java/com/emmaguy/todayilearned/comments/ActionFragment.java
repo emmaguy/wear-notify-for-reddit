@@ -57,7 +57,7 @@ public class ActionFragment extends Fragment implements View.OnClickListener {
     }
 
     public interface OnActionListener {
-        public void onActionPerformed(String replies);
+        void onActionPerformed(String replies);
     }
 }
 

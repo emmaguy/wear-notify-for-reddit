@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Reddit for Wear</string>
-
     <string name="dismiss_all">Dismiss All</string>
     <string name="loading">Loading...</string>
 

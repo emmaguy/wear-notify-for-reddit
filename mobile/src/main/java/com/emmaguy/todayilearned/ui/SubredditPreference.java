@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 
 public class SubredditPreference extends Preference {
-    private static Set<String> DefaultSubReddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews", "britishproblems", "showerthoughts", "pics"));
-    private static Set<String> DefaultSelectedSubReddits = new HashSet<String>(Arrays.asList("todayilearned"));
+    private static Set<String> DefaultSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews", "britishproblems", "showerthoughts", "pics"));
+    private static Set<String> DefaultSelectedSubreddits = new HashSet<String>(Arrays.asList("todayilearned"));
 
     public SubredditPreference(Context context) {
         super(context, null);
@@ -32,7 +32,7 @@ public class SubredditPreference extends Preference {
     }
 
     public static List<String> getAllSelectedSubreddits(SharedPreferences prefs, String key) {
-        Set<String> subreddits = prefs.getStringSet(key, DefaultSelectedSubReddits);
+        Set<String> subreddits = prefs.getStringSet(key, DefaultSelectedSubreddits);
 
         return new ArrayList(subreddits);
     }
@@ -49,7 +49,7 @@ public class SubredditPreference extends Preference {
     }
 
     public List<String> getAllSubreddits() {
-        Set<String> subreddits = getSharedPreferences().getStringSet(getKey(), DefaultSubReddits);
+        Set<String> subreddits = getSharedPreferences().getStringSet(getKey(), DefaultSubreddits);
 
         ArrayList<String> sortedSubreddits = new ArrayList(subreddits);
         Collections.sort(sortedSubreddits);
@@ -101,7 +101,7 @@ public class SubredditPreference extends Preference {
             i++;
         }
 
-        new AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(getContext(), R.style.AppCompatAlertDialogStyle)
                 .setTitle(getContext().getResources().getString(R.string.select_subreddits))
                 .setMultiChoiceItems(savedSubreddits.toArray(new String[savedSubreddits.size()]), selected, new DialogInterface.OnMultiChoiceClickListener() {
 

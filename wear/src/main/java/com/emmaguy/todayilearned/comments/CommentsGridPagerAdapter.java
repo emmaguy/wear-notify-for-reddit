@@ -24,8 +24,8 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
         @Override
         protected Drawable create(final Point page) {
             TransitionDrawable background = new TransitionDrawable(new Drawable[]{
-                    new ColorDrawable(R.color.theme_blue),
-                    new ColorDrawable(R.color.theme_blue_with_dark_overlay)
+                    new ColorDrawable(R.color.primary),
+                    new ColorDrawable(R.color.primary_darkest)
             });
             mPageBackgrounds.put(page, background);
             notifyPageBackgroundChanged(page.y, page.x);

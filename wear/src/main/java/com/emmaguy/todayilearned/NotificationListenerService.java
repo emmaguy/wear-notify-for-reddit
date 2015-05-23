@@ -152,7 +152,7 @@ public class NotificationListenerService extends WearableListenerService {
 
                     ArrayList<Post> posts = mGson.fromJson(latestPosts, Post.getPostsListTypeToken());
 
-                    Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.theme_blue)}, 1, 1, Bitmap.Config.ARGB_8888);
+                    Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
                     NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     for (int i = 0; i < posts.size(); i++) {
                         Post post = posts.get(i);
@@ -290,7 +290,7 @@ public class NotificationListenerService extends WearableListenerService {
                             getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_OPEN_ON_PHONE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.go_to_phone_00156,
+                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_full_openonphone,
                             getString(R.string.open_on_phone),
                             getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
                     break;

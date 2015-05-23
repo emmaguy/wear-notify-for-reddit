@@ -1,6 +1,6 @@
 ![banner](https://raw.githubusercontent.com/emmaguy/til/master/images/banner.png)
 
-Reddit for Wear
+Notify for Reddit (formerly 'Reddit for Wear')
 =================================
 
 Get notifications from your favourite subreddits right on your android wearable.
@@ -22,7 +22,7 @@ Choose:
 - How to order the actions (view image, comments, upvote etc) on the watch
 - How often to get updates
 - How many posts to get per update
-- What sorting order to use (e.g. 'hot', 'new' or 'controversial') 
+- What sorting order to use (e.g. 'hot', 'new' or 'controversial')
 
 ![phone1](https://raw.githubusercontent.com/emmaguy/til/master/images/phone_settings.png)
 

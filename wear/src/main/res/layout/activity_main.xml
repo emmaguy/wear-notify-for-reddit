@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/theme_blue"
+    android:background="@color/primary"
     tools:context="com.emmaguy.todayilearned.MainActivity"
     tools:deviceIds="wear_square">
 
