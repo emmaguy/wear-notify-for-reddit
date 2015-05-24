@@ -64,7 +64,7 @@ public class WearListenerService extends WearableListenerService {
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         if (messageEvent.getPath().equals(Constants.PATH_REFRESH)) {
-            WakefulIntentService.sendWakefulWork(this, RetrieveService.class);
+            WakefulIntentService.sendWakefulWork(this, RetrieveService.getFromWearableIntent(this));
         }
     }
 
@@ -106,11 +106,11 @@ public class WearListenerService extends WearableListenerService {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     if (intent == null) {
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_FAILURE);
-                        sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED);
                     } else {
                         startActivity(intent);
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_SUCCESS);
-                        sendReplyResult(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS);
                     }
                 } else if (Constants.PATH_VOTE.equals(path)) {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
@@ -145,7 +145,7 @@ public class WearListenerService extends WearableListenerService {
                             Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
                         } else {
                             Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
-                            sendReplyResult(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                            sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
                         }
                     }
                 }, new Action1<Throwable>() {
@@ -153,7 +153,7 @@ public class WearListenerService extends WearableListenerService {
                     public void call(Throwable throwable) {
                         Logger.sendThrowable(getApplicationContext(), "Failed to get comments", throwable);
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
-                        sendReplyResult(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
                     }
                 });
     }
@@ -196,13 +196,13 @@ public class WearListenerService extends WearableListenerService {
                     public void call(Throwable e) {
                         Logger.sendThrowable(getApplicationContext(), "Failed to vote", e);
                         Logger.sendEvent(getApplicationContext(), getVoteType(voteDirection), Logger.LOG_EVENT_FAILURE);
-                        sendReplyResult(Constants.PATH_KEY_VOTE_RESULT_FAILED);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_VOTE_RESULT_FAILED);
                     }
                 }, new Action0() {
                     @Override
                     public void call() {
                         Logger.sendEvent(getApplicationContext(), getVoteType(voteDirection), Logger.LOG_EVENT_SUCCESS);
-                        sendReplyResult(Constants.PATH_KEY_VOTE_RESULT_SUCCESS);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_VOTE_RESULT_SUCCESS);
                     }
                 });
     }
@@ -223,14 +223,14 @@ public class WearListenerService extends WearableListenerService {
                     @Override
                     public void onCompleted() {
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_SUCCESS);
-                        sendReplyResult(Constants.PATH_POST_REPLY_RESULT_SUCCESS);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_FAILURE);
                         Logger.sendThrowable(getApplicationContext(), e.getMessage(), e);
-                        sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
     }
@@ -250,7 +250,7 @@ public class WearListenerService extends WearableListenerService {
 
                     @Override
                     public void onCompleted() {
-                        sendReplyResult(Constants.PATH_POST_REPLY_RESULT_SUCCESS);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_SUCCESS);
                     }
 
@@ -258,7 +258,7 @@ public class WearListenerService extends WearableListenerService {
                     public void onError(Throwable e) {
                         Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_FAILURE);
                         Logger.sendThrowable(getApplicationContext(), e.getMessage(), e);
-                        sendReplyResult(Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
     }
@@ -280,8 +280,8 @@ public class WearListenerService extends WearableListenerService {
         return Utils.getCookie(PreferenceManager.getDefaultSharedPreferences(this), this);
     }
 
-    private void sendReplyResult(final String result) {
-        Wearable.MessageApi.sendMessage(mGoogleApiClient, "", result, null).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
+    public static void sendReplyResult(GoogleApiClient client, final String result) {
+        Wearable.MessageApi.sendMessage(client, "", result, null).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
             @Override
             public void onResult(MessageApi.SendMessageResult sendMessageResult) {
                 Logger.Log("sendReplyResult: " + result + " status " + sendMessageResult.getStatus());

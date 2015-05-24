@@ -1,5 +1,6 @@
 package com.emmaguy.todayilearned.background;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -26,6 +27,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -56,6 +58,7 @@ import rx.schedulers.Schedulers;
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final int WATCH_SCREEN_SIZE = 320;
     private static final int MARKER = 65536;
+    private static final String INTENT_KEY_INFORM_WATCH_NO_POSTS = "inform_no_posts";
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -69,7 +72,12 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     protected void doWakefulWork(Intent intent) {
         connectToWearable();
 
-        retrieveLatestPostsFromReddit();
+        boolean informWatchIfNoPosts = false;
+        if (intent.hasExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS)) {
+            informWatchIfNoPosts = intent.getBooleanExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS, false);
+        }
+
+        retrieveLatestPostsFromReddit(informWatchIfNoPosts);
     }
 
     private void connectToWearable() {
@@ -84,7 +92,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
-    private void retrieveLatestPostsFromReddit() {
+    private void retrieveLatestPostsFromReddit(final boolean sendInformationToWearableIfNoPosts) {
         final String cookie = Utils.getCookie(getSharedPreferences(), this);
         final String modhash = Utils.getModhash(getSharedPreferences(), this);
 
@@ -110,6 +118,9 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
                         if (posts.size() > 0) {
                             sendNewPostsData(posts);
+                        } else if (sendInformationToWearableIfNoPosts) {
+                            Logger.Log("Sending no posts information");
+                            WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
                         }
                     }
                 }, new Action1<Throwable>() {
@@ -399,5 +410,15 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+    }
+
+    public static Intent getFromWearableIntent(Context context) {
+        final Intent intent = new Intent(context, RetrieveService.class);
+        intent.putExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS, true);
+        return intent;
+    }
+
+    public static Intent getFromBackgroundSyncIntent(Context context) {
+        return new Intent(context, RetrieveService.class);
     }
 }

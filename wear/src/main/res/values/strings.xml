@@ -2,7 +2,8 @@
 <resources>
 
     <string name="dismiss_all">Dismiss All</string>
-    <string name="loading">Loading...</string>
+    <string name="getting_new_posts">Getting <i>new</i> posts...</string>
+    <string name="posts_with_images_slower">Posts with images\nwill take longer</string>
 
     <string name="open_on_phone">Open on phone</string>
     <string name="view_comments">View Comments</string>
@@ -29,6 +30,8 @@
     <string name="score_hidden">[hidden]</string>
     <string name="view_image">View Image</string>
     <string name="long_press_information">Long press anywhere to exit</string>
+    <string name="no_posts_to_retrieve">No new posts to retrieve from your subscribed subreddits!</string>
+    <string name="force_finish_main_activity">FinishMainActivity</string>
 
     <plurals name="points">
         <item quantity="one">pt</item>

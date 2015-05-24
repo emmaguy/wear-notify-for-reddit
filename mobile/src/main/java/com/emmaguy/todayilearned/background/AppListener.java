@@ -29,7 +29,7 @@ public class AppListener implements WakefulIntentService.AlarmListener {
     }
 
     public void sendWakefulWork(Context context) {
-        WakefulIntentService.sendWakefulWork(context, RetrieveService.class);
+        WakefulIntentService.sendWakefulWork(context, RetrieveService.getFromBackgroundSyncIntent(context));
     }
 
     public long getMaxAge() {

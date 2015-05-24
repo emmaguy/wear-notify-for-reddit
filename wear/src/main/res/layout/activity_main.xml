@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,15 +14,34 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:indeterminate="true"
-        android:indeterminateDrawable="@drawable/indeterminate_drawable"
-        android:minHeight="96dp"
-        android:minWidth="96dp" />
+        android:indeterminateTint="@color/white"
+        android:minHeight="64dp"
+        android:minWidth="64dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
+    <ViewFlipper
+        android:id="@+id/main_flipper_benefits"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/main_progressbar"
         android:layout_centerHorizontal="true"
-        android:paddingTop="15dp"
-        android:text="@string/loading" />
+        android:flipInterval="4000"
+        android:inAnimation="@android:anim/fade_in"
+        android:outAnimation="@android:anim/fade_out"
+        android:paddingTop="15dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/getting_new_posts"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/posts_with_images_slower"
+            android:textSize="18sp" />
+
+    </ViewFlipper>
 </RelativeLayout>

@@ -78,29 +78,41 @@ public class NotificationListenerService extends WearableListenerService {
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
+        final String path = messageEvent.getPath();
         String message = "";
+        boolean finishActivity = false;
 
-        if (messageEvent.getPath().equals(Constants.PATH_POST_REPLY_RESULT_SUCCESS)) {
+        if (path.equals(Constants.PATH_POST_REPLY_RESULT_SUCCESS)) {
             message = getString(R.string.reply_successful);
-        } else if (messageEvent.getPath().equals(Constants.PATH_POST_REPLY_RESULT_FAILURE)) {
+        } else if (path.equals(Constants.PATH_POST_REPLY_RESULT_FAILURE)) {
             message = getString(R.string.reply_failed_sad_face);
-        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS)) {
+        } else if (path.equals(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS)) {
             message = getString(R.string.saving_to_pocket_succeeded);
-        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED)) {
+        } else if (path.equals(Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED)) {
             message = getString(R.string.saving_to_pocket_failed_sad_face);
-        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_VOTE_RESULT_FAILED)) {
+        } else if (path.equals(Constants.PATH_KEY_VOTE_RESULT_FAILED)) {
             message = getString(R.string.voting_failed);
-        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_VOTE_RESULT_SUCCESS)) {
+        } else if (path.equals(Constants.PATH_KEY_VOTE_RESULT_SUCCESS)) {
             message = getString(R.string.voting_succeded);
-        } else if (messageEvent.getPath().equals(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED)) {
+        } else if (path.equals(Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED)) {
             message = getString(R.string.retrieving_comments_failed);
+        } else if (path.equals(Constants.PATH_NO_NEW_POSTS)) {
+            message = getString(R.string.no_posts_to_retrieve);
+            finishActivity = true;
         }
 
+        updateUser(message, finishActivity);
+    }
+
+    private void updateUser(String message, final boolean finishActivity) {
         if (!TextUtils.isEmpty(message)) {
             final String msg = message;
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (finishActivity) {
+                        sendBroadcast(new Intent(getString(R.string.force_finish_main_activity)));
+                    }
                     Toast.makeText(NotificationListenerService.this, msg, Toast.LENGTH_LONG).show();
                 }
             });
@@ -205,6 +217,7 @@ public class NotificationListenerService extends WearableListenerService {
                         }
 
                         sNotificationId += NOTIFICATION_ID_INCREMENT;
+                        sendBroadcast(new Intent(getString(R.string.force_finish_main_activity)));
                     }
                 } else if (path.equals(Constants.PATH_COMMENTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
