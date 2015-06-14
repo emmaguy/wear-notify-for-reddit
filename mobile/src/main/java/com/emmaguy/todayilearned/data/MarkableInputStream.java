@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned.background;
+package com.emmaguy.todayilearned.data;
 
 /*
  * Copyright (C) 2013 Square, Inc.
@@ -25,7 +25,7 @@ import java.io.InputStream;
  * marking and resetting. Each cursor is a token, and it's the caller's
  * responsibility to keep track of these. From https://github.com/square/picasso
  */
-final class MarkableInputStream extends InputStream {
+public final class MarkableInputStream extends InputStream {
     private static final int DEFAULT_BUFFER_SIZE = 4096;
 
     private final InputStream in;

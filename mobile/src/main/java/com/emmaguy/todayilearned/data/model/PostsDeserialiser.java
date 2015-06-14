@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned.data;
+package com.emmaguy.todayilearned.data.model;
 
 import android.text.TextUtils;
 

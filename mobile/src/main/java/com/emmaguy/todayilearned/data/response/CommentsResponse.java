@@ -1,6 +1,6 @@
 package com.emmaguy.todayilearned.data.response;
 
-import com.emmaguy.todayilearned.data.PostsDeserialiser;
+import com.emmaguy.todayilearned.data.model.PostsDeserialiser;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;

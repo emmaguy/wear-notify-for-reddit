@@ -2,8 +2,8 @@ package com.emmaguy.todayilearned.ui;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -11,11 +11,8 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -23,23 +20,32 @@ import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.background.AppListener;
-import com.emmaguy.todayilearned.data.Reddit;
-import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
-import com.emmaguy.todayilearned.data.response.LoginResponse;
+import com.emmaguy.todayilearned.data.auth.BasicAuthorisationRequestInterceptor;
+import com.emmaguy.todayilearned.data.auth.RedditAccessTokenRequester;
+import com.emmaguy.todayilearned.data.retrofit.AuthenticatedRedditService;
+import com.emmaguy.todayilearned.data.model.Token;
+import com.emmaguy.todayilearned.data.auth.RedditRequestTokenUriParser;
+import com.emmaguy.todayilearned.data.retrofit.UnauthenticatedRedditService;
+import com.emmaguy.todayilearned.data.converter.TokenConverter;
+import com.emmaguy.todayilearned.data.encoder.Base64Encoder;
 import com.emmaguy.todayilearned.data.response.SubscriptionResponse;
+import com.emmaguy.todayilearned.data.storage.SharedPreferencesUniqueIdentifierStorage;
+import com.emmaguy.todayilearned.data.storage.SharedPreferencesTokenStorage;
+import com.emmaguy.todayilearned.data.storage.UniqueIdentifierStorage;
+import com.emmaguy.todayilearned.data.storage.TokenStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
 import de.psdev.licensesdialog.LicensesDialog;
-import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class SettingsActivity extends AppCompatActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,8 +71,16 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
-        public SettingsFragment() {
-        }
+        private final TokenConverter mConverter = new TokenConverter(new GsonConverter(new GsonBuilder().create()));
+
+        private Base64Encoder mEncoder;
+        private TokenStorage mTokenStorage;
+        private UniqueIdentifierStorage mUniqueIdentifierStorage;
+        private RedditRequestTokenUriParser mRequestTokenUriParser;
+        private AuthenticatedRedditService mAuthenticatedRedditService;
+        private UnauthenticatedRedditService mUnauthenticatedRedditService;
+        private RedditAccessTokenRequester mRedditAccessTokenRequester;
+        private BasicAuthorisationRequestInterceptor mBasicAuthorisationRequestInterceptor;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -75,6 +89,15 @@ public class SettingsActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.prefs);
 
             WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
+
+            mEncoder = new Base64Encoder();
+            mBasicAuthorisationRequestInterceptor = new BasicAuthorisationRequestInterceptor(mEncoder);
+            mUniqueIdentifierStorage = new SharedPreferencesUniqueIdentifierStorage(getPreferenceManager().getSharedPreferences(), getResources());
+            mRedditAccessTokenRequester = new RedditAccessTokenRequester(getActivity(), getResources(), mUniqueIdentifierStorage);
+            mTokenStorage = new SharedPreferencesTokenStorage(getPreferenceManager().getSharedPreferences(), getResources());
+            mAuthenticatedRedditService = new AuthenticatedRedditService(mTokenStorage);
+            mUnauthenticatedRedditService = new UnauthenticatedRedditService();
+            mRequestTokenUriParser = new RedditRequestTokenUriParser(getResources(), mTokenStorage, mUniqueIdentifierStorage);
 
             initSummary();
 
@@ -95,6 +118,53 @@ public class SettingsActivity extends AppCompatActivity {
             super.onResume();
 
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+            Uri uri = getActivity().getIntent().getData();
+            mRequestTokenUriParser.setUri(uri);
+
+            if (mRequestTokenUriParser.hasValidCode()) {
+                getAccessToken(mRequestTokenUriParser.getCode());
+            } else if (mRequestTokenUriParser.showError()) {
+                new AlertDialog.Builder(getActivity())
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setTitle(R.string.login_to_reddit)
+                        .setMessage(R.string.error_whilst_trying_to_login)
+                        .create()
+                        .show();
+            }
+        }
+
+        private void getAccessToken(String code) {
+            final String credentials = getString(R.string.client_id) + ":";
+            final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.logging_in));
+            final String redirectUri = getString(R.string.redirect_url_scheme) + getString(R.string.redirect_url_callback);
+
+            mUnauthenticatedRedditService
+                    .getRedditService(mConverter, mBasicAuthorisationRequestInterceptor.build(credentials))
+                    .loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE, redirectUri, code)
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<Token>() {
+                        @Override
+                        public void onCompleted() {
+                            spinner.dismiss();
+                            initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
+                            Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
+                            Logger.sendThrowable(getActivity().getApplicationContext(), e.getMessage(), e);
+                            spinner.dismiss();
+                            Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onNext(Token tokenResponse) {
+                            mTokenStorage.saveToken(tokenResponse);
+                        }
+                    });
         }
 
         @Override
@@ -110,9 +180,9 @@ public class SettingsActivity extends AppCompatActivity {
                 new LicensesDialog(getActivity(), R.raw.open_source_notices, false, true).show();
                 return true;
             } else if (preference.getKey().equals(getString(R.string.prefs_key_account_info))) {
-                showLoginDialog();
+                mRedditAccessTokenRequester.request();
             } else if (preference.getKey().equals(getString(R.string.prefs_key_sync_subreddits))) {
-                if (Utils.isLoggedIn(getPreferenceScreen().getSharedPreferences(), getActivity())) {
+                if (mTokenStorage.isLoggedIn()) {
                     syncSubreddits();
                 } else {
                     Toast.makeText(getActivity(), R.string.you_need_to_sign_in_to_sync_subreddits, Toast.LENGTH_SHORT).show();
@@ -124,14 +194,10 @@ public class SettingsActivity extends AppCompatActivity {
         private void syncSubreddits() {
             final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.syncing_subreddits));
 
-            final RestAdapter restAdapter = new RestAdapter.Builder()
-                    .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                    .setRequestInterceptor(new RedditRequestInterceptor(Utils.getCookie(getPreferenceScreen().getSharedPreferences(), getActivity()), Utils.getModhash(getPreferenceScreen().getSharedPreferences(), getActivity())))
-                    .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(SubscriptionResponse.class, new SubscriptionResponse.SubscriptionResponseJsonDeserializer()).create()))
-                    .build();
-
-            final Reddit redditEndpoint = restAdapter.create(Reddit.class);
-            redditEndpoint.subredditSubscriptions()
+            final GsonConverter converter = new GsonConverter(new GsonBuilder().registerTypeAdapter(SubscriptionResponse.class, new SubscriptionResponse.SubscriptionResponseJsonDeserializer()).create());
+            mAuthenticatedRedditService
+                    .getRedditService(converter)
+                    .subredditSubscriptions()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<SubscriptionResponse>() {
@@ -163,74 +229,6 @@ public class SettingsActivity extends AppCompatActivity {
                             Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
                         }
                     });
-        }
-
-        private void showLoginDialog() {
-            View layout = LayoutInflater.from(getActivity()).inflate(R.layout.login_dialog, null);
-
-            final EditText username = (EditText) layout.findViewById(R.id.username_edittext);
-            final EditText password = (EditText) layout.findViewById(R.id.password_edittext);
-
-            new AlertDialog.Builder(getActivity())
-                    .setNegativeButton(R.string.cancel, null)
-                    .setPositiveButton(R.string.login, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            loginToReddit(username.getText().toString(), password.getText().toString());
-                        }
-                    })
-                    .setTitle(R.string.login_to_reddit)
-                    .setView(layout)
-                    .create()
-                    .show();
-        }
-
-        private void loginToReddit(final String username, String password) {
-            final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.logging_in));
-
-            final RestAdapter restAdapter = new RestAdapter.Builder()
-                    .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                    .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(LoginResponse.class, new LoginResponse.LoginResponseJsonDeserializer()).create()))
-                    .build();
-
-            final Reddit redditEndpoint = restAdapter.create(Reddit.class);
-            redditEndpoint.login(username, password)
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<LoginResponse>() {
-                        @Override
-                        public void onNext(LoginResponse response) {
-                            if (response.hasErrors()) {
-                                throw new RuntimeException("Failed to login: " + response);
-                            }
-                            updateLoginInformation(response.getModhash(), response.getCookie(), username);
-                        }
-
-                        @Override
-                        public void onCompleted() {
-                            Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
-                            spinner.dismiss();
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
-                            Logger.sendThrowable(getActivity().getApplicationContext(), e.getMessage(), e);
-                            spinner.dismiss();
-                            Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        }
-
-        private void updateLoginInformation(String modhash, String cookie, String username) {
-            getPreferenceManager().getSharedPreferences()
-                    .edit()
-                    .putString(getString(R.string.prefs_key_username), username)
-                    .putString(getString(R.string.prefs_key_modhash), modhash)
-                    .putString(getString(R.string.prefs_key_cookie), cookie)
-                    .apply();
-
-            updatePrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
         }
 
         @Override
@@ -298,7 +296,7 @@ public class SettingsActivity extends AppCompatActivity {
                 PreferenceScreen screen = (PreferenceScreen) pref;
 
                 if (screen.getKey().equals(getString(R.string.prefs_key_account_info))) {
-                    if (Utils.isLoggedIn(getPreferenceScreen().getSharedPreferences(), getActivity())) {
+                    if (mTokenStorage.isLoggedIn()) {
                         screen.setSummary(getString(R.string.logged_in_as_x, getUsername()));
                     }
                 }

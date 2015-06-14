@@ -16,7 +16,6 @@ package com.emmaguy.todayilearned;
  * limitations under the License.
  */
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -48,7 +47,6 @@ public class PocketUtil {
      * @param context
      * @return The Activity Intent that can be started to save the url, or null if Pocket is not installed.
      * @see #isPocketInstalled(Context)
-     * @see #installPocket(Activity)
      */
     public static Intent newAddToPocketIntent(String url, String tweetStatusId, Context context) {
         String pocketPackageName = getPocketPackageName(context);
@@ -72,8 +70,6 @@ public class PocketUtil {
 
     /**
      * Returns true if Pocket is installed on this device.
-     *
-     * @see #installPocket(Activity)
      */
     public static boolean isPocketInstalled(Context context) {
         return getPocketPackageName(context) != null;

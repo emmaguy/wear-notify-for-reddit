@@ -17,7 +17,10 @@
 
     <string name="prefs_key_open_source">open_source</string>
 
-    <string name="prefs_key_cookie">cookie</string>
-    <string name="prefs_key_modhash">modhash</string>
     <string name="prefs_key_username">username</string>
+    <string name="prefs_key_state">state</string>
+
+    <string name="prefs_key_token_expiry_millis">expires_in</string>
+    <string name="prefs_key_token_refresh_token">refresh_token</string>
+    <string name="prefs_key_token_access_token">access_token</string>
 </resources>

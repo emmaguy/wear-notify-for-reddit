@@ -1,7 +1,19 @@
 package com.emmaguy.todayilearned.sharedlib;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Constants {
+    public static Set<String> sDefaultSelectedSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "AskReddit"));
+
     public static final String ENDPOINT_URL_REDDIT = "https://www.reddit.com/";
+    public static final String ENDPOINT_URL_OAUTH_REDDIT = "https://oauth.reddit.com/";
+
+    public static final String AUTHORIZATION = "Authorization";
+
+    public static final String GRANT_TYPE_AUTHORISATION_CODE = "authorization_code";
+    public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
 
     public static final String PATH_REDDIT_POSTS = "/redditwear";
     public static final String PATH_REFRESH = "/refresh";

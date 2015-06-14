@@ -20,7 +20,7 @@ import android.widget.TextView;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.PocketUtil;
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.Utils;
+import com.emmaguy.todayilearned.data.storage.SharedPreferencesTokenStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 
 import java.util.ArrayList;
@@ -48,7 +48,8 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
     }
 
     private static LinkedHashMap<Integer, Action> getAllActions(SharedPreferences prefs, Context context) {
-        boolean loggedIn = Utils.isLoggedIn(prefs, context);
+        // TODO: god not this
+        boolean loggedIn = new SharedPreferencesTokenStorage(prefs, context.getResources()).isLoggedIn();
 
         LinkedHashMap<Integer, Action> actions = new LinkedHashMap<>();
         addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_COMMENTS, context.getString(R.string.action_view_comments)));

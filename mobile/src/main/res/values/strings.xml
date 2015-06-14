@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="action_order_description">Choose the actions which appear on your android wearable. \n\nRe-order by long pressing on the item you wish to move, and dragging in to your preferred position.</string>
+    <string name="action_open_on_phone">Open on phone</string>
+    <string name="action_view_comments">View comments</string>
+    <string name="action_save_to_pocket">Save to Pocket</string>
+    <string name="action_reply">Reply to post</string>
+    <string name="action_upvote">Upvote</string>
+    <string name="action_downvote">Downvote</string>
+    <string name="action_view_image">View image</string>
+
     <string name="feedback">Feedback</string>
     <string name="number_to_retrieve">Number of posts to retrieve</string>
     <string name="pref_title_sync_frequency">Sync frequency</string>
@@ -8,38 +17,6 @@
     <string name="open_source_projects">Open source projects</string>
     <string name="sort_order">Sort order</string>
     <string name="tap_to_modify">Tap to modify subreddits</string>
-
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
-    <string-array name="pref_posts_to_request">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>5</item>
-        <item>10</item>
-        <item>15</item>
-        <item>20</item>
-    </string-array>
-    <string-array name="pref_sort_order">
-        <item>hot</item>
-        <item>new</item>
-        <item>controversial</item>
-    </string-array>
-
     <string name="subreddits">Subreddits</string>
     <string name="add_subreddit">Add Subreddit</string>
     <string name="save">Save</string>
@@ -56,7 +33,7 @@
     <string name="username">Username</string>
     <string name="login">Login</string>
     <string name="login_to_reddit">Login to reddit</string>
-    <string name="failed_to_login">Failed to login. Please check your username/password and internet connection</string>
+    <string name="failed_to_login">Failed to login</string>
     <string name="logging_in">Logging in...</string>
     <string name="syncing_subreddits">Syncing subreddits...</string>
     <string name="failed_to_sync_subreddits">Failed to sync subreddits</string>
@@ -74,19 +51,13 @@
     <string name="watch_actions_order">Actions on watch</string>
     <string name="high_resolution_images">High resolution images</string>
     <string name="download_fullsized_image">Downloads high res images (if available)</string>
-
-    <string name="action_order_description">Choose the actions which appear on your android wearable. \n\nRe-order by long pressing on the item you wish to move, and dragging in to your preferred position.</string>
-    <string name="action_open_on_phone">Open on phone</string>
-    <string name="action_view_comments">View comments</string>
-    <string name="action_save_to_pocket">Save to Pocket</string>
-    <string name="action_reply">Reply to post</string>
-    <string name="action_upvote">Upvote</string>
-    <string name="action_downvote">Downvote</string>
-    <string name="action_view_image">View image</string>
-
     <string name="none">None</string>
     <string name="requires_login">(requires login)</string>
     <string name="requires_pocket_app_installed">(requires Pocket app to be installed)</string>
     <string name="hint_dialog_subreddit">subreddit name, e.g. showerthoughts</string>
+    <string name="requesting_token">Requesting token</string>
+    <string name="redirect_url_scheme">wearnotifyreddit</string>
+    <string name="redirect_url_callback">://callback</string>
+    <string name="error_whilst_trying_to_login">An error occurred whilst trying to log in. Please check your Internet connection and try again later</string>
 
 </resources>

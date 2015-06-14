@@ -1,23 +1,34 @@
-package com.emmaguy.todayilearned.data;
+package com.emmaguy.todayilearned.data.retrofit;
 
+import com.emmaguy.todayilearned.data.model.Token;
 import com.emmaguy.todayilearned.data.response.AddCommentResponse;
-import com.emmaguy.todayilearned.data.response.LoginResponse;
 import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.data.response.SubscriptionResponse;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.util.List;
 
+import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
+import retrofit.http.Headers;
 import retrofit.http.POST;
 import retrofit.http.Path;
 import retrofit.http.Query;
 import rx.Observable;
 
-public interface Reddit {
-    @POST("/api/login?rem=true&api_type=json")
-    Observable<LoginResponse> login(@Query("user") String username,
-                                    @Query("passwd") String password);
+public interface RedditService {
+    @POST("/api/v1/access_token")
+    @Headers("Content-Type: application/x-www-form-urlencoded")
+    @FormUrlEncoded
+    Observable<Token> loginToken(@Field("grant_type") String grantType,
+                                 @Field("redirect_uri") String redirectUri,
+                                 @Field("code") String code);
+
+    @POST("/api/v1/access_token")
+    @Headers("Content-Type: application/x-www-form-urlencoded")
+    @FormUrlEncoded
+    Token refreshToken(@Field("grant_type") String grantType, @Field("refresh_token") String refreshToken);
 
     @POST("/api/comment?api_type=json")
     Observable<AddCommentResponse> commentOnPost(@Query("text") String comment,

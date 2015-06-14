@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.sharedlib.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +22,6 @@ import java.util.Set;
 
 public class SubredditPreference extends Preference {
     private static Set<String> DefaultSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews", "britishproblems", "showerthoughts", "pics", "AskReddit"));
-    private static Set<String> DefaultSelectedSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "AskReddit"));
 
     public SubredditPreference(Context context) {
         super(context, null);
@@ -29,12 +29,6 @@ public class SubredditPreference extends Preference {
 
     public SubredditPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    public static List<String> getAllSelectedSubreddits(SharedPreferences prefs, String key) {
-        Set<String> subreddits = prefs.getStringSet(key, DefaultSelectedSubreddits);
-
-        return new ArrayList(subreddits);
     }
 
     @Override
@@ -58,7 +52,9 @@ public class SubredditPreference extends Preference {
     }
 
     public List<String> getAllSelectedSubreddits() {
-        return getAllSelectedSubreddits(getSharedPreferences(), getSelectedSubredditsKey());
+        final String key = getSelectedSubredditsKey();
+        Set<String> subreddits = getSharedPreferences().getStringSet(key, Constants.sDefaultSelectedSubreddits);
+        return new ArrayList(subreddits);
     }
 
     /**

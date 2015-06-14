@@ -37,10 +37,16 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':sharedlib')
-    compile 'com.squareup.retrofit:retrofit:1.8.+'
+
+    compile 'net.danlew:android.joda:2.7.+'
+
+    compile 'com.squareup.retrofit:retrofit:1.9.+'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.4.0'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+
     compile 'com.netflix.rxjava:rxjava-core:0.20.+'
     compile 'com.netflix.rxjava:rxjava-android:0.20.+'
-    compile 'com.android.support:recyclerview-v7:22.+'
+    compile 'com.android.support:recyclerview-v7:21.+'
     compile 'com.afollestad:material-dialogs:0.7.4.2'
     compile('de.psdev.licensesdialog:licensesdialog:1.5.0') {
         exclude module: 'support-v4'

@@ -119,7 +119,6 @@ public class ReorderRecyclerView extends RecyclerView {
             }
         });
 
-        //
         final OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
             public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
@@ -134,6 +133,7 @@ public class ReorderRecyclerView extends RecyclerView {
                 }
                 return false;
             }
+
 
             @Override
             public void onTouchEvent(RecyclerView rv, MotionEvent event) {

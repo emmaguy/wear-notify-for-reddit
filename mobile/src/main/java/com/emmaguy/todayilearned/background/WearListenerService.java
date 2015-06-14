@@ -2,15 +2,12 @@ package com.emmaguy.todayilearned.background;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.PocketUtil;
-import com.emmaguy.todayilearned.Utils;
-import com.emmaguy.todayilearned.data.Reddit;
-import com.emmaguy.todayilearned.data.RedditRequestInterceptor;
+import com.emmaguy.todayilearned.data.retrofit.RedditService;
 import com.emmaguy.todayilearned.data.response.AddCommentResponse;
 import com.emmaguy.todayilearned.data.response.CommentsResponse;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -129,11 +126,10 @@ public class WearListenerService extends WearableListenerService {
     private void getComments(String permalink) {
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new CommentsResponse.CommentsResponseJsonDeserialiser()).create()))
                 .build();
 
-        final Reddit redditEndpoint = restAdapter.create(Reddit.class);
+        final RedditService redditEndpoint = restAdapter.create(RedditService.class);
         redditEndpoint.comments(permalink, "best")
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -179,10 +175,9 @@ public class WearListenerService extends WearableListenerService {
     private void vote(String fullname, final int voteDirection) {
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .build();
 
-        final Reddit redditEndpoint = restAdapter.create(Reddit.class);
+        final RedditService redditEndpoint = restAdapter.create(RedditService.class);
         redditEndpoint.vote(fullname, voteDirection)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -208,7 +203,7 @@ public class WearListenerService extends WearableListenerService {
     }
 
     private void replyToDirectMessage(String subject, String message, String toUser) {
-        final Reddit redditEndpoint = getRestAdapter().create(Reddit.class);
+        final RedditService redditEndpoint = getRestAdapter().create(RedditService.class);
         redditEndpoint.replyToDirectMessage(subject, message, toUser)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -236,7 +231,7 @@ public class WearListenerService extends WearableListenerService {
     }
 
     private void replyToRedditPost(String fullname, String message) {
-        final Reddit redditEndpoint = getRestAdapter().create(Reddit.class);
+        final RedditService redditEndpoint = getRestAdapter().create(RedditService.class);
         redditEndpoint.commentOnPost(message, fullname)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -266,18 +261,8 @@ public class WearListenerService extends WearableListenerService {
     private RestAdapter getRestAdapter() {
         return new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
-                .setRequestInterceptor(new RedditRequestInterceptor(getCookie(), getModhash()))
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(AddCommentResponse.class, new AddCommentResponse.CommentResponseJsonDeserializer()).create()))
                 .build();
-    }
-
-
-    private String getModhash() {
-        return Utils.getModhash(PreferenceManager.getDefaultSharedPreferences(this), this);
-    }
-
-    private String getCookie() {
-        return Utils.getCookie(PreferenceManager.getDefaultSharedPreferences(this), this);
     }
 
     public static void sendReplyResult(GoogleApiClient client, final String result) {
