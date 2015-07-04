@@ -79,6 +79,7 @@ public class NotificationListenerService extends WearableListenerService {
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         final String path = messageEvent.getPath();
+        Logger.log("onMessageReceived, path: " + path);
         String message = "";
         boolean finishActivity = false;
 
@@ -119,7 +120,8 @@ public class NotificationListenerService extends WearableListenerService {
         }
     }
 
-    public Bitmap loadBitmapFromAsset(Asset asset) {
+    private Bitmap loadBitmapFromAsset(Asset asset) {
+        Logger.log("loadBitmapFromAsset");
         ConnectionResult result = mGoogleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
         if (!result.isSuccess()) {
             return null;
@@ -129,7 +131,7 @@ public class NotificationListenerService extends WearableListenerService {
         mGoogleApiClient.disconnect();
 
         if (assetInputStream == null) {
-            Logger.Log("Requested an unknown Asset");
+            Logger.log("Requested an unknown Asset");
             return null;
         }
         // decode the stream into a bitmap
@@ -138,13 +140,14 @@ public class NotificationListenerService extends WearableListenerService {
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
+        Logger.log("onDataChanged");
         final List<DataEvent> events = FreezableUtils.freezeIterable(dataEvents);
         dataEvents.close();
 
         if (!mGoogleApiClient.isConnected()) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Logger.Log("NotifListenerService, service failed to connect: " + connectionResult);
+                Logger.log("onDataChanged, service failed to connect: " + connectionResult);
                 return;
             }
         }
@@ -152,72 +155,29 @@ public class NotificationListenerService extends WearableListenerService {
         for (DataEvent event : events) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 String path = event.getDataItem().getUri().getPath();
-                Logger.Log("NotificationListenerService path: " + path);
+                Logger.log("onDataChanged path: " + path);
 
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
-                    DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
-                    DataMap dataMap = dataMapItem.getDataMap();
+                    try {
+                        DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+                        DataMap dataMap = dataMapItem.getDataMap();
 
-                    final String latestPosts = dataMap.getString(Constants.KEY_REDDIT_POSTS);
-                    final boolean openOnPhoneDismisses = dataMap.getBoolean(Constants.KEY_DISMISS_AFTER_ACTION);
-                    final ArrayList<Integer> actionOrder = dataMap.getIntegerArrayList(Constants.KEY_ACTION_ORDER);
+                        final String latestPosts = dataMap.getString(Constants.KEY_REDDIT_POSTS);
+                        final boolean openOnPhoneDismisses = dataMap.getBoolean(Constants.KEY_DISMISS_AFTER_ACTION);
+                        final ArrayList<Integer> actionOrder = dataMap.getIntegerArrayList(Constants.KEY_ACTION_ORDER);
 
-                    ArrayList<Post> posts = mGson.fromJson(latestPosts, Post.getPostsListTypeToken());
+                        ArrayList<Post> posts = mGson.fromJson(latestPosts, Post.getPostsListTypeToken());
 
-                    Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
-                    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    for (int i = 0; i < posts.size(); i++) {
-                        Post post = posts.get(i);
+                        Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
+                        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-                        Bitmap backgroundBitmap = null;
-                        if (post.hasThumbnail() || post.hasHighResImage()) {
-                            Asset a = dataMap.getAsset(post.getId());
-                            if (a != null) {
-                                backgroundBitmap = loadBitmapFromAsset(a);
-                            }
+                        Logger.log("onDataChanged creating notifications for " + posts.size() + " posts");
+                        for (int i = 0; i < posts.size(); i++) {
+                            Post post = posts.get(i);
+                            createNotificationForPost(dataMap, openOnPhoneDismisses, actionOrder, themeBlueBitmap, notificationManager, post);
                         }
-
-                        int notificationId = sNotificationId;
-
-                        String title = post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit();
-
-                        Notification.Builder builder = new Notification.Builder(this)
-                                .setContentTitle(title)
-                                .setContentText((post.isDirectMessage() ? post.getDescription() : post.getPostContents()))
-                                .setSmallIcon(R.drawable.ic_launcher);
-
-                        boolean hasCachedImage;
-                        if (backgroundBitmap != null) {
-                            if (post.hasThumbnail()) {
-                                // If the post has a thumbnail, use it - this will filter out nfsw etc thumbnails
-                                // but will still allow the user to see the full image if they like
-                                builder.setLargeIcon(backgroundBitmap);
-                            } else {
-                                setBlueBackground(themeBlueBitmap, builder);
-                                enableNotificationGrouping(builder);
-                            }
-                            hasCachedImage = cacheBackgroundToDisk(notificationId, backgroundBitmap);
-                        } else {
-                            hasCachedImage = false;
-                            setBlueBackground(themeBlueBitmap, builder);
-                            enableNotificationGrouping(builder);
-                        }
-
-                        addActions(actionOrder, openOnPhoneDismisses, hasCachedImage, post, notificationId, builder);
-
-                        if (hasCachedImage) {
-                            // When the notification is dismissed, we will remove this image from the file cache
-                            builder.setDeleteIntent(getDeletePendingIntent(notificationId));
-                        }
-
-                        notificationManager.notify(notificationId, builder.build());
-
-                        if (backgroundBitmap != null) {
-                            backgroundBitmap.recycle();
-                        }
-
-                        sNotificationId += NOTIFICATION_ID_INCREMENT;
-                        sendBroadcast(new Intent(getString(R.string.force_finish_main_activity)));
+                    } catch (Exception e) {
+                        Logger.log("Failed to get reddit posts from data event", e);
                     }
                 } else if (path.equals(Constants.PATH_COMMENTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
@@ -237,6 +197,60 @@ public class NotificationListenerService extends WearableListenerService {
                     }
                 }
             }
+        }
+    }
+
+    private void createNotificationForPost(DataMap dataMap, boolean openOnPhoneDismisses, ArrayList<Integer> actionOrder, Bitmap themeBlueBitmap, NotificationManager notificationManager, Post post) {
+        try {
+            Bitmap backgroundBitmap = null;
+            if (post.hasThumbnail() || post.hasHighResImage()) {
+                Asset a = dataMap.getAsset(post.getId());
+                if (a != null) {
+                    backgroundBitmap = loadBitmapFromAsset(a);
+                }
+            }
+            String title = post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit();
+
+            Notification.Builder builder = new Notification.Builder(this)
+                    .setContentTitle(title)
+                    .setContentText((post.isDirectMessage() ? post.getDescription() : post.getPostContents()))
+                    .setSmallIcon(R.drawable.ic_launcher);
+
+            boolean hasCachedImage;
+            if (backgroundBitmap != null) {
+                if (post.hasThumbnail()) {
+                    // If the post has a thumbnail, use it - this will filter out nfsw etc thumbnails
+                    // but will still allow the user to see the full image if they like
+                    builder.setLargeIcon(backgroundBitmap);
+                } else {
+                    setBlueBackground(themeBlueBitmap, builder);
+                    enableNotificationGrouping(builder);
+                }
+                hasCachedImage = cacheBackgroundToDisk(sNotificationId, backgroundBitmap);
+            } else {
+                hasCachedImage = false;
+                setBlueBackground(themeBlueBitmap, builder);
+                enableNotificationGrouping(builder);
+            }
+
+            addActions(actionOrder, openOnPhoneDismisses, hasCachedImage, post, sNotificationId, builder);
+
+            if (hasCachedImage) {
+                // When the notification is dismissed, we will remove this image from the file cache
+                builder.setDeleteIntent(getDeletePendingIntent(sNotificationId));
+            }
+
+
+            notificationManager.notify(sNotificationId, builder.build());
+
+            if (backgroundBitmap != null) {
+                backgroundBitmap.recycle();
+            }
+
+            sNotificationId += NOTIFICATION_ID_INCREMENT;
+            sendBroadcast(new Intent(getString(R.string.force_finish_main_activity)));
+        } catch (Exception e) {
+            Logger.log("Failed to create notification for post: " + post, e);
         }
     }
 
@@ -260,7 +274,7 @@ public class NotificationListenerService extends WearableListenerService {
             out = new FileOutputStream(localCache);
             backgroundBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (IOException e) {
-            Logger.Log("Error writing local cache", e);
+            Logger.log("Error writing local cache", e);
         } finally {
             try {
                 if (out != null) {
@@ -268,7 +282,7 @@ public class NotificationListenerService extends WearableListenerService {
                 }
                 isCached = true;
             } catch (IOException e) {
-                Logger.Log("Error closing local cache file", e);
+                Logger.log("Error closing local cache file", e);
             }
         }
 
@@ -352,7 +366,7 @@ public class NotificationListenerService extends WearableListenerService {
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                     @Override
                     public void onResult(DataApi.DataItemResult dataItemResult) {
-                        Logger.Log("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
+                        Logger.log("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
                     }
                 });
     }

@@ -30,7 +30,7 @@ public class ActionReceiver extends BroadcastReceiver {
         mGoogleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Wearable.API)
                 .build();
-        Logger.Log("onReceive in ActionReceiver");
+        Logger.log("onReceive in ActionReceiver");
         new ConnectTask(context, intent.getExtras()).execute();
     }
 
@@ -55,7 +55,7 @@ public class ActionReceiver extends BroadcastReceiver {
         protected Void doInBackground(Void... params) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Logger.Log("Action receiver, service failed to connect: " + connectionResult);
+                Logger.log("Action receiver, service failed to connect: " + connectionResult);
                 return null;
             }
 
@@ -65,18 +65,18 @@ public class ActionReceiver extends BroadcastReceiver {
             final int notificationId = getIntAndRemoveKey(Constants.KEY_NOTIFICATION_ID);
             final boolean dismissAfterAction = getBooleanAndRemoveKey(Constants.KEY_DISMISS_AFTER_ACTION);
 
-            Logger.Log("Path: " + path);
+            Logger.log("Path: " + path);
 
             PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(path);
 
             for (String key : mBundle.keySet()) {
                 Object value = mBundle.get(key);
                 if (value instanceof Integer) {
-                    Logger.Log("Putting int: " + key + " value: " + value);
+                    Logger.log("Putting int: " + key + " value: " + value);
                     Integer i = (Integer) value;
                     putDataMapRequest.getDataMap().putInt(key, i);
                 } else { // assume String
-                    Logger.Log("Putting String: " + key + " value: " + value);
+                    Logger.log("Putting String: " + key + " value: " + value);
                     putDataMapRequest.getDataMap().putString(key, value.toString());
                 }
             }
@@ -87,11 +87,11 @@ public class ActionReceiver extends BroadcastReceiver {
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Logger.Log("Action receiver '" + message + "' putDataItem status: " + dataItemResult.getStatus().toString());
+                            Logger.log("Action receiver '" + message + "' putDataItem status: " + dataItemResult.getStatus().toString());
                             if (dataItemResult.getStatus().isSuccess()) {
                                 showConfirmation(mContext, message, animation);
 
-                                Logger.Log("DismissAfterAction: " + dismissAfterAction + " notificationId " + notificationId);
+                                Logger.log("DismissAfterAction: " + dismissAfterAction + " notificationId " + notificationId);
                                 if (dismissAfterAction) {
                                     NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
                                     manager.cancel(notificationId);

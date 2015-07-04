@@ -89,7 +89,7 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
             File localCache = new File(getCacheDir(), imageName);
             return BitmapFactory.decodeStream(new FileInputStream(localCache));
         } catch (Exception e) {
-            Logger.Log("Failed to get image from disk: ", e);
+            Logger.log("Failed to get image from disk: ", e);
         }
         return null;
     }

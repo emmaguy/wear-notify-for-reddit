@@ -21,10 +21,8 @@ import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.background.AppListener;
-import com.emmaguy.todayilearned.data.auth.BasicAuthorisationRequestInterceptor;
 import com.emmaguy.todayilearned.data.auth.RedditAccessTokenRequester;
 import com.emmaguy.todayilearned.data.auth.RedditRequestTokenUriParser;
-import com.emmaguy.todayilearned.data.converter.TokenConverter;
 import com.emmaguy.todayilearned.data.model.Token;
 import com.emmaguy.todayilearned.data.response.SubscriptionResponse;
 import com.emmaguy.todayilearned.data.retrofit.AuthenticatedRedditService;
@@ -94,8 +92,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             initSummary();
 
-            initialiseClickListener(getString(R.string.prefs_force_expire_token));
-            initialiseClickListener(getString(R.string.prefs_force_refresh_now));
+            if (Utils.sIsDebug) {
+                initialiseClickListener(getString(R.string.prefs_force_expire_token));
+                initialiseClickListener(getString(R.string.prefs_force_refresh_now));
+            } else {
+                getPreferenceScreen().removePreference(findPreference(getString(R.string.prefs_force_expire_token)));
+                getPreferenceScreen().removePreference(findPreference(getString(R.string.prefs_force_refresh_now)));
+            }
 
             initialiseClickListener(getString(R.string.prefs_key_open_source));
             initialiseClickListener(getString(R.string.prefs_key_account_info));
@@ -258,7 +261,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void clearSavedUtcTime() {
-            getPreferenceManager().getSharedPreferences().edit().putLong(getString(R.string.prefs_key_created_utc), 0).apply();
+            mUserStorage.setRetrievedPostCreatedUtc(0);
         }
 
         protected void initSummary() {
@@ -297,16 +300,12 @@ public class SettingsActivity extends AppCompatActivity {
 
                 if (screen.getKey().equals(getString(R.string.prefs_key_account_info))) {
                     if (mTokenStorage.isLoggedIn()) {
-                        screen.setSummary(getString(R.string.logged_in_as_x, getUsername()));
+                        screen.setSummary(getString(R.string.logged_in));
                     }
                 }
             } else if (pref instanceof DragReorderActionsPreference) {
                 pref.setSummary(pref.getSummary());
             }
-        }
-
-        private String getUsername() {
-            return getPreferenceManager().getSharedPreferences().getString(getString(R.string.prefs_key_username), "");
         }
     }
 }

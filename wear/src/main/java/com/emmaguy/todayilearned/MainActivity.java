@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -60,7 +59,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         Wearable.MessageApi.sendMessage(mGoogleApiClient, "", Constants.PATH_REFRESH, null).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
             @Override
             public void onResult(MessageApi.SendMessageResult result) {
-                Logger.Log("Requested a refresh, result: " + result.getStatus());
+                Logger.log("Requested a refresh, result: " + result.getStatus());
                 finishActivity();
             }
         });

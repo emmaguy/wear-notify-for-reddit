@@ -31,7 +31,7 @@ public class RedditAccessTokenRequester {
 
         final String redirectUrl = mResources.getString(R.string.redirect_url_scheme) + mResources.getString(R.string.redirect_url_callback);
 
-        String url = Constants.ENDPOINT_URL_REDDIT + "api/v1/authorize?" +
+        String url = Constants.WEB_URL_REDDIT + "api/v1/authorize?" +
                 "client_id=" + mResources.getString(R.string.client_id) +
                 "&duration=" + mResources.getString(R.string.reddit_auth_duration) +
                 "&response_type=code" +

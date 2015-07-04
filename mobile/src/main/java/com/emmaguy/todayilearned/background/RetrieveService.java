@@ -15,6 +15,7 @@ import com.emmaguy.todayilearned.data.model.PostsDeserialiser;
 import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.data.retrofit.AuthenticatedRedditService;
 import com.emmaguy.todayilearned.data.retrofit.RedditService;
+import com.emmaguy.todayilearned.data.retrofit.UnauthenticatedRedditService;
 import com.emmaguy.todayilearned.data.storage.TokenStorage;
 import com.emmaguy.todayilearned.data.storage.UserStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -47,8 +48,9 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private GoogleApiClient mGoogleApiClient;
 
-    @Inject AuthenticatedRedditService mAuthenticatedRedditService;
     @Inject LatestPostsFromRedditRetriever mLatestPostsRetriever;
+    @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
+    @Inject AuthenticatedRedditService mAuthenticatedRedditService;
     @Inject TokenStorage mTokenStorage;
     @Inject UserStorage mUserStorage;
 
@@ -87,10 +89,18 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
+    private RedditService getRedditServiceForLoggedInState(GsonConverter converter) {
+        if (mTokenStorage.isLoggedIn()) {
+            return mAuthenticatedRedditService.getRedditService(converter);
+        }
+
+        return mUnauthenticatedRedditService.getRedditService(converter, null);
+    }
+
     private void retrieveLatestPostsFromReddit(final boolean sendInformationToWearableIfNoPosts) {
         final Gson gson = new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeserialiser()).create();
-        final RedditService redditService = mAuthenticatedRedditService.getRedditService(new GsonConverter(gson));
-        mLatestPostsRetriever.getPosts(redditService)
+        final GsonConverter converter = new GsonConverter(gson);
+        mLatestPostsRetriever.getPosts(getRedditServiceForLoggedInState(converter))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<Post>>() {
@@ -112,45 +122,45 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 });
 
-//        if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
-//            redditService
-//                    .unreadMessages()
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe(new Action1<List<Post>>() {
-//                        @Override
-//                        public void call(List<Post> messages) {
-//                            Logger.log("Found messages: " + messages.size());
-//
-//                            if (messages.size() > 0) {
-//                                sendNewPostsData(messages);
-//
-//                                mAuthenticatedRedditService.getRedditService(new MarkAsReadConverter())
-//                                        .markAllMessagesRead()
-//                                        .subscribeOn(Schedulers.io())
-//                                        .observeOn(AndroidSchedulers.mainThread())
-//                                        .subscribe(new Action1<MarkAllReadResponse>() {
-//                                            @Override
-//                                            public void call(MarkAllReadResponse markAllReadResponse) {
-//                                                if (markAllReadResponse.hasErrors()) {
-//                                                    throw new RuntimeException("Failed to mark all as read: " + markAllReadResponse);
-//                                                }
-//                                            }
-//                                        }, new Action1<Throwable>() {
-//                                            @Override
-//                                            public void call(Throwable throwable) {
-//                                                Logger.sendThrowable(getApplicationContext(), throwable.getMessage(), throwable);
-//                                            }
-//                                        });
-//                            }
-//                        }
-//                    }, new Action1<Throwable>() {
-//                        @Override
-//                        public void call(Throwable throwable) {
-//                            Logger.sendThrowable(getApplicationContext(), "Failed to get latest messages", throwable);
-//                        }
-//                    });
-//        }
+        if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
+            mAuthenticatedRedditService.getRedditService(converter)
+                    .unreadMessages()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action1<List<Post>>() {
+                        @Override
+                        public void call(List<Post> messages) {
+                            Logger.log("Found messages: " + messages.size());
+
+                            if (messages.size() > 0) {
+                                sendNewPostsData(messages);
+
+                                mAuthenticatedRedditService.getRedditService(new MarkAsReadConverter())
+                                        .markAllMessagesRead()
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(new Action1<MarkAllReadResponse>() {
+                                            @Override
+                                            public void call(MarkAllReadResponse markAllReadResponse) {
+                                                if (markAllReadResponse.hasErrors()) {
+                                                    throw new RuntimeException("Failed to mark all as read: " + markAllReadResponse);
+                                                }
+                                            }
+                                        }, new Action1<Throwable>() {
+                                            @Override
+                                            public void call(Throwable throwable) {
+                                                Logger.sendThrowable(getApplicationContext(), throwable.getMessage(), throwable);
+                                            }
+                                        });
+                            }
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Logger.sendThrowable(getApplicationContext(), "Failed to get latest messages", throwable);
+                        }
+                    });
+        }
     }
 
     private void sendNewPostsData(List<Post> posts) {
@@ -167,7 +177,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             dataMap.putString(Constants.KEY_REDDIT_POSTS, latestPosts);
 
             for (Post p : posts) {
-                if (p.hasThumbnail() || p.hasHighResImage()) {
+                if ((p.hasThumbnail() || p.hasHighResImage()) && p.getImage() != null) {
                     Asset asset = Asset.createFromBytes(p.getImage());
 
                     Logger.log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());

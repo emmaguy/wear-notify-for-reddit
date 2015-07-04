@@ -91,6 +91,7 @@ public class LatestPostsFromRedditRetriever {
 
                                 bitmap.recycle();
                             } catch (Exception e) {
+                                post.setHasHighResImage(false);
                                 Logger.sendThrowable(mContext, "Failed to download image", e);
                             }
                         }

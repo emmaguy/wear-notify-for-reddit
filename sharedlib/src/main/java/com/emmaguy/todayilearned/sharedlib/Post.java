@@ -6,6 +6,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.List;
 
 public class Post {
@@ -205,5 +206,27 @@ public class Post {
 
     public static Type getPostsListTypeToken() {
         return new TypeToken<List<Post>>() {}.getType();
+    }
+
+    @Override public String toString() {
+        return "Post{" +
+                "mSubreddit='" + mSubreddit + '\'' +
+                ", mTitle='" + mTitle + '\'' +
+                ", mDescription='" + mDescription + '\'' +
+                ", mFullname='" + mFullname + '\'' +
+                ", mPermalink='" + mPermalink + '\'' +
+                ", mUrl='" + mUrl + '\'' +
+                ", mScoreHidden=" + mScoreHidden +
+                ", mScore=" + mScore +
+                ", mGilded=" + mGilded +
+                ", mAuthor='" + mAuthor + '\'' +
+                ", mId='" + mId + '\'' +
+                ", mThumbnail='" + mThumbnail + '\'' +
+                ", mCreatedUtc=" + mCreatedUtc +
+                ", mReplies=" + mReplies +
+                ", mLevel=" + mLevel +
+                ", mHasHighResImage=" + mHasHighResImage +
+                ", mImage=" + Arrays.toString(mImage) +
+                '}';
     }
 }

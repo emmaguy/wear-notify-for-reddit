@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 public class SubredditPreference extends Preference {
-    private static Set<String> DefaultSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "crazyideas", "worldnews", "britishproblems", "showerthoughts", "pics", "AskReddit"));
+    private static Set<String> DefaultSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "AndroidWear", "crazyideas", "worldnews", "britishproblems", "showerthoughts", "pics", "AskReddit"));
 
     public SubredditPreference(Context context) {
         super(context, null);

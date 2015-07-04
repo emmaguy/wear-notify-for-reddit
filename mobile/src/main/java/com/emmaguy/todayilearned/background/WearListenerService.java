@@ -125,7 +125,7 @@ public class WearListenerService extends WearableListenerService {
 
     private void getComments(String permalink) {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
+                .setEndpoint(Constants.WEB_URL_REDDIT)
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new CommentsResponse.CommentsResponseJsonDeserialiser()).create()))
                 .build();
 
@@ -174,7 +174,7 @@ public class WearListenerService extends WearableListenerService {
 
     private void vote(String fullname, final int voteDirection) {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
+                .setEndpoint(Constants.WEB_URL_REDDIT)
                 .build();
 
         final RedditService redditEndpoint = restAdapter.create(RedditService.class);
@@ -260,7 +260,7 @@ public class WearListenerService extends WearableListenerService {
 
     private RestAdapter getRestAdapter() {
         return new RestAdapter.Builder()
-                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
+                .setEndpoint(Constants.WEB_URL_REDDIT)
                 .setConverter(new GsonConverter(new GsonBuilder().registerTypeAdapter(AddCommentResponse.class, new AddCommentResponse.CommentResponseJsonDeserializer()).create()))
                 .build();
     }

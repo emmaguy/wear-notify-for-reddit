@@ -37,7 +37,7 @@
     <string name="logging_in">Logging in...</string>
     <string name="syncing_subreddits">Syncing subreddits...</string>
     <string name="failed_to_sync_subreddits">Failed to sync subreddits</string>
-    <string name="logged_in_as_x">Logged in as %1$s</string>
+    <string name="logged_in">Logged in</string>
     <string name="successfully_synced_subreddits">Successfully synced subreddits</string>
     <string name="retrieve_messages">Retrieve messages</string>
     <string name="subject">Subject</string>
@@ -45,7 +45,6 @@
     <string name="feedback_info">Having an issue? Got an idea for an awesome new feature? Send us some feedback!</string>
     <string name="submit">Submit</string>
     <string name="feedback_android_version">Feedback v</string>
-    <string name="settings">Settings</string>
     <string name="open_on_phone_also_dismisses">\'Open on phone\' also dismisses</string>
     <string name="open_on_phone_summary">Dismiss the notification when \'Open on phone\' action is performed</string>
     <string name="watch_actions_order">Actions on watch</string>
@@ -56,11 +55,16 @@
     <string name="requires_pocket_app_installed">(requires Pocket app to be installed)</string>
     <string name="hint_dialog_subreddit">subreddit name, e.g. showerthoughts</string>
     <string name="requesting_token">Requesting token</string>
+
+    <string name="error_whilst_trying_to_login">An error occurred whilst trying to log in. Please check your Internet connection and try again later</string>
+
     <string name="redirect_url_scheme">wearnotifyreddit</string>
     <string name="redirect_url_callback">://callback</string>
-    <string name="error_whilst_trying_to_login">An error occurred whilst trying to log in. Please check your Internet connection and try again later</string>
 
     <string name="reddit_auth_scope">mysubreddits,privatemessages,vote,submit,read</string>
     <string name="reddit_auth_duration">permanent</string>
+    <string name="reddit_settings">Reddit settings</string>
+    <string name="wearable_options">Wearable settings</string>
+    <string name="debug_settings">Debug settings</string>
 
 </resources>

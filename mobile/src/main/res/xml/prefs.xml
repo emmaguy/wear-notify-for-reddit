@@ -1,7 +1,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
         android:key="parent"
-        android:title="@string/settings">
+        android:title="@string/reddit_settings">
         <com.emmaguy.todayilearned.ui.SubredditPreference
             android:key="@string/prefs_key_subreddits"
             android:summary="@string/tap_to_modify"
@@ -30,6 +30,9 @@
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
             android:title="@string/sort_order" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/wearable_options">
         <com.emmaguy.todayilearned.ui.DragReorderActionsPreference
             android:key="@string/prefs_key_actions_order"
             android:title="@string/watch_actions_order" />
@@ -59,10 +62,10 @@
             android:title="@string/retrieve_messages" />
     </PreferenceCategory>
 
-    <PreferenceCategory>
+    <PreferenceCategory android:title="@string/debug_settings">
         <PreferenceScreen
             android:key="@string/prefs_force_expire_token"
-            android:title="Expire token" />
+            android:title="Expire access token" />
         <PreferenceScreen
             android:key="@string/prefs_force_refresh_now"
             android:title="Refresh now" />

@@ -19,6 +19,6 @@ public class DeleteCachedImageReceiver extends BroadcastReceiver {
         File localCache = new File(context.getCacheDir(), cachedImageName);
         boolean success = localCache.delete();
 
-        Logger.Log("Deleting " + success);
+        Logger.log("Deleting " + success);
     }
 }

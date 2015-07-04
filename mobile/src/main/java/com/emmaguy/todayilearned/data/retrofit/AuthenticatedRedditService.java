@@ -7,7 +7,6 @@ import com.squareup.okhttp.OkHttpClient;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import retrofit.android.AndroidLog;
 import retrofit.client.OkClient;
 import retrofit.converter.Converter;
 
@@ -25,7 +24,6 @@ public class AuthenticatedRedditService {
         mTokenConverter = tokenConverter;
     }
 
-    // TODO: inject RestAdapters instead?
     public RedditService getRedditService(Converter converter) {
         OkHttpClient okHttpClient = new OkHttpClient();
         final RestAdapter.Builder builder = new RestAdapter.Builder()
@@ -40,12 +38,12 @@ public class AuthenticatedRedditService {
                 .build()
                 .create(RedditService.class);
 
-        okHttpClient.networkInterceptors().add(new TokenRefreshInterceptor(mTokenStorage, getUnauthedRedditService()));
+        okHttpClient.networkInterceptors().add(new TokenRefreshInterceptor(mTokenStorage, getTokenRefreshRedditService()));
         okHttpClient.setRetryOnConnectionFailure(true);
         return redditService;
     }
 
-    private RedditService getUnauthedRedditService() {
+    private RedditService getTokenRefreshRedditService() {
         OkHttpClient okHttpClient = new OkHttpClient();
         final RestAdapter.Builder builder = new RestAdapter.Builder().setEndpoint(Constants.ENDPOINT_URL_SSL_REDDIT);
 
