@@ -33,13 +33,14 @@ public class RedditAccessTokenRequester {
 
         String url = Constants.ENDPOINT_URL_REDDIT + "api/v1/authorize?" +
                 "client_id=" + mResources.getString(R.string.client_id) +
-                "&duration=permanent" +
+                "&duration=" + mResources.getString(R.string.reddit_auth_duration) +
                 "&response_type=code" +
                 "&state=" + randomIdentifier +
                 "&redirect_uri=" + redirectUrl +
-                "&scope=mysubreddits,privatemessages,vote,submit,read";
+                "&scope=" + mResources.getString(R.string.reddit_auth_scope);
 
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(browserIntent);
     }
 }

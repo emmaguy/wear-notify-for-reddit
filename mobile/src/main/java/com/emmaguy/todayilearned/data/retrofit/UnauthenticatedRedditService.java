@@ -4,6 +4,7 @@ import com.emmaguy.todayilearned.sharedlib.Constants;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.android.AndroidLog;
 import retrofit.converter.Converter;
 
 /**
@@ -12,8 +13,7 @@ import retrofit.converter.Converter;
 public class UnauthenticatedRedditService {
     public RedditService getRedditService(Converter converter, RequestInterceptor requestInterceptor) {
         RedditService redditService = new RestAdapter.Builder()
-                .setLogLevel(RestAdapter.LogLevel.FULL)
-                .setEndpoint(Constants.ENDPOINT_URL_REDDIT)
+                .setEndpoint(Constants.ENDPOINT_URL_SSL_REDDIT)
                 .setConverter(converter)
                 .setRequestInterceptor(requestInterceptor)
                 .build()

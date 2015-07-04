@@ -29,13 +29,15 @@ public class TokenConverter implements Converter {
         if (type != Token.class) {
             return mOriginalConverter.fromBody(body, type);
         }
+
+        // We don't check for null refresh token, it's optional - it's retrieved on initial auth but not on a token refresh
         TokenResponse response = (TokenResponse) mOriginalConverter.fromBody(body, TokenResponse.class);
-        if (response == null || response.getAccessToken() == null || response.getRefreshToken() == null) {
-            throw new ConversionException("Empty token");
+        if (response == null || response.getAccessToken() == null) {
+            throw new ConversionException("Empty/missing token response: " + response);
         }
         return new Token.Builder()
-                .accessTokenBytes(response.getAccessToken())
-                .refreshTokenBytes(response.getRefreshToken())
+                .accessToken(response.getAccessToken())
+                .refreshToken(response.getRefreshToken())
                 .expiryTimeMillis(DateTime.now(DateTimeZone.UTC).plusSeconds(response.getExpiresIn()).getMillis())
                 .build();
     }

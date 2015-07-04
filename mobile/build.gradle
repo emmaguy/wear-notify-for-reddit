@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
 
 Properties props = new Properties()
 props.load(new FileInputStream(file(project.property("signing.properties"))))
@@ -38,20 +39,24 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':sharedlib')
 
-    compile 'net.danlew:android.joda:2.7.+'
+    compile 'net.danlew:android.joda:2.7.2'
 
-    compile 'com.squareup.retrofit:retrofit:1.9.+'
+    compile 'com.google.dagger:dagger:2.0.1'
+    apt 'com.google.dagger:dagger-compiler:2.0.1'
+    provided 'org.glassfish:javax.annotation:10.0-b28'
+
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.4.0'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
 
-    compile 'com.netflix.rxjava:rxjava-core:0.20.+'
-    compile 'com.netflix.rxjava:rxjava-android:0.20.+'
-    compile 'com.android.support:recyclerview-v7:21.+'
+    compile 'com.netflix.rxjava:rxjava-core:0.20.7'
+    compile 'com.netflix.rxjava:rxjava-android:0.20.7'
+    compile 'com.android.support:recyclerview-v7:22.2.0'
     compile 'com.afollestad:material-dialogs:0.7.4.2'
     compile('de.psdev.licensesdialog:licensesdialog:1.5.0') {
         exclude module: 'support-v4'
     }
-    compile 'com.commonsware.cwac:wakeful:1.0.+'
+    compile 'com.commonsware.cwac:wakeful:1.0.5'
     compile 'com.google.android.gms:play-services:7.3.0' // for google analytics
     compile 'com.google.android.gms:play-services-wearable:7.3.0'
     wearApp project(':wear')

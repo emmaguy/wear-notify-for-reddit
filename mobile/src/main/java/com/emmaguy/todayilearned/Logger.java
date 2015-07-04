@@ -32,7 +32,7 @@ public class Logger {
 
     private static Tracker mTracker;
 
-    public static void Log(String message) {
+    public static void log(String message) {
         if (Utils.sIsDebug) {
             Log.d("RedditWear", message);
         }
@@ -66,7 +66,7 @@ public class Logger {
 
     public static void sendEvent(Context c, String action, String label) {
         if (Utils.sIsDebug) {
-            Log("Sending event: " + action + " " + label);
+            log("Sending event: " + action + " " + label);
         } else {
             getTracker(c)
                     .send(new HitBuilders.EventBuilder()

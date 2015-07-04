@@ -40,4 +40,14 @@ public class TokenResponse {
     public String getScope() {
         return mScope;
     }
+
+    @Override public String toString() {
+        return "TokenResponse{" +
+                "mAccessToken='" + mAccessToken + '\'' +
+                ", mTokenType='" + mTokenType + '\'' +
+                ", mExpiresIn=" + mExpiresIn +
+                ", mRefreshToken='" + mRefreshToken + '\'' +
+                ", mScope='" + mScope + '\'' +
+                '}';
+    }
 }

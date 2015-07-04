@@ -148,7 +148,7 @@ public class LatestPostsFromRedditRetriever {
                 inSampleSize *= 2;
             }
         }
-        Logger.Log("inSampleSize: " + inSampleSize);
+        Logger.log("inSampleSize: " + inSampleSize);
         return inSampleSize;
     }
 }

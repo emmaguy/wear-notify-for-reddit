@@ -1,7 +1,8 @@
 package com.emmaguy.todayilearned.data.auth;
 
-import com.emmaguy.todayilearned.data.retrofit.RedditService;
+import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.data.model.Token;
+import com.emmaguy.todayilearned.data.retrofit.RedditService;
 import com.emmaguy.todayilearned.data.storage.TokenStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.squareup.okhttp.Interceptor;
@@ -15,27 +16,26 @@ import java.io.IOException;
 import retrofit.RetrofitError;
 
 /**
- * Refresh a token - transparently to rest of the code, blocks a request whilst it does the refresh then continues
- * with the original request once we have a valid token again
- *
+ * Refresh a token - transparently to rest of the code. Will block a request whilst doing the token refresh,
+ * then continue with the original request once we have a valid token again.
+ * <p/>
  * Created by emma on 14/06/15.
  */
 public class TokenRefreshInterceptor implements Interceptor {
     private static final String BEARER_FORMAT = "bearer %s";
 
     private final TokenStorage mTokenStorage;
-    private final RedditService mRedditService;
+    private final RedditService mRefreshRedditService;
 
-    public TokenRefreshInterceptor(TokenStorage tokenStorage, RedditService service) {
+    public TokenRefreshInterceptor(TokenStorage tokenStorage, RedditService refreshRedditService) {
         mTokenStorage = tokenStorage;
-        mRedditService = service;
+        mRefreshRedditService = refreshRedditService;
     }
 
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Response response;
-
         if (request.url().toString().contains("access_token")) {
             // if we're trying to get the access token, carry on
             response = chain.proceed(request);
@@ -55,14 +55,15 @@ public class TokenRefreshInterceptor implements Interceptor {
         return response;
     }
 
-    // this needs to be synchronized, so that multiple renew token requests don't happen at the same time
+    // synchronized so we only renew one request at a time
     private synchronized Response renewTokenAndDoRequest(Chain chain, Request originalRequest) throws IOException {
         if (mTokenStorage.hasTokenExpired()) {
             try {
-                Token token = mRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, mTokenStorage.getRefreshToken());
-                mTokenStorage.saveToken(token);
+                Token token = mRefreshRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, mTokenStorage.getRefreshToken());
+                mTokenStorage.updateToken(token);
             } catch (RetrofitError error) {
-                if (error.getResponse() == null || isServerErrorResponse(error.getResponse())) {
+                Logger.log("Failed to renew token: " + error.getMessage());
+                if (error.getResponse() == null || isServerError(error.getResponse())) {
                     throw new RuntimeException(error.getCause());
                 } else {
                     mTokenStorage.clearToken();
@@ -73,8 +74,8 @@ public class TokenRefreshInterceptor implements Interceptor {
         return addAuthenticationHeaderAndProceed(chain, originalRequest);
     }
 
-    private boolean isServerErrorResponse(retrofit.client.Response response) {
-        return (response.getStatus() == HttpStatus.SC_NOT_FOUND || response.getStatus() == HttpStatus.SC_INTERNAL_SERVER_ERROR);
+    private boolean isServerError(retrofit.client.Response response) {
+        return response.getStatus() == HttpStatus.SC_NOT_FOUND || response.getStatus() == HttpStatus.SC_INTERNAL_SERVER_ERROR;
     }
 
     private Response addAuthenticationHeaderAndProceed(Chain chain, Request request) throws IOException {

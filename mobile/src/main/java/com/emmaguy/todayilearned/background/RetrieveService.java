@@ -2,20 +2,19 @@ package com.emmaguy.todayilearned.background;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.data.LatestPostsFromRedditRetriever;
-import com.emmaguy.todayilearned.data.model.PostsDeserialiser;
 import com.emmaguy.todayilearned.data.converter.MarkAsReadConverter;
+import com.emmaguy.todayilearned.data.model.PostsDeserialiser;
 import com.emmaguy.todayilearned.data.response.MarkAllReadResponse;
 import com.emmaguy.todayilearned.data.retrofit.AuthenticatedRedditService;
-import com.emmaguy.todayilearned.data.storage.SharedPreferencesTokenStorage;
-import com.emmaguy.todayilearned.data.storage.SharedPreferencesUserStorage;
+import com.emmaguy.todayilearned.data.retrofit.RedditService;
 import com.emmaguy.todayilearned.data.storage.TokenStorage;
 import com.emmaguy.todayilearned.data.storage.UserStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -36,6 +35,8 @@ import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import retrofit.converter.GsonConverter;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -46,10 +47,10 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private GoogleApiClient mGoogleApiClient;
 
-    private UserStorage mUserStorage;
-    private TokenStorage mTokenStorage;
-    private LatestPostsFromRedditRetriever mLatestPostsRetriever;
-    private AuthenticatedRedditService mAuthenticatedRedditService;
+    @Inject AuthenticatedRedditService mAuthenticatedRedditService;
+    @Inject LatestPostsFromRedditRetriever mLatestPostsRetriever;
+    @Inject TokenStorage mTokenStorage;
+    @Inject UserStorage mUserStorage;
 
     public RetrieveService() {
         super("RetrieveService");
@@ -59,11 +60,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     public void onCreate() {
         super.onCreate();
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        mUserStorage = new SharedPreferencesUserStorage(prefs, getResources());
-        mTokenStorage = new SharedPreferencesTokenStorage(prefs, getResources());
-        mLatestPostsRetriever = new LatestPostsFromRedditRetriever(getApplicationContext(), mUserStorage);
-        mAuthenticatedRedditService = new AuthenticatedRedditService(mTokenStorage);
+        App.with(this).getAppComponent().inject(this);
     }
 
     @Override
@@ -92,18 +89,19 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private void retrieveLatestPostsFromReddit(final boolean sendInformationToWearableIfNoPosts) {
         final Gson gson = new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeserialiser()).create();
-        mLatestPostsRetriever.getPosts(mAuthenticatedRedditService.getRedditService(new GsonConverter(gson)))
+        final RedditService redditService = mAuthenticatedRedditService.getRedditService(new GsonConverter(gson));
+        mLatestPostsRetriever.getPosts(redditService)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<Post>>() {
                     @Override
                     public void call(List<Post> posts) {
-                        Logger.Log("Found posts: " + posts.size());
+                        Logger.log("Found posts: " + posts.size());
 
                         if (posts.size() > 0) {
                             sendNewPostsData(posts);
                         } else if (sendInformationToWearableIfNoPosts) {
-                            Logger.Log("Sending no posts information");
+                            Logger.log("Sending no posts information");
                             WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
                         }
                     }
@@ -114,55 +112,53 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 });
 
-        if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
-            mAuthenticatedRedditService.getRedditService(null)
-                    .unreadMessages()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<List<Post>>() {
-                        @Override
-                        public void call(List<Post> messages) {
-                            Logger.Log("Found messages: " + messages.size());
-
-                            if (messages.size() > 0) {
-                                sendNewPostsData(messages);
-
-                                mAuthenticatedRedditService.getRedditService(new MarkAsReadConverter())
-                                        .markAllMessagesRead()
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(new Action1<MarkAllReadResponse>() {
-                                            @Override
-                                            public void call(MarkAllReadResponse markAllReadResponse) {
-                                                if (markAllReadResponse.hasErrors()) {
-                                                    throw new RuntimeException("Failed to mark all as read: " + markAllReadResponse);
-                                                }
-                                            }
-                                        }, new Action1<Throwable>() {
-                                            @Override
-                                            public void call(Throwable throwable) {
-                                                Logger.sendThrowable(getApplicationContext(), throwable.getMessage(), throwable);
-                                            }
-                                        });
-                            }
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            Logger.sendThrowable(getApplicationContext(), "Failed to get latest messages", throwable);
-                        }
-                    });
-        }
+//        if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
+//            redditService
+//                    .unreadMessages()
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(new Action1<List<Post>>() {
+//                        @Override
+//                        public void call(List<Post> messages) {
+//                            Logger.log("Found messages: " + messages.size());
+//
+//                            if (messages.size() > 0) {
+//                                sendNewPostsData(messages);
+//
+//                                mAuthenticatedRedditService.getRedditService(new MarkAsReadConverter())
+//                                        .markAllMessagesRead()
+//                                        .subscribeOn(Schedulers.io())
+//                                        .observeOn(AndroidSchedulers.mainThread())
+//                                        .subscribe(new Action1<MarkAllReadResponse>() {
+//                                            @Override
+//                                            public void call(MarkAllReadResponse markAllReadResponse) {
+//                                                if (markAllReadResponse.hasErrors()) {
+//                                                    throw new RuntimeException("Failed to mark all as read: " + markAllReadResponse);
+//                                                }
+//                                            }
+//                                        }, new Action1<Throwable>() {
+//                                            @Override
+//                                            public void call(Throwable throwable) {
+//                                                Logger.sendThrowable(getApplicationContext(), throwable.getMessage(), throwable);
+//                                            }
+//                                        });
+//                            }
+//                        }
+//                    }, new Action1<Throwable>() {
+//                        @Override
+//                        public void call(Throwable throwable) {
+//                            Logger.sendThrowable(getApplicationContext(), "Failed to get latest messages", throwable);
+//                        }
+//                    });
+//        }
     }
 
     private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
-            Logger.Log("sendNewPostsData: " + posts.size());
+            Logger.log("sendNewPostsData: " + posts.size());
 
             Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
             final String latestPosts = gson.toJson(posts);
-
-            Logger.Log("latestPosts: " + latestPosts);
 
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
@@ -174,7 +170,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 if (p.hasThumbnail() || p.hasHighResImage()) {
                     Asset asset = Asset.createFromBytes(p.getImage());
 
-                    Logger.Log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
+                    Logger.log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
                     dataMap.putAsset(p.getId(), asset);
                 }
             }
@@ -188,12 +184,12 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             dataMap.putLong("timestamp", System.currentTimeMillis());
 
             PutDataRequest request = mapRequest.asPutDataRequest();
-            Logger.Log("Sending request: " + request);
+            Logger.log("Sending request: " + request);
             Wearable.DataApi.putDataItem(mGoogleApiClient, request)
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Logger.Log("onResult: " + dataItemResult.getStatus());
+                            Logger.log("onResult: " + dataItemResult.getStatus());
 
                             if (dataItemResult.getStatus().isSuccess()) {
                                 if (mGoogleApiClient.isConnected()) {

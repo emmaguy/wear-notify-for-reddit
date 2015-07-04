@@ -37,7 +37,7 @@ public class AddCommentResponse {
             JsonObject jsonContents = json.getAsJsonObject().get("json").getAsJsonObject();
             JsonArray errors = jsonContents.get("errors").getAsJsonArray();
 
-            Logger.Log("CommentResponse json: " + json);
+            Logger.log("CommentResponse json: " + json);
             AddCommentResponse response = new AddCommentResponse();
 
             if (errors.size() > 0) {

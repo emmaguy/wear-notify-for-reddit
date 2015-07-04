@@ -16,29 +16,31 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.Utils;
 import com.emmaguy.todayilearned.background.AppListener;
 import com.emmaguy.todayilearned.data.auth.BasicAuthorisationRequestInterceptor;
 import com.emmaguy.todayilearned.data.auth.RedditAccessTokenRequester;
-import com.emmaguy.todayilearned.data.retrofit.AuthenticatedRedditService;
-import com.emmaguy.todayilearned.data.model.Token;
 import com.emmaguy.todayilearned.data.auth.RedditRequestTokenUriParser;
-import com.emmaguy.todayilearned.data.retrofit.UnauthenticatedRedditService;
 import com.emmaguy.todayilearned.data.converter.TokenConverter;
-import com.emmaguy.todayilearned.data.encoder.Base64Encoder;
+import com.emmaguy.todayilearned.data.model.Token;
 import com.emmaguy.todayilearned.data.response.SubscriptionResponse;
-import com.emmaguy.todayilearned.data.storage.SharedPreferencesUniqueIdentifierStorage;
-import com.emmaguy.todayilearned.data.storage.SharedPreferencesTokenStorage;
-import com.emmaguy.todayilearned.data.storage.UniqueIdentifierStorage;
+import com.emmaguy.todayilearned.data.retrofit.AuthenticatedRedditService;
+import com.emmaguy.todayilearned.data.retrofit.UnauthenticatedRedditService;
 import com.emmaguy.todayilearned.data.storage.TokenStorage;
+import com.emmaguy.todayilearned.data.storage.UserStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import de.psdev.licensesdialog.LicensesDialog;
+import retrofit.RequestInterceptor;
+import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -71,35 +73,29 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
-        private final TokenConverter mConverter = new TokenConverter(new GsonConverter(new GsonBuilder().create()));
-
-        private Base64Encoder mEncoder;
-        private TokenStorage mTokenStorage;
-        private UniqueIdentifierStorage mUniqueIdentifierStorage;
-        private RedditRequestTokenUriParser mRequestTokenUriParser;
-        private AuthenticatedRedditService mAuthenticatedRedditService;
-        private UnauthenticatedRedditService mUnauthenticatedRedditService;
-        private RedditAccessTokenRequester mRedditAccessTokenRequester;
-        private BasicAuthorisationRequestInterceptor mBasicAuthorisationRequestInterceptor;
+        @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
+        @Inject AuthenticatedRedditService mAuthenticatedRedditService;
+        @Inject RedditAccessTokenRequester mRedditAccessTokenRequester;
+        @Inject RedditRequestTokenUriParser mRequestTokenUriParser;
+        @Inject RequestInterceptor mRequestInterceptor;
+        @Inject Converter mTokenConverter;
+        @Inject TokenStorage mTokenStorage;
+        @Inject UserStorage mUserStorage;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
+            App.with(getActivity()).getAppComponent().inject(this);
+
             addPreferencesFromResource(R.xml.prefs);
 
             WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
 
-            mEncoder = new Base64Encoder();
-            mBasicAuthorisationRequestInterceptor = new BasicAuthorisationRequestInterceptor(mEncoder);
-            mUniqueIdentifierStorage = new SharedPreferencesUniqueIdentifierStorage(getPreferenceManager().getSharedPreferences(), getResources());
-            mRedditAccessTokenRequester = new RedditAccessTokenRequester(getActivity(), getResources(), mUniqueIdentifierStorage);
-            mTokenStorage = new SharedPreferencesTokenStorage(getPreferenceManager().getSharedPreferences(), getResources());
-            mAuthenticatedRedditService = new AuthenticatedRedditService(mTokenStorage);
-            mUnauthenticatedRedditService = new UnauthenticatedRedditService();
-            mRequestTokenUriParser = new RedditRequestTokenUriParser(getResources(), mTokenStorage, mUniqueIdentifierStorage);
-
             initSummary();
+
+            initialiseClickListener(getString(R.string.prefs_force_expire_token));
+            initialiseClickListener(getString(R.string.prefs_force_refresh_now));
 
             initialiseClickListener(getString(R.string.prefs_key_open_source));
             initialiseClickListener(getString(R.string.prefs_key_account_info));
@@ -135,12 +131,11 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void getAccessToken(String code) {
-            final String credentials = getString(R.string.client_id) + ":";
             final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.logging_in));
             final String redirectUri = getString(R.string.redirect_url_scheme) + getString(R.string.redirect_url_callback);
 
             mUnauthenticatedRedditService
-                    .getRedditService(mConverter, mBasicAuthorisationRequestInterceptor.build(credentials))
+                    .getRedditService(mTokenConverter, mRequestInterceptor)
                     .loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE, redirectUri, code)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -187,6 +182,11 @@ public class SettingsActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getActivity(), R.string.you_need_to_sign_in_to_sync_subreddits, Toast.LENGTH_SHORT).show();
                 }
+            } else if (preference.getKey().equals(getString(R.string.prefs_force_expire_token))) {
+                mTokenStorage.forceExpireToken();
+            } else if (preference.getKey().equals(getString(R.string.prefs_force_refresh_now))) {
+                mUserStorage.setRetrievedPostCreatedUtc(0);
+                WakefulIntentService.scheduleAlarms(new AppListener(), getActivity().getApplicationContext());
             }
             return false;
         }

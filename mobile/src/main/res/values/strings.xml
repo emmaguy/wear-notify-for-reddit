@@ -60,4 +60,7 @@
     <string name="redirect_url_callback">://callback</string>
     <string name="error_whilst_trying_to_login">An error occurred whilst trying to log in. Please check your Internet connection and try again later</string>
 
+    <string name="reddit_auth_scope">mysubreddits,privatemessages,vote,submit,read</string>
+    <string name="reddit_auth_duration">permanent</string>
+
 </resources>

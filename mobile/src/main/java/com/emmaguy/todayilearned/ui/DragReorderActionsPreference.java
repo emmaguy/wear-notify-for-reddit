@@ -48,10 +48,11 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
     }
 
     private static LinkedHashMap<Integer, Action> getAllActions(SharedPreferences prefs, Context context) {
-        // TODO: god not this
+        // TODO: pass in isLoggedIn rather than reading it in here
         boolean loggedIn = new SharedPreferencesTokenStorage(prefs, context.getResources()).isLoggedIn();
 
         LinkedHashMap<Integer, Action> actions = new LinkedHashMap<>();
+        addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_IMAGE, context.getString(R.string.action_view_image)));
         addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_COMMENTS, context.getString(R.string.action_view_comments)));
 
         addToAllActions(actions, new Action(Constants.ACTION_ORDER_REPLY, context.getString(R.string.action_reply), loggedIn, context.getString(R.string.requires_login)));
@@ -61,7 +62,6 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         addToAllActions(actions, new Action(Constants.ACTION_ORDER_SAVE_TO_POCKET, context.getString(R.string.action_save_to_pocket), PocketUtil.isPocketInstalled(context), context.getString(R.string.requires_pocket_app_installed)));
 
         addToAllActions(actions, new Action(Constants.ACTION_ORDER_OPEN_ON_PHONE, context.getString(R.string.action_open_on_phone)));
-        addToAllActions(actions, new Action(Constants.ACTION_ORDER_VIEW_IMAGE, context.getString(R.string.action_view_image)));
 
         return actions;
     }

@@ -32,7 +32,7 @@ public class SharedPreferencesUserStorage implements UserStorage {
 
     public void setRetrievedPostCreatedUtc(long createdAtUtc) {
         if (createdAtUtc > getCreatedUtcOfRetrievedPosts()) {
-            Logger.Log("Updating mLatestCreatedUtc to: " + createdAtUtc);
+            Logger.log("Updating mLatestCreatedUtc to: " + createdAtUtc);
 
             mSharedPreferences
                     .edit()

@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.text.TextUtils;
 
+import com.emmaguy.todayilearned.Logger;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.data.model.Token;
 
@@ -35,11 +36,19 @@ public class SharedPreferencesTokenStorage implements TokenStorage {
     @Override
     public boolean hasTokenExpired() {
         long expiryTime = mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_token_expiry_millis), -1);
-        return expiryTime < DateTime.now(DateTimeZone.UTC).getMillis();
+        final boolean hasExpired = expiryTime < DateTime.now(DateTimeZone.UTC).getMillis();
+        if(hasExpired) {
+            Logger.log("token has expired");
+        } else {
+            Logger.log("token not expired");
+        }
+
+        return hasExpired;
     }
 
     @Override
     public void saveToken(Token token) {
+        Logger.log("saveToken");
         mSharedPreferences
                 .edit()
                 .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis), token.getExpiryTimeMillis())
@@ -49,7 +58,18 @@ public class SharedPreferencesTokenStorage implements TokenStorage {
     }
 
     @Override
+    public void updateToken(Token token) {
+        // Update the expiry and access token, but the refresh token remains the same
+        mSharedPreferences
+                .edit()
+                .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis), token.getExpiryTimeMillis())
+                .putString(mResources.getString(R.string.prefs_key_token_access_token), token.getAccessToken())
+                .apply();
+    }
+
+    @Override
     public void clearToken() {
+        Logger.log("clearToken");
         mSharedPreferences
                 .edit()
                 .remove(mResources.getString(R.string.prefs_key_token_expiry_millis))
@@ -60,6 +80,7 @@ public class SharedPreferencesTokenStorage implements TokenStorage {
 
     @Override
     public void forceExpireToken() {
+        Logger.log("forceExpireToken");
         final long timeInThePast = DateTime.now(DateTimeZone.UTC).getMillis() - 1;
         mSharedPreferences
                 .edit()

@@ -75,7 +75,7 @@ public class WearListenerService extends WearableListenerService {
                 DataMap dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
 
                 String path = event.getDataItem().getUri().getPath();
-                Logger.Log("Path: " + path);
+                Logger.log("Path: " + path);
 
                 if (Constants.PATH_REPLY.equals(path)) {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
@@ -167,7 +167,7 @@ public class WearListenerService extends WearableListenerService {
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                     @Override
                     public void onResult(DataApi.DataItemResult dataItemResult) {
-                        Logger.Log("Sent comments onResult: " + dataItemResult.getStatus());
+                        Logger.log("Sent comments onResult: " + dataItemResult.getStatus());
                     }
                 });
     }
@@ -269,7 +269,7 @@ public class WearListenerService extends WearableListenerService {
         Wearable.MessageApi.sendMessage(client, "", result, null).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
             @Override
             public void onResult(MessageApi.SendMessageResult sendMessageResult) {
-                Logger.Log("sendReplyResult: " + result + " status " + sendMessageResult.getStatus());
+                Logger.log("sendReplyResult: " + result + " status " + sendMessageResult.getStatus());
             }
         });
     }

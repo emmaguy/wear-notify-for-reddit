@@ -20,6 +20,9 @@
     <string name="prefs_key_username">username</string>
     <string name="prefs_key_state">state</string>
 
+    <string name="prefs_force_expire_token">expire_token</string>
+    <string name="prefs_force_refresh_now">refresh_now</string>
+
     <string name="prefs_key_token_expiry_millis">expires_in</string>
     <string name="prefs_key_token_refresh_token">refresh_token</string>
     <string name="prefs_key_token_access_token">access_token</string>

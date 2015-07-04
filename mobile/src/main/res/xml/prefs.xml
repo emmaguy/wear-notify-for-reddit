@@ -59,6 +59,15 @@
             android:title="@string/retrieve_messages" />
     </PreferenceCategory>
 
+    <PreferenceCategory>
+        <PreferenceScreen
+            android:key="@string/prefs_force_expire_token"
+            android:title="Expire token" />
+        <PreferenceScreen
+            android:key="@string/prefs_force_refresh_now"
+            android:title="Refresh now" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/special_thanks">
         <PreferenceScreen
             android:key="@string/prefs_key_open_source"

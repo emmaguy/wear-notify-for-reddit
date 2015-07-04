@@ -26,6 +26,15 @@ public class Token {
         return mRefreshToken;
     }
 
+
+    @Override public String toString() {
+        return "Token{" +
+                "mExpiryTimeMillis=" + mExpiryTimeMillis +
+                ", mAccessToken='" + mAccessToken + '\'' +
+                ", mRefreshToken='" + mRefreshToken + '\'' +
+                '}';
+    }
+
     public static final class Builder {
         private long mExpiryTimeMillis;
         private String mAccessTokenBytes;
@@ -36,12 +45,12 @@ public class Token {
             return this;
         }
 
-        public Builder accessTokenBytes(String accessToken) {
+        public Builder accessToken(String accessToken) {
             mAccessTokenBytes = accessToken;
             return this;
         }
 
-        public Builder refreshTokenBytes(String refreshToken) {
+        public Builder refreshToken(String refreshToken) {
             mRefreshTokenBytes = refreshToken;
             return this;
         }
