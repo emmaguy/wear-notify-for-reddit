@@ -385,7 +385,7 @@ public class NotificationListenerService extends WearableListenerService {
         Intent openOnPhone = new Intent(this, ActionReceiver.class);
         openOnPhone.putExtra(Constants.KEY_PATH, Constants.PATH_OPEN_ON_PHONE);
         openOnPhone.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.open_on_phone));
-        openOnPhone.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.OPEN_ON_PHONE_ANIMATION);
+        openOnPhone.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
         openOnPhone.putExtra(Constants.KEY_POST_PERMALINK, permalink);
         openOnPhone.putExtra(Constants.KEY_DISMISS_AFTER_ACTION, openOnPhoneDismisses);
         openOnPhone.putExtra(Constants.KEY_NOTIFICATION_ID, notificationId);
