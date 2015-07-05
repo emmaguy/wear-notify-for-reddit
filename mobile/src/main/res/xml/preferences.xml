@@ -1,6 +1,6 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:key="@string/prefs_key_parent">
     <PreferenceCategory
-        android:key="parent"
         android:title="@string/reddit_settings">
         <com.emmaguy.todayilearned.settings.SubredditPreference
             android:key="@string/prefs_key_subreddits"
@@ -35,7 +35,7 @@
     <PreferenceCategory android:title="@string/wearable_options">
         <com.emmaguy.todayilearned.settings.DragReorderActionsPreference
             android:key="@string/prefs_key_actions_order"
-            android:title="@string/watch_actions_order" />
+            android:title="@string/action_arrangement" />
         <CheckBoxPreference
             android:key="@string/prefs_key_full_image"
             android:summary="@string/download_fullsized_image"
@@ -62,7 +62,9 @@
             android:title="@string/retrieve_messages" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/debug_settings" android:key="@string/prefs_key_debug">
+    <PreferenceCategory
+        android:key="@string/prefs_key_debug"
+        android:title="@string/debug_settings">
         <PreferenceScreen
             android:key="@string/prefs_force_expire_token"
             android:title="Expire access token" />

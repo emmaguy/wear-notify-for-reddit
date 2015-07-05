@@ -1,0 +1,50 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="?android:attr/activatedBackgroundIndicator"
+              android:clipToPadding="false"
+              android:gravity="center_vertical"
+              android:minHeight="?attr/listPreferredItemHeightSmall"
+              android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+              android:paddingStart="?android:attr/listPreferredItemPaddingStart">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingBottom="16dp"
+        android:paddingTop="16dp">
+
+        <TextView
+            android:id="@+android:id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:textAppearance="?attr/textAppearanceListItem"
+            tools:text="title" />
+
+        <TextView
+            android:id="@+android:id/summary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@android:id/title"
+            android:layout_alignStart="@android:id/title"
+            android:maxLines="10"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:textColor="?android:attr/textColorSecondary"
+            tools:text="summary" />
+
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/icon_imageview"
+        android:layout_marginRight="-3dp"
+        android:layout_width="@dimen/action_background_size"
+        android:layout_height="@dimen/action_background_size"
+        android:background="@drawable/action_circle"
+        android:padding="@dimen/action_drawable_padding"
+        android:src="@drawable/view_image" />
+
+</LinearLayout>

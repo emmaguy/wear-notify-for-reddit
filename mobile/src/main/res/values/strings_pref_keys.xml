@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="prefs_key_parent">parent</string>
+    <string name="prefs_key_debug">debug</string>
+
     <string name="prefs_key_subreddits">subreddits</string>
     <string name="prefs_key_selected_subreddits">selectedsubreddits</string>
 
@@ -21,7 +24,6 @@
     <string name="prefs_key_username">username</string>
     <string name="prefs_key_state">state</string>
 
-    <string name="prefs_key_debug">debug</string>
     <string name="prefs_force_expire_token">expire_token</string>
     <string name="prefs_force_refresh_now">refresh_now</string>
 

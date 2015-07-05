@@ -21,13 +21,13 @@ import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.inject.Inject;
 
 public class DragReorderActionsPreference extends Preference implements CheckChangedListener {
-    private final HashMap<Integer, Action> mSelectedActions = new HashMap<>();
+    private final LinkedHashMap<Integer, Action> mSelectedActions = new LinkedHashMap<>();
     private final ArrayList<Action> mActions = new ArrayList<>();
     private final Context mContext;
 
@@ -100,12 +100,31 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         setSummary(getSummary());
     }
 
+    @Override protected View onCreateView(ViewGroup parent) {
+        super.onCreateView(parent);
+
+        return LayoutInflater.from(mContext).inflate(R.layout.wearable_actions_summary, parent, false);
+    }
+
+    @Override protected void onBindView(View view) {
+        super.onBindView(view);
+
+        final ImageView imageView = (ImageView) view.findViewById(R.id.icon_imageview);
+        if (!mSelectedActions.isEmpty()) {
+            Action firstSelectedAction = mSelectedActions.entrySet().iterator().next().getValue();
+            imageView.setImageResource(firstSelectedAction.getResId());
+            imageView.setVisibility(View.VISIBLE);
+        } else {
+            imageView.setVisibility(View.GONE);
+        }
+    }
+
     private Action getActionFromAllActions(Integer id) {
         return mWearableActions.getAllActions().get(id);
     }
 
     private void showDragReorderDialog() {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_action_preference_layout, null);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_reorder_actions, null);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.actions_reorder_recyclerview);
         ReorderRecyclerView.ReorderAdapter adapter = new ReorderRecyclerView.ReorderAdapter() {
@@ -160,14 +179,14 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        new AlertDialog.Builder(mContext).setView(view).create().show();
+        new AlertDialog.Builder(mContext).setView(view).setTitle(R.string.action_arrangement).create().show();
     }
 
     private static final class InsetDecoration extends RecyclerView.ItemDecoration {
         private final int mInsets;
 
         public InsetDecoration(Context context) {
-            mInsets = context.getResources().getDimensionPixelSize(R.dimen.card_insets);
+            mInsets = context.getResources().getDimensionPixelSize(R.dimen.reorder_action_inset);
         }
 
         @Override

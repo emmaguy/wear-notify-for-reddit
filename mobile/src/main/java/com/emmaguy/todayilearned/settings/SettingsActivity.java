@@ -41,6 +41,8 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
+import static com.emmaguy.todayilearned.sharedlib.Constants.ACTION_ORDER_OPEN_ON_PHONE;
+
 public class SettingsActivity extends AppCompatActivity {
 
     @Override
@@ -94,20 +96,27 @@ public class SettingsActivity extends AppCompatActivity {
                 initialiseClickListener(getString(R.string.prefs_force_expire_token));
                 initialiseClickListener(getString(R.string.prefs_force_refresh_now));
             } else {
-                final PreferenceCategory screen = (PreferenceCategory) findPreference(getString(R.string.prefs_key_debug));
-                screen.removePreference(findPreference(getString(R.string.prefs_force_expire_token)));
-                screen.removePreference(findPreference(getString(R.string.prefs_force_refresh_now)));
+                final PreferenceScreen screen = (PreferenceScreen) findPreference(getString(R.string.prefs_key_parent));
+                screen.removePreference(findPreference(getString(R.string.prefs_key_debug)));
             }
 
             initialiseClickListener(getString(R.string.prefs_key_open_source));
             initialiseClickListener(getString(R.string.prefs_key_account_info));
             initialiseClickListener(getString(R.string.prefs_key_sync_subreddits));
+
+            toggleRedditSettings();
+            toggleOpenOnPhoneAction();
+        }
+
+        private void toggleRedditSettings() {
+            findPreference(getString(R.string.prefs_key_sync_subreddits)).setEnabled(mTokenStorage.isLoggedIn());
+            findPreference(getString(R.string.prefs_key_messages_enabled)).setEnabled(mTokenStorage.isLoggedIn());
         }
 
         private void initialiseClickListener(String key) {
-            Preference resetPref = findPreference(key);
-            if (resetPref != null) {
-                resetPref.setOnPreferenceClickListener(this);
+            Preference preference = findPreference(key);
+            if (preference != null) {
+                preference.setOnPreferenceClickListener(this);
             }
         }
 
@@ -144,9 +153,11 @@ public class SettingsActivity extends AppCompatActivity {
                     .subscribe(new Observer<Token>() {
                         @Override
                         public void onCompleted() {
+                            toggleRedditSettings();
                             spinner.dismiss();
                             initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
                             Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
+                            Toast.makeText(getActivity(), R.string.successfully_logged_in, Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
@@ -178,7 +189,14 @@ public class SettingsActivity extends AppCompatActivity {
                 new LicensesDialog(getActivity(), R.raw.open_source_notices, false, true).show();
                 return true;
             } else if (preferenceKey.equals(getString(R.string.prefs_key_account_info))) {
-                mRedditAccessTokenRequester.request();
+                if (mTokenStorage.isLoggedIn()) {
+                    mTokenStorage.clearToken();
+                    initSummary();
+                    toggleRedditSettings();
+                    Toast.makeText(getActivity(), R.string.logged_out, Toast.LENGTH_SHORT).show();
+                } else {
+                    mRedditAccessTokenRequester.request();
+                }
             } else if (preferenceKey.equals(getString(R.string.prefs_key_sync_subreddits))) {
                 if (mTokenStorage.isLoggedIn()) {
                     syncSubreddits();
@@ -247,9 +265,22 @@ public class SettingsActivity extends AppCompatActivity {
                 WakefulIntentService.scheduleAlarms(new BackgroundAlarmListener(), getActivity().getApplicationContext());
             } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();
+            } else if (key.equals(getString(R.string.prefs_key_actions_order)) || key.equals(getString(R.string.prefs_key_actions_order_ordered))) {
+                toggleOpenOnPhoneAction();
             }
 
             sendEvents(sharedPreferences, key);
+        }
+
+        private void toggleOpenOnPhoneAction() {
+            boolean enableOpenOnPhoneOption = false;
+            for (Integer i : mWearableActionStorage.getSelectedActionIds()) {
+                if (i == ACTION_ORDER_OPEN_ON_PHONE) {
+                    enableOpenOnPhoneOption = true;
+                    break;
+                }
+            }
+            findPreference(getString(R.string.prefs_key_open_on_phone_dismisses)).setEnabled(enableOpenOnPhoneOption);
         }
 
         private void sendEvents(SharedPreferences sharedPreferences, String key) {
@@ -303,6 +334,8 @@ public class SettingsActivity extends AppCompatActivity {
                 if (screen.getKey().equals(getString(R.string.prefs_key_account_info))) {
                     if (mTokenStorage.isLoggedIn()) {
                         screen.setSummary(getString(R.string.logged_in));
+                    } else {
+                        screen.setSummary(R.string.tap_to_sign_in);
                     }
                 }
             } else if (pref instanceof DragReorderActionsPreference) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="action_order_description">Choose the actions which appear on your android wearable. \n\nRe-order by long pressing on the item you wish to move, and dragging in to your preferred position.</string>
+    <string name="action_order_description">Long press on an action you wish to move, then drag to a new position.</string>
     <string name="action_open_on_phone">Open on phone</string>
     <string name="action_view_comments">View comments</string>
     <string name="action_save_to_pocket">Save to Pocket</string>
@@ -38,6 +38,8 @@
     <string name="syncing_subreddits">Syncing subreddits...</string>
     <string name="failed_to_sync_subreddits">Failed to sync subreddits</string>
     <string name="logged_in">Logged in</string>
+    <string name="logged_out">Logged out</string>
+    <string name="successfully_logged_in">Successfully logged in</string>
     <string name="successfully_synced_subreddits">Successfully synced subreddits</string>
     <string name="retrieve_messages">Retrieve messages</string>
     <string name="subject">Subject</string>
@@ -47,7 +49,7 @@
     <string name="feedback_android_version">Feedback v</string>
     <string name="open_on_phone_also_dismisses">\'Open on phone\' also dismisses</string>
     <string name="open_on_phone_summary">Dismiss the notification when \'Open on phone\' action is performed</string>
-    <string name="watch_actions_order">Actions on watch</string>
+    <string name="action_arrangement">Action arrangement</string>
     <string name="high_resolution_images">High resolution images</string>
     <string name="download_fullsized_image">Downloads high res images (if available)</string>
     <string name="none">None</string>
@@ -64,7 +66,7 @@
     <string name="reddit_auth_scope">mysubreddits,privatemessages,vote,submit,read</string>
     <string name="reddit_auth_duration">permanent</string>
     <string name="reddit_settings">Reddit settings</string>
-    <string name="wearable_options">Wearable settings</string>
+    <string name="wearable_options">Wearable options</string>
     <string name="debug_settings">Debug settings</string>
 
 </resources>
