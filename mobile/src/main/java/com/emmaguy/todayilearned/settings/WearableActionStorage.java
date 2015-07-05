@@ -57,7 +57,7 @@ public class WearableActionStorage implements ActionStorage {
             // Find the missing action(s) and add them
             for (Integer action : allActions.keySet()) {
                 if (!actions.contains(action)) {
-                    actions.add(allActions.get(action).mId);
+                    actions.add(allActions.get(action).getId());
                 }
             }
         }
@@ -95,9 +95,9 @@ public class WearableActionStorage implements ActionStorage {
 
         for (Action action : actions.values()) {
             if (!excludeDisabled) {
-                arrayList.add(action.mId);
-            } else if (action.mEnabled) {
-                arrayList.add(action.mId);
+                arrayList.add(action.getId());
+            } else if (action.isEnabled()) {
+                arrayList.add(action.getId());
             }
         }
 
@@ -108,8 +108,8 @@ public class WearableActionStorage implements ActionStorage {
         ArrayList<Integer> list = new ArrayList<>();
 
         for (Action a : actions) {
-            if (selectedActions.containsKey(a.mId) && a.mEnabled) {
-                list.add(a.mId);
+            if (selectedActions.containsKey(a.getId()) && a.isEnabled()) {
+                list.add(a.getId());
             }
         }
 
@@ -123,7 +123,7 @@ public class WearableActionStorage implements ActionStorage {
     private ArrayList<Integer> getOrderedActionIds(ArrayList<Action> actions) {
         ArrayList<Integer> orderedActionIds = new ArrayList<>();
         for (Action a : actions) {
-            orderedActionIds.add(a.mId);
+            orderedActionIds.add(a.getId());
         }
         return orderedActionIds;
     }

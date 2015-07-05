@@ -1,26 +1,41 @@
 package com.emmaguy.todayilearned.settings;
 
-class Action {
-    public final int mId;
-    public final boolean mEnabled;
-    public final String mName;
-    public final String mDisabledReason;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-    Action(int id, String name) {
-        mId = id;
-        mName = name;
-        mEnabled = true;
-        mDisabledReason = null;
+class Action {
+    private final int mId;
+    private final int mResId;
+    private final boolean mIsEnabled;
+    private final @NonNull String mName;
+    private final @Nullable String mDisabledReason;
+
+    Action(int id, String name, @DrawableRes int resId) {
+        this(id, name, resId, true, null);
     }
 
-    Action(int id, String name, boolean isEnabled, String disabledReason) {
+    Action(int id, String name, @DrawableRes int resId, boolean isEnabled, String disabledReason) {
         mId = id;
         mName = name;
-        mEnabled = isEnabled;
+        mResId = resId;
+        mIsEnabled = isEnabled;
         mDisabledReason = disabledReason;
     }
 
     public String getName() {
-        return mEnabled ? mName : mName + " " + mDisabledReason;
+        return mIsEnabled ? mName : mName + " " + mDisabledReason;
+    }
+
+    public int getId() {
+        return mId;
+    }
+
+    public int getResId() {
+        return mResId;
+    }
+
+    public boolean isEnabled() {
+        return mIsEnabled;
     }
 }

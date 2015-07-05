@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.emmaguy.todayilearned.App;
@@ -58,8 +59,8 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         ArrayList<String> actions = new ArrayList<>();
 
         for (Action action : mActions) {
-            if (mSelectedActions.containsKey(action.mId)) {
-                actions.add(getActionFromAllActions(action.mId).mName);
+            if (mSelectedActions.containsKey(action.getId())) {
+                actions.add(getActionFromAllActions(action.getId()).getName());
             }
         }
 
@@ -119,11 +120,16 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
                 Action action = mActions.get(position);
                 ActionViewHolder holder = (ActionViewHolder) h;
 
-                holder.mCheckBox.setEnabled(action.mEnabled);
+                final boolean isEnabled = mSelectedActions.containsKey(action.getId());
 
-                holder.mCheckBox.setChecked(mSelectedActions.containsKey(action.mId));
-                holder.mCheckBox.setTag(action.mId);
-                holder.mTextView.setText(action.getName());
+                holder.mCheckBox.setEnabled(action.isEnabled());
+                holder.mCheckBox.setChecked(isEnabled);
+                holder.mCheckBox.setTag(action.getId());
+
+                holder.mImageView.setImageResource(action.getResId());
+                holder.mActionTextView.setText(action.getName());
+                holder.mActionTextView.setEnabled(isEnabled);
+                holder.mNumberTextView.setText((position + 1) + ".");
             }
 
             @Override
@@ -133,7 +139,7 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
 
             @Override
             public long getItemId(int position) {
-                return mActions.get(position).mId;
+                return mActions.get(position).getId();
             }
 
             @Override
@@ -143,6 +149,7 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
                 mActions.set(toIndex, temp);
 
                 mWearableActionStorage.save(mActions, mSelectedActions);
+                notifyDataSetChanged();
             }
         };
         adapter.setHasStableIds(true);
@@ -170,16 +177,21 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
     }
 
     private final class ActionViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
-        public TextView mTextView;
-        public CheckBox mCheckBox;
         private CheckChangedListener mListener;
+
+        private TextView mNumberTextView;
+        private TextView mActionTextView;
+        private CheckBox mCheckBox;
+        private ImageView mImageView;
 
         public ActionViewHolder(View itemView, CheckChangedListener listener) {
             super(itemView);
 
             mListener = listener;
 
-            mTextView = (TextView) itemView.findViewById(R.id.action_textview);
+            mImageView = (ImageView) itemView.findViewById(R.id.icon_imageview);
+            mNumberTextView = (TextView) itemView.findViewById(R.id.number_textview);
+            mActionTextView = (TextView) itemView.findViewById(R.id.action_textview);
             mCheckBox = (CheckBox) itemView.findViewById(R.id.action_checkbox);
             mCheckBox.setOnCheckedChangeListener(this);
         }

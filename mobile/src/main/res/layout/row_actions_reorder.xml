@@ -1,27 +1,36 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/light_outline"
-    android:minHeight="48dp">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/light_outline"
+              android:gravity="center_vertical"
+              android:minHeight="64dp"
+              android:orientation="horizontal">
 
-    <CheckBox
-        android:id="@+id/action_checkbox"
+    <TextView
+        android:id="@+id/number_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
+        android:gravity="center_vertical"
         android:paddingLeft="15dp"
-        android:paddingRight="15dp" />
+        android:paddingRight="15dp"
+        android:textAppearance="?android:textAppearanceListItem"
+        android:textColor="@android:color/black"
+        tools:text="1." />
+
+    <ImageView
+        android:id="@+id/icon_imageview"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/action_circle"
+        android:padding="6dp"
+        tools:src="@drawable/downvote" />
 
     <TextView
         android:id="@+id/action_textview"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:layout_toLeftOf="@id/action_checkbox"
-        android:drawableLeft="@drawable/ic_drag_reorder"
+        android:layout_weight="1"
         android:gravity="center_vertical"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
@@ -29,4 +38,11 @@
         android:textColor="@android:color/black"
         tools:text="blah blah" />
 
-</RelativeLayout>
+    <CheckBox
+        android:id="@+id/action_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp" />
+
+</LinearLayout>

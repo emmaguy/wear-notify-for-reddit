@@ -84,7 +84,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             App.with(getActivity()).getAppComponent().inject(this);
 
-            addPreferencesFromResource(R.xml.prefs);
+            addPreferencesFromResource(R.xml.preferences);
 
             WakefulIntentService.scheduleAlarms(new BackgroundAlarmListener(), getActivity().getApplicationContext());
 
@@ -94,8 +94,9 @@ public class SettingsActivity extends AppCompatActivity {
                 initialiseClickListener(getString(R.string.prefs_force_expire_token));
                 initialiseClickListener(getString(R.string.prefs_force_refresh_now));
             } else {
-                getPreferenceScreen().removePreference(findPreference(getString(R.string.prefs_force_expire_token)));
-                getPreferenceScreen().removePreference(findPreference(getString(R.string.prefs_force_refresh_now)));
+                final PreferenceCategory screen = (PreferenceCategory) findPreference(getString(R.string.prefs_key_debug));
+                screen.removePreference(findPreference(getString(R.string.prefs_force_expire_token)));
+                screen.removePreference(findPreference(getString(R.string.prefs_force_refresh_now)));
             }
 
             initialiseClickListener(getString(R.string.prefs_key_open_source));

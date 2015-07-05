@@ -296,34 +296,34 @@ public class NotificationListenerService extends WearableListenerService {
 
             switch (order) {
                 case Constants.ACTION_ORDER_VIEW_COMMENTS:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_message_white_48dp,
+                    builder.addAction(new Notification.Action.Builder(R.drawable.view_comments,
                             getString(R.string.view_comments),
                             getViewCommentsPendingIntent(post, notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_REPLY:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_reply_white_48dp, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
+                    builder.addAction(new Notification.Action.Builder(R.drawable.reply, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
                             .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
                             .build());
                     break;
                 case Constants.ACTION_ORDER_UPVOTE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_upvote_white_48dp, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
+                    builder.addAction(new Notification.Action.Builder(R.drawable.upvote, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_DOWNVOTE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_downvote_white_48dp, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
+                    builder.addAction(new Notification.Action.Builder(R.drawable.downvote, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_SAVE_TO_POCKET:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_pocket,
+                    builder.addAction(new Notification.Action.Builder(R.drawable.pocket,
                             getString(R.string.save_to_pocket),
                             getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_OPEN_ON_PHONE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.ic_full_openonphone,
+                    builder.addAction(new Notification.Action.Builder(R.drawable.open_on_phone,
                             getString(R.string.open_on_phone),
                             getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_VIEW_IMAGE:
                     if (hasCachedImage) {
-                        builder.addAction(new Notification.Action.Builder(R.drawable.ic_image_white_48dp,
+                        builder.addAction(new Notification.Action.Builder(R.drawable.view_image,
                                 getString(R.string.view_image),
                                 getViewImagePendingIntent(notificationId)).build());
                     }

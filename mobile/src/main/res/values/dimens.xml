@@ -3,7 +3,7 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="card_insets">5dp</dimen>
+    <dimen name="card_insets">2dp</dimen>
 
     <dimen name="edittext_parent_padding">8dp</dimen>
     <dimen name="edittext_padding">14dp</dimen>

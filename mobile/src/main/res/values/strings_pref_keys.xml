@@ -21,6 +21,7 @@
     <string name="prefs_key_username">username</string>
     <string name="prefs_key_state">state</string>
 
+    <string name="prefs_key_debug">debug</string>
     <string name="prefs_force_expire_token">expire_token</string>
     <string name="prefs_force_refresh_now">refresh_now</string>
 

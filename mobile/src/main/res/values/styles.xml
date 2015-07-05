@@ -12,10 +12,4 @@
         <item name="android:background">@android:color/white</item>
     </style>
 
-    <style name="FloatLabel" parent="android:TextAppearance.Small">
-        <item name="android:textColor">@color/primary</item>
-        <item name="android:textSize">11sp</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
 </resources>

@@ -62,7 +62,7 @@
             android:title="@string/retrieve_messages" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/debug_settings">
+    <PreferenceCategory android:title="@string/debug_settings" android:key="@string/prefs_key_debug">
         <PreferenceScreen
             android:key="@string/prefs_force_expire_token"
             android:title="Expire access token" />
