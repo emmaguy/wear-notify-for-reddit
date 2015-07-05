@@ -4,10 +4,14 @@ import android.app.Application;
 import android.content.Context;
 
 /**
- * Created by emma on 04/07/15.
+ * Main application
  */
 public class App extends Application {
     private AppComponent mAppComponent;
+
+    public static App with(Context context) {
+        return (App) context.getApplicationContext();
+    }
 
     @Override
     public void onCreate() {
@@ -18,9 +22,5 @@ public class App extends Application {
 
     public AppComponent getAppComponent() {
         return mAppComponent;
-    }
-
-    public static App with(Context context) {
-        return (App) context.getApplicationContext();
     }
 }

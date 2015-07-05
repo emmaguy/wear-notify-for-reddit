@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name=".settings.SettingsActivity"
             android:label="@string/app_name_short">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -43,13 +43,13 @@
                 android:resource="@xml/wakeful" />
         </receiver>
 
-        <service android:name=".background.WearListenerService">
+        <service android:name=".refresh.WearListenerService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>
         </service>
         <service
-            android:name=".background.RetrieveService"
+            android:name=".refresh.RetrieveService"
             android:exported="false" />
 
         <meta-data

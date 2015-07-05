@@ -16,7 +16,7 @@
         android:textColor="@android:color/black" />
 
     <!-- wrap_content does not work, so set a specific height (https://code.google.com/p/android/issues/detail?id=74772) -->
-    <com.emmaguy.todayilearned.ui.ReorderRecyclerView
+    <com.emmaguy.todayilearned.settings.ReorderRecyclerView
         android:id="@+id/actions_reorder_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="410dp" />

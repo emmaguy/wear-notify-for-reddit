@@ -226,7 +226,6 @@ public class Post {
                 ", mReplies=" + mReplies +
                 ", mLevel=" + mLevel +
                 ", mHasHighResImage=" + mHasHighResImage +
-                ", mImage=" + Arrays.toString(mImage) +
                 '}';
     }
 }

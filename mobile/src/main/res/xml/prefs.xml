@@ -2,7 +2,7 @@
     <PreferenceCategory
         android:key="parent"
         android:title="@string/reddit_settings">
-        <com.emmaguy.todayilearned.ui.SubredditPreference
+        <com.emmaguy.todayilearned.settings.SubredditPreference
             android:key="@string/prefs_key_subreddits"
             android:summary="@string/tap_to_modify"
             android:title="@string/subreddits" />
@@ -33,7 +33,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/wearable_options">
-        <com.emmaguy.todayilearned.ui.DragReorderActionsPreference
+        <com.emmaguy.todayilearned.settings.DragReorderActionsPreference
             android:key="@string/prefs_key_actions_order"
             android:title="@string/watch_actions_order" />
         <CheckBoxPreference
