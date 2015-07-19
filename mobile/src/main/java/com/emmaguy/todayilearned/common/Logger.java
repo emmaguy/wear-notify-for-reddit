@@ -5,10 +5,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
+import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.R;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
 import retrofit.RetrofitError;
@@ -33,9 +33,16 @@ public class Logger {
 
     private static Tracker mTracker;
 
-    public static void log(String message) {
+    public static void log(Context context, String message) {
         if (Utils.sIsDebug) {
             Log.d("RedditWear", message);
+        } else {
+            Log.d("RedditWear", message);
+            getTracker(context)
+                    .send(new HitBuilders.EventBuilder()
+                            .setCategory("DEBUG" + BuildConfig.VERSION_NAME)
+                            .setAction(message)
+                            .build());
         }
     }
 
@@ -46,28 +53,25 @@ public class Logger {
     }
 
     public static void sendThrowable(Context c, String message, Throwable t) {
+        final String category = (t instanceof RetrofitError) ? "retrofit, " + ((RetrofitError) t).getKind() : "other";
+        final String action = message + ", msg: " + t.getMessage();
+        final String label = "connected to network: " + isConnectedToNetwork(c) + "\nstack trace: " + Log.getStackTraceString(t);
+
         if (Utils.sIsDebug) {
-            Log.e("RedditWear", message, t);
+            Log.e("RedditWear", "category: " + category + "\naction: " + action + "\nlabel: " + label, t);
         } else {
-            String description = "Exception: " + new StandardExceptionParser(c, null).getDescription(Thread.currentThread().getName(), t);
-
-            if (t instanceof RetrofitError) {
-                RetrofitError retrofitError = (RetrofitError) t;
-                description += " " + retrofitError.getKind();
-            }
-
             getTracker(c)
                     .send(new HitBuilders.EventBuilder()
-                            .setCategory(description)
-                            .setAction(message + " msg: " + t.getMessage())
-                            .setLabel("Connected to network: " + String.valueOf(isConnectedToNetwork(c)))
+                            .setCategory(category)
+                            .setAction(action)
+                            .setLabel(label)
                             .build());
         }
     }
 
     public static void sendEvent(Context c, String action, String label) {
         if (Utils.sIsDebug) {
-            log("Sending event: " + action + " " + label);
+            log(c, "Sending event: " + action + " " + label);
         } else {
             getTracker(c)
                     .send(new HitBuilders.EventBuilder()

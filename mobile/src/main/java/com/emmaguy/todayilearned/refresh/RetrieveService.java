@@ -8,7 +8,6 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.settings.ActionStorage;
-import com.emmaguy.todayilearned.settings.WearableActionStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.TokenStorage;
@@ -28,6 +27,7 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import retrofit.converter.GsonConverter;
 import rx.android.schedulers.AndroidSchedulers;
@@ -41,9 +41,10 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
     @Inject AuthenticatedRedditService mAuthenticatedRedditService;
     @Inject ActionStorage mWearableActionStorage;
-    @Inject GsonConverter mPostsConverter;
     @Inject TokenStorage mTokenStorage;
     @Inject UserStorage mUserStorage;
+
+    @Inject @Named("posts") GsonConverter mPostsConverter;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -107,12 +108,10 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 .subscribe(new Action1<List<Post>>() {
                     @Override
                     public void call(List<Post> posts) {
-                        Logger.log("Found posts: " + posts.size());
-
                         if (posts.size() > 0) {
                             sendNewPostsData(posts);
                         } else if (sendInformationToWearableIfNoPosts) {
-                            Logger.log("Sending no posts information");
+                            Logger.log(getApplicationContext(), "Sending no posts information");
                             WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
                         }
                     }
@@ -131,7 +130,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     .subscribe(new Action1<List<Post>>() {
                         @Override
                         public void call(List<Post> messages) {
-                            Logger.log("Found messages: " + messages.size());
+                            Logger.log(getApplicationContext(), "Found messages: " + messages.size());
 
                             if (messages.size() > 0) {
                                 sendNewPostsData(messages);
@@ -166,8 +165,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     private void sendNewPostsData(List<Post> posts) {
         if (mGoogleApiClient.isConnected()) {
-            Logger.log("sendNewPostsData: " + posts.size());
-
             Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
             final String latestPosts = gson.toJson(posts);
 
@@ -180,8 +177,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             for (Post p : posts) {
                 if ((p.hasThumbnail() || p.hasHighResImage()) && p.getImage() != null) {
                     Asset asset = Asset.createFromBytes(p.getImage());
-
-                    Logger.log("Putting asset with id: " + p.getId() + " asset " + asset + " url: " + p.getThumbnail());
                     dataMap.putAsset(p.getId(), asset);
                 }
             }
@@ -190,12 +185,12 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             dataMap.putLong("timestamp", System.currentTimeMillis());
 
             PutDataRequest request = mapRequest.asPutDataRequest();
-            Logger.log("Sending request: " + request);
+            Logger.log(getApplicationContext(), "Sending request with " + posts.size() + " posts");
             Wearable.DataApi.putDataItem(mGoogleApiClient, request)
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Logger.log("onResult: " + dataItemResult.getStatus());
+                            Logger.log(getApplicationContext(), "onResult: " + dataItemResult.getStatus());
 
                             if (dataItemResult.getStatus().isSuccess()) {
                                 if (mGoogleApiClient.isConnected()) {

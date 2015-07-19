@@ -26,7 +26,7 @@ public interface RedditService {
     @FormUrlEncoded Token refreshToken(@Field("grant_type") String grantType,
             @Field("refresh_token") String refreshToken);
 
-    @POST("/api/comment?api_type=json") Observable<AddCommentResponse> commentOnPost(@Query("text") String comment,
+    @POST("/api/comment?api_type=json") Observable<RedditResponse> commentOnPost(@Query("text") String comment,
             @Query("thing_id") String postId);
 
     @GET("/subreddits/mine/subscriber.json") Observable<SubscriptionResponse> subredditSubscriptions();
@@ -45,7 +45,7 @@ public interface RedditService {
 
     @POST("/api/read_all_messages") Observable<MarkAllRead> markAllMessagesRead();
 
-    @POST("/api/compose?api_type=json") Observable<AddCommentResponse> replyToDirectMessage(
+    @POST("/api/compose?api_type=json") Observable<RedditResponse> replyToDirectMessage(
             @Query("subject") String subject,
             @Query("text") String message,
             @Query("to") String toUser);

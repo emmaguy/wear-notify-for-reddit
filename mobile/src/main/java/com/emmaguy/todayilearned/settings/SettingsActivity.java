@@ -206,7 +206,7 @@ public class SettingsActivity extends AppCompatActivity {
             } else if (preferenceKey.equals(getString(R.string.prefs_force_expire_token))) {
                 mTokenStorage.forceExpireToken();
             } else if (preferenceKey.equals(getString(R.string.prefs_force_refresh_now))) {
-                mUserStorage.setRetrievedPostCreatedUtc(0);
+                mUserStorage.setSeenTimestamp(0);
                 WakefulIntentService.scheduleAlarms(new BackgroundAlarmListener(), getActivity().getApplicationContext());
             } else if (preferenceKey.equals(getString(R.string.prefs_key_actions_order))) {
                 Logger.sendEvent(getActivity(), Logger.LOG_EVENT_CUSTOMISE_ACTIONS, "");
@@ -294,7 +294,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void clearSavedUtcTime() {
-            mUserStorage.setRetrievedPostCreatedUtc(0);
+            mUserStorage.setSeenTimestamp(0);
         }
 
         protected void initSummary() {

@@ -5,7 +5,6 @@ import android.content.res.Resources;
 import android.text.TextUtils;
 
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 
 import java.util.ArrayList;
@@ -31,10 +30,8 @@ class SharedPreferencesUserStorage implements UserStorage {
         return Integer.parseInt(mSharedPreferences.getString(key, "5"));
     }
 
-    public void setRetrievedPostCreatedUtc(long createdAtUtc) {
-        if (createdAtUtc > getCreatedUtcOfRetrievedPosts()) {
-            Logger.log("Updating mLatestCreatedUtc to: " + createdAtUtc);
-
+    public void setSeenTimestamp(long createdAtUtc) {
+        if (hasTimestampBeenSeen(createdAtUtc)) {
             mSharedPreferences
                     .edit()
                     .putLong(mResources.getString(R.string.prefs_key_created_utc), createdAtUtc)
@@ -42,8 +39,7 @@ class SharedPreferencesUserStorage implements UserStorage {
         }
     }
 
-    @Override
-    public long getCreatedUtcOfRetrievedPosts() {
+    private long getCreatedUtcOfRetrievedPosts() {
         return mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_created_utc), 0);
     }
 
@@ -53,7 +49,7 @@ class SharedPreferencesUserStorage implements UserStorage {
     }
 
     @Override
-    public String getSubreddit() {
+    public String getSubreddits() {
         final String key = mResources.getString(R.string.prefs_key_selected_subreddits);
         Set<String> subreddits = mSharedPreferences.getStringSet(key, Constants.sDefaultSelectedSubreddits);
 
@@ -73,5 +69,9 @@ class SharedPreferencesUserStorage implements UserStorage {
     @Override
     public boolean openOnPhoneDismissesAfterAction() {
         return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_open_on_phone_dismisses), false);
+    }
+
+    @Override public boolean hasTimestampBeenSeen(long postCreatedUtc) {
+        return postCreatedUtc > getCreatedUtcOfRetrievedPosts();
     }
 }

@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.emmaguy.todayilearned.common.Logger;
-import com.emmaguy.todayilearned.common.Utils;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.UserStorage;
 
@@ -83,21 +82,21 @@ public class LatestPostsFromRedditRetriever {
     }
 
     public Observable<List<Post>> getPosts(final RedditService reddit) {
-        return reddit.latestPosts(mUserStorage.getSubreddit(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
+        Logger.log(mContext, mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
+        return reddit.latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
                 .lift(LatestPostsFromRedditRetriever.<Post>flattenList())
                 .filter(new Func1<Post, Boolean>() {
                     @Override
                     public Boolean call(Post post) {
                         // Check that this post is new (i.e. we haven't retrieved it before)
-                        // In debug, never ignore posts - we want content to test with
-                        return (post.getCreatedUtc() > mUserStorage.getCreatedUtcOfRetrievedPosts()) || Utils.sIsDebug;
+                        final boolean filter = mUserStorage.hasTimestampBeenSeen(post.getCreatedUtc());
+//                        Logger.log(mContext, "Filtering: " + filter);
+                        return filter;
                     }
                 })
                 .doOnNext(new Action1<Post>() {
                     @Override
                     public void call(Post post) {
-                        mUserStorage.setRetrievedPostCreatedUtc(post.getCreatedUtc());
-
                         // Default to just getting the thumbnail, if available
                         String imageUrl = post.getThumbnail();
                         boolean hasHighResAvailable = false;
@@ -111,40 +110,52 @@ public class LatestPostsFromRedditRetriever {
                         }
 
                         if (post.hasThumbnail() || hasHighResAvailable) {
-                            try {
-                                URL url = new URL(imageUrl);
-                                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                                connection.setDoInput(true);
-                                connection.connect();
-
-                                MarkableInputStream markStream = new MarkableInputStream(connection.getInputStream());
-                                long mark = markStream.savePosition(MARKER);
-
-                                final BitmapFactory.Options options = new BitmapFactory.Options();
-                                options.inJustDecodeBounds = true;
-                                BitmapFactory.decodeStream(markStream, null, options);
-
-                                options.inSampleSize = calculateInSampleSize(options, WATCH_SCREEN_SIZE, WATCH_SCREEN_SIZE);
-                                options.inJustDecodeBounds = false;
-
-                                markStream.reset(mark);
-
-                                final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                                Bitmap bitmap = BitmapFactory.decodeStream(markStream, null, options);
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-
-                                post.setImage(byteStream.toByteArray());
-                                post.setHasHighResImage(hasHighResAvailable);
-
-                                bitmap.recycle();
-                            } catch (Exception e) {
-                                post.setHasHighResImage(false);
-                                Logger.sendThrowable(mContext, "Failed to download image", e);
-                            }
+                            post.setHasHighResImage(hasHighResAvailable);
+                            downloadImage(post, imageUrl);
                         }
                     }
                 })
-                .toList();
+                .toList()
+                .doOnNext(new Action1<List<Post>>() {
+                    // once all the posts have been processed, find the newest timestamp so we don't see these ones again
+                    @Override public void call(List<Post> posts) {
+                        for (Post p : posts) {
+                            mUserStorage.setSeenTimestamp(p.getCreatedUtc());
+                        }
+                    }
+                });
+    }
+
+    private void downloadImage(Post post, String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+
+            MarkableInputStream markStream = new MarkableInputStream(connection.getInputStream());
+            long mark = markStream.savePosition(MARKER);
+
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(markStream, null, options);
+
+            options.inSampleSize = calculateInSampleSize(options, WATCH_SCREEN_SIZE, WATCH_SCREEN_SIZE);
+            options.inJustDecodeBounds = false;
+
+            markStream.reset(mark);
+
+            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(markStream, null, options);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+
+            post.setImage(byteStream.toByteArray());
+
+            bitmap.recycle();
+        } catch (Exception e) {
+            post.setHasHighResImage(false);
+            Logger.sendThrowable(mContext, "Failed to download image", e);
+        }
     }
 
     private boolean isImage(String pictureFileName) {

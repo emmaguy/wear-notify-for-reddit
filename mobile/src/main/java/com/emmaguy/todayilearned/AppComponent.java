@@ -2,6 +2,7 @@ package com.emmaguy.todayilearned;
 
 import com.emmaguy.todayilearned.refresh.ConverterModule;
 import com.emmaguy.todayilearned.refresh.RetrieveService;
+import com.emmaguy.todayilearned.refresh.WearListenerService;
 import com.emmaguy.todayilearned.settings.DragReorderActionsPreference;
 import com.emmaguy.todayilearned.settings.SettingsActivity;
 import com.emmaguy.todayilearned.settings.SettingsModule;
@@ -17,8 +18,8 @@ import dagger.Component;
 @Singleton
 @Component(modules = {AppModule.class, StorageModule.class, ConverterModule.class, SettingsModule.class})
 public interface AppComponent {
-    void inject(RetrieveService retrieveService);
-    void inject(SettingsActivity.SettingsFragment fragment);
-
     void inject(DragReorderActionsPreference dragReorderActionsPreference);
+    void inject(SettingsActivity.SettingsFragment fragment);
+    void inject(WearListenerService wearListenerService);
+    void inject(RetrieveService retrieveService);
 }

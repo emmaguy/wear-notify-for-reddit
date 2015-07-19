@@ -60,7 +60,7 @@ class TokenRefreshInterceptor implements Interceptor {
                 Token token = mRefreshRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, mTokenStorage.getRefreshToken());
                 mTokenStorage.updateToken(token);
             } catch (RetrofitError error) {
-                Logger.log("Failed to renew token: " + error.getMessage());
+//                Logger.log("Failed to renew token: " + error.getMessage());
                 if (error.getResponse() == null || isServerError(error.getResponse())) {
                     throw new RuntimeException(error.getCause());
                 } else {

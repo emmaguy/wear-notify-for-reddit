@@ -3,11 +3,11 @@ package com.emmaguy.todayilearned.storage;
 public interface UserStorage {
     int getNumberToRequest();
 
-    long getCreatedUtcOfRetrievedPosts();
-    void setRetrievedPostCreatedUtc(long latestCreatedUtc);
+    void setSeenTimestamp(long timestamp);
+    boolean hasTimestampBeenSeen(long timestamp);
 
     String getSortType();
-    String getSubreddit();
+    String getSubreddits();
 
     boolean messagesEnabled();
     boolean downloadFullSizedImages();
