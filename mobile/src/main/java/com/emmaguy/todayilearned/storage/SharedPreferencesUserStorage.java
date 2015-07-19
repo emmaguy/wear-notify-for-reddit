@@ -31,7 +31,7 @@ class SharedPreferencesUserStorage implements UserStorage {
     }
 
     public void setSeenTimestamp(long createdAtUtc) {
-        if (hasTimestampBeenSeen(createdAtUtc)) {
+        if (isTimestampNewerThanStored(createdAtUtc)) {
             mSharedPreferences
                     .edit()
                     .putLong(mResources.getString(R.string.prefs_key_created_utc), createdAtUtc)
@@ -71,7 +71,7 @@ class SharedPreferencesUserStorage implements UserStorage {
         return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_open_on_phone_dismisses), false);
     }
 
-    @Override public boolean hasTimestampBeenSeen(long postCreatedUtc) {
+    @Override public boolean isTimestampNewerThanStored(long postCreatedUtc) {
         return postCreatedUtc > getCreatedUtcOfRetrievedPosts();
     }
 }

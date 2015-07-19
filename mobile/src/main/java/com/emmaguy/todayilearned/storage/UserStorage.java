@@ -4,7 +4,7 @@ public interface UserStorage {
     int getNumberToRequest();
 
     void setSeenTimestamp(long timestamp);
-    boolean hasTimestampBeenSeen(long timestamp);
+    boolean isTimestampNewerThanStored(long timestamp);
 
     String getSortType();
     String getSubreddits();

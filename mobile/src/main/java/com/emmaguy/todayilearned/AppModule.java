@@ -5,14 +5,19 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
+import com.emmaguy.todayilearned.refresh.ImageDownloader;
 import com.emmaguy.todayilearned.refresh.LatestPostsFromRedditRetriever;
 import com.emmaguy.todayilearned.refresh.UnauthenticatedRedditService;
 import com.emmaguy.todayilearned.storage.UserStorage;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import rx.Scheduler;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 @Module
 public class AppModule {
@@ -42,13 +47,33 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public LatestPostsFromRedditRetriever provideLatestPostsFromRedditRetriever(UserStorage storage) {
-        return new LatestPostsFromRedditRetriever(mContext, storage);
+    public ImageDownloader provideImageDownloader() {
+        return new ImageDownloader(mContext);
+    }
+
+    @Provides
+    @Singleton
+    public LatestPostsFromRedditRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, UserStorage storage) {
+        return new LatestPostsFromRedditRetriever(downloader, storage);
     }
 
     @Provides
     @Singleton
     public UnauthenticatedRedditService provideUnauthenticatedRedditService() {
         return new UnauthenticatedRedditService();
+    }
+
+    @Provides
+    @Singleton
+    @Named("io")
+    public Scheduler provideIo() {
+        return Schedulers.io();
+    }
+
+    @Provides
+    @Singleton
+    @Named("ui")
+    public Scheduler provideUi() {
+        return AndroidSchedulers.mainThread();
     }
 }

@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import retrofit.converter.GsonConverter;
+import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -43,6 +44,9 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Inject ActionStorage mWearableActionStorage;
     @Inject TokenStorage mTokenStorage;
     @Inject UserStorage mUserStorage;
+
+    @Inject @Named("io") Scheduler mIoScheduler;
+    @Inject @Named("ui") Scheduler mUiScheduler;
 
     @Inject @Named("posts") GsonConverter mPostsConverter;
 
@@ -102,12 +106,14 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     }
 
     private void retrieveLatestPostsFromReddit(final boolean sendInformationToWearableIfNoPosts) {
+        Logger.log(this, mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
         mLatestPostsRetriever.getPosts(getRedditServiceForLoggedInState(mPostsConverter))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(mIoScheduler)
+                .observeOn(mUiScheduler)
                 .subscribe(new Action1<List<Post>>() {
                     @Override
                     public void call(List<Post> posts) {
+                        Logger.log(getApplicationContext(), "Posts " + posts.size());
                         if (posts.size() > 0) {
                             sendNewPostsData(posts);
                         } else if (sendInformationToWearableIfNoPosts) {
@@ -125,8 +131,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
             mAuthenticatedRedditService.getRedditService(mPostsConverter)
                     .unreadMessages()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(mIoScheduler)
+                    .observeOn(mUiScheduler)
                     .subscribe(new Action1<List<Post>>() {
                         @Override
                         public void call(List<Post> messages) {

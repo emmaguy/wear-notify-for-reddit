@@ -1,16 +1,8 @@
 package com.emmaguy.todayilearned.refresh;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-
-import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.UserStorage;
 
-import java.io.ByteArrayOutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -24,18 +16,57 @@ import rx.functions.Func1;
  * Created by emma on 14/06/15.
  */
 public class LatestPostsFromRedditRetriever {
-    private static final int WATCH_SCREEN_SIZE = 320;
-    private static final int MARKER = 65536;
-
-    private final Context mContext;
+    private final ImageDownloader mImageDownloader;
     private final UserStorage mUserStorage;
 
-    @Inject public LatestPostsFromRedditRetriever(Context context, UserStorage userStorage) {
-        mContext = context;
+    @Inject public LatestPostsFromRedditRetriever(ImageDownloader imageDownloader, UserStorage userStorage) {
+        mImageDownloader = imageDownloader;
         mUserStorage = userStorage;
     }
 
-    public static <T> Observable.Operator<T, List<T>> flattenList() {
+    public Observable<List<Post>> getPosts(final RedditService reddit) {
+        return reddit.latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
+                .lift(LatestPostsFromRedditRetriever.<Post>flattenList())
+                .filter(new Func1<Post, Boolean>() {
+                    @Override
+                    public Boolean call(Post post) {
+                        // Check that this post is new (i.e. we haven't retrieved it before)
+                        return mUserStorage.isTimestampNewerThanStored(post.getCreatedUtc());
+                    }
+                })
+                .doOnNext(new Action1<Post>() {
+                    @Override
+                    public void call(Post post) {
+                        // Default to just getting the thumbnail, if available
+                        String imageUrl = post.getThumbnail();
+                        boolean hasHighResAvailable = false;
+
+                        // If user has chosen to get full images, only do so if we actually have a image based url
+                        if (mUserStorage.downloadFullSizedImages()) {
+                            if (isImage(post.getUrl())) {
+                                imageUrl = post.getUrl();
+                                hasHighResAvailable = true;
+                            }
+                        }
+
+                        if (post.hasThumbnail() || hasHighResAvailable) {
+                            post.setHasHighResImage(hasHighResAvailable);
+                            mImageDownloader.downloadImage(post, imageUrl);
+                        }
+                    }
+                })
+                .toList()
+                .doOnNext(new Action1<List<Post>>() {
+                    // once all the posts have been processed, find the newest timestamp so we don't see these ones again
+                    @Override public void call(List<Post> posts) {
+                        for (Post p : posts) {
+                            mUserStorage.setSeenTimestamp(p.getCreatedUtc());
+                        }
+                    }
+                });
+    }
+
+    private static <T> Observable.Operator<T, List<T>> flattenList() {
         return new Observable.Operator<T, List<T>>() {
             @Override
             public Subscriber<? super List<T>> call(final Subscriber<? super T> subscriber) {
@@ -59,103 +90,6 @@ public class LatestPostsFromRedditRetriever {
                 };
             }
         };
-    }
-
-    private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
-    }
-
-    public Observable<List<Post>> getPosts(final RedditService reddit) {
-        Logger.log(mContext, mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
-        return reddit.latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
-                .lift(LatestPostsFromRedditRetriever.<Post>flattenList())
-                .filter(new Func1<Post, Boolean>() {
-                    @Override
-                    public Boolean call(Post post) {
-                        // Check that this post is new (i.e. we haven't retrieved it before)
-                        final boolean filter = mUserStorage.hasTimestampBeenSeen(post.getCreatedUtc());
-//                        Logger.log(mContext, "Filtering: " + filter);
-                        return filter;
-                    }
-                })
-                .doOnNext(new Action1<Post>() {
-                    @Override
-                    public void call(Post post) {
-                        // Default to just getting the thumbnail, if available
-                        String imageUrl = post.getThumbnail();
-                        boolean hasHighResAvailable = false;
-
-                        // If user has chosen to get full images, only do so if we actually have a image based url
-                        if (mUserStorage.downloadFullSizedImages()) {
-                            if (isImage(post.getUrl())) {
-                                imageUrl = post.getUrl();
-                                hasHighResAvailable = true;
-                            }
-                        }
-
-                        if (post.hasThumbnail() || hasHighResAvailable) {
-                            post.setHasHighResImage(hasHighResAvailable);
-                            downloadImage(post, imageUrl);
-                        }
-                    }
-                })
-                .toList()
-                .doOnNext(new Action1<List<Post>>() {
-                    // once all the posts have been processed, find the newest timestamp so we don't see these ones again
-                    @Override public void call(List<Post> posts) {
-                        for (Post p : posts) {
-                            mUserStorage.setSeenTimestamp(p.getCreatedUtc());
-                        }
-                    }
-                });
-    }
-
-    private void downloadImage(Post post, String imageUrl) {
-        try {
-            URL url = new URL(imageUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-
-            MarkableInputStream markStream = new MarkableInputStream(connection.getInputStream());
-            long mark = markStream.savePosition(MARKER);
-
-            final BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(markStream, null, options);
-
-            options.inSampleSize = calculateInSampleSize(options, WATCH_SCREEN_SIZE, WATCH_SCREEN_SIZE);
-            options.inJustDecodeBounds = false;
-
-            markStream.reset(mark);
-
-            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            Bitmap bitmap = BitmapFactory.decodeStream(markStream, null, options);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-
-            post.setImage(byteStream.toByteArray());
-
-            bitmap.recycle();
-        } catch (Exception e) {
-            post.setHasHighResImage(false);
-            Logger.sendThrowable(mContext, "Failed to download image", e);
-        }
     }
 
     private boolean isImage(String pictureFileName) {
