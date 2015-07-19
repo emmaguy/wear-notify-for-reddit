@@ -6,7 +6,7 @@ import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
 import com.emmaguy.todayilearned.refresh.ImageDownloader;
-import com.emmaguy.todayilearned.refresh.LatestPostsFromRedditRetriever;
+import com.emmaguy.todayilearned.refresh.LatestPostsRetriever;
 import com.emmaguy.todayilearned.refresh.UnauthenticatedRedditService;
 import com.emmaguy.todayilearned.storage.UserStorage;
 
@@ -53,8 +53,8 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public LatestPostsFromRedditRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, UserStorage storage) {
-        return new LatestPostsFromRedditRetriever(downloader, storage);
+    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, UserStorage storage) {
+        return new LatestPostsRetriever(downloader, storage);
     }
 
     @Provides

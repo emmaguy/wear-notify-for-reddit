@@ -29,6 +29,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
@@ -38,7 +39,7 @@ import rx.schedulers.Schedulers;
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String INTENT_KEY_INFORM_WATCH_NO_POSTS = "inform_no_posts";
 
-    @Inject LatestPostsFromRedditRetriever mLatestPostsRetriever;
+    @Inject LatestPostsRetriever mLatestPostsRetriever;
     @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
     @Inject AuthenticatedRedditService mAuthenticatedRedditService;
     @Inject ActionStorage mWearableActionStorage;
@@ -49,6 +50,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Inject @Named("ui") Scheduler mUiScheduler;
 
     @Inject @Named("posts") GsonConverter mPostsConverter;
+    @Inject @Named("markread") Converter mMarkAsReadConverter;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -97,7 +99,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
-    private RedditService getRedditServiceForLoggedInState(GsonConverter converter) {
+    private RedditService getRedditServiceForLoggedInState(Converter converter) {
         if (mTokenStorage.isLoggedIn()) {
             return mAuthenticatedRedditService.getRedditService(converter);
         }
@@ -129,7 +131,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 });
 
         if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
-            mAuthenticatedRedditService.getRedditService(mPostsConverter)
+            getRedditServiceForLoggedInState(mPostsConverter)
                     .unreadMessages()
                     .subscribeOn(mIoScheduler)
                     .observeOn(mUiScheduler)
@@ -141,7 +143,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                             if (messages.size() > 0) {
                                 sendNewPostsData(messages);
 
-                                mAuthenticatedRedditService.getRedditService(new MarkAsReadConverter())
+                                getRedditServiceForLoggedInState(mMarkAsReadConverter)
                                         .markAllMessagesRead()
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())

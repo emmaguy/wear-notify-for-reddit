@@ -32,6 +32,7 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import de.psdev.licensesdialog.LicensesDialog;
 import retrofit.RequestInterceptor;
@@ -78,7 +79,8 @@ public class SettingsActivity extends AppCompatActivity {
         @Inject WearableActionStorage mWearableActionStorage;
         @Inject TokenStorage mTokenStorage;
         @Inject UserStorage mUserStorage;
-        @Inject Converter mTokenConverter;
+
+        @Inject @Named("token") Converter mTokenConverter;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {

@@ -15,8 +15,16 @@ import retrofit.converter.GsonConverter;
 public class ConverterModule {
     @Provides
     @Singleton
+    @Named("token")
     public Converter provideTokenConverter() {
         return new TokenConverter(new GsonConverter(new GsonBuilder().create()));
+    }
+
+    @Provides
+    @Singleton
+    @Named("markread")
+    public Converter provideMarkAsReadConverter() {
+        return new MarkAsReadConverter();
     }
 
     @Provides
