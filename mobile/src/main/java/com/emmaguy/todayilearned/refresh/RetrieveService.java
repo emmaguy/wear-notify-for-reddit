@@ -29,28 +29,19 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import retrofit.converter.Converter;
-import retrofit.converter.GsonConverter;
 import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String INTENT_KEY_INFORM_WATCH_NO_POSTS = "inform_no_posts";
 
     @Inject LatestPostsRetriever mLatestPostsRetriever;
-    @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
-    @Inject AuthenticatedRedditService mAuthenticatedRedditService;
     @Inject ActionStorage mWearableActionStorage;
     @Inject TokenStorage mTokenStorage;
     @Inject UserStorage mUserStorage;
 
     @Inject @Named("io") Scheduler mIoScheduler;
     @Inject @Named("ui") Scheduler mUiScheduler;
-
-    @Inject @Named("posts") GsonConverter mPostsConverter;
-    @Inject @Named("markread") Converter mMarkAsReadConverter;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -99,17 +90,9 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
-    private RedditService getRedditServiceForLoggedInState(Converter converter) {
-        if (mTokenStorage.isLoggedIn()) {
-            return mAuthenticatedRedditService.getRedditService(converter);
-        }
-
-        return mUnauthenticatedRedditService.getRedditService(converter, null);
-    }
-
     private void retrieveLatestPostsFromReddit(final boolean sendInformationToWearableIfNoPosts) {
         Logger.log(this, mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
-        mLatestPostsRetriever.getPosts(getRedditServiceForLoggedInState(mPostsConverter))
+        mLatestPostsRetriever.getPosts()
                 .subscribeOn(mIoScheduler)
                 .observeOn(mUiScheduler)
                 .subscribe(new Action1<List<Post>>() {
@@ -129,46 +112,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                         Logger.sendThrowable(getApplicationContext(), "Failed to get latest posts", throwable);
                     }
                 });
-
-        if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
-            getRedditServiceForLoggedInState(mPostsConverter)
-                    .unreadMessages()
-                    .subscribeOn(mIoScheduler)
-                    .observeOn(mUiScheduler)
-                    .subscribe(new Action1<List<Post>>() {
-                        @Override
-                        public void call(List<Post> messages) {
-                            Logger.log(getApplicationContext(), "Found messages: " + messages.size());
-
-                            if (messages.size() > 0) {
-                                sendNewPostsData(messages);
-
-                                getRedditServiceForLoggedInState(mMarkAsReadConverter)
-                                        .markAllMessagesRead()
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(new Action1<MarkAllRead>() {
-                                            @Override
-                                            public void call(MarkAllRead markAllRead) {
-                                                if (markAllRead.hasErrors()) {
-                                                    throw new RuntimeException("Failed to mark all as read: " + markAllRead);
-                                                }
-                                            }
-                                        }, new Action1<Throwable>() {
-                                            @Override
-                                            public void call(Throwable throwable) {
-                                                Logger.sendThrowable(getApplicationContext(), throwable.getMessage(), throwable);
-                                            }
-                                        });
-                            }
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            Logger.sendThrowable(getApplicationContext(), "Failed to get latest messages", throwable);
-                        }
-                    });
-        }
     }
 
     private void sendNewPostsData(List<Post> posts) {

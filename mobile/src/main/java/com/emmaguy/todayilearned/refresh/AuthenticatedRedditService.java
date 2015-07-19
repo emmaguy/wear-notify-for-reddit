@@ -19,7 +19,6 @@ public class AuthenticatedRedditService {
     private final TokenStorage mTokenStorage;
     private final Converter mTokenConverter;
 
-    @Inject
     public AuthenticatedRedditService(TokenStorage tokenStorage, RequestInterceptor interceptor, Converter tokenConverter) {
         mRequestInterceptor = interceptor;
         mTokenStorage = tokenStorage;

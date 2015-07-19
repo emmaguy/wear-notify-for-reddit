@@ -43,7 +43,7 @@ public interface RedditService {
 
     @POST("/api/vote") Observable<Void> vote(@Query("id") String fullname, @Query("dir") Integer voteDirection);
 
-    @POST("/api/read_all_messages") Observable<MarkAllRead> markAllMessagesRead();
+    @POST("/api/read_all_messages") MarkAllRead markAllMessagesRead();
 
     @POST("/api/compose?api_type=json") Observable<RedditResponse> replyToDirectMessage(
             @Query("subject") String subject,
