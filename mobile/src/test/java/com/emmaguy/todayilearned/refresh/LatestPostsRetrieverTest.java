@@ -27,7 +27,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Created by emma on 19/07/15.
  */
-public class LatestPostsFromRedditRetrieverTest {
+public class LatestPostsRetrieverTest {
     private static final String DEFAULT_IMAGE_URL_NO_FILE_EXTENSION = "http://nofileextension";
     private static final String DEFAULT_THUMBNAIL_URL = "http://anythumb";
     private static final String DEFAULT_IMAGE_URL = "http://anyurl.jpg";
@@ -76,7 +76,7 @@ public class LatestPostsFromRedditRetrieverTest {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP), mockPost(DEFAULT_TIMESTAMP_OLD), mockPost(DEFAULT_TIMESTAMP_LARGER));
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
-        LatestPostsFromRedditRetriever retriever = new LatestPostsFromRedditRetriever(mImageDownloader, mUserStorage);
+        LatestPostsRetriever retriever = new LatestPostsRetriever(mImageDownloader, mUserStorage);
         retriever.getPosts(mRedditService).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<Post>>() {
             @Override public void call(List<Post> posts) {
                 resultingPosts = posts;
@@ -101,7 +101,7 @@ public class LatestPostsFromRedditRetrieverTest {
         when(mPost.getThumbnail()).thenReturn(DEFAULT_THUMBNAIL_URL);
         when(mPost.hasThumbnail()).thenReturn(true);
 
-        LatestPostsFromRedditRetriever retriever = new LatestPostsFromRedditRetriever(mImageDownloader, mUserStorage);
+        LatestPostsRetriever retriever = new LatestPostsRetriever(mImageDownloader, mUserStorage);
         retriever.getPosts(mRedditService).subscribeOn(Schedulers.immediate()).subscribe();
 
         verify(mImageDownloader).downloadImage(mPost, DEFAULT_THUMBNAIL_URL);
@@ -110,7 +110,7 @@ public class LatestPostsFromRedditRetrieverTest {
     @Test public void latestPostsWithHighResDownloadingOn_triesToDownloadImage() {
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
-        LatestPostsFromRedditRetriever retriever = new LatestPostsFromRedditRetriever(mImageDownloader, mUserStorage);
+        LatestPostsRetriever retriever = new LatestPostsRetriever(mImageDownloader, mUserStorage);
         retriever.getPosts(mRedditService).subscribeOn(Schedulers.immediate()).subscribe();
 
         verify(mImageDownloader).downloadImage(mPost, DEFAULT_IMAGE_URL);
@@ -120,7 +120,7 @@ public class LatestPostsFromRedditRetrieverTest {
         when(mPost.getUrl()).thenReturn(DEFAULT_IMAGE_URL_NO_FILE_EXTENSION);
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
-        LatestPostsFromRedditRetriever retriever = new LatestPostsFromRedditRetriever(mImageDownloader, mUserStorage);
+        LatestPostsRetriever retriever = new LatestPostsRetriever(mImageDownloader, mUserStorage);
         retriever.getPosts(mRedditService).subscribeOn(Schedulers.immediate()).subscribe();
 
         verifyZeroInteractions(mImageDownloader);
