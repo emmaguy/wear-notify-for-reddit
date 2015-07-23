@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
+import com.emmaguy.todayilearned.background.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.AuthenticatedRedditService;
 import com.emmaguy.todayilearned.refresh.ImageDownloader;
 import com.emmaguy.todayilearned.refresh.LatestPostsRetriever;
@@ -58,10 +59,11 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, TokenStorage tokenStorage,
+    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(Context context, ImageDownloader downloader, TokenStorage tokenStorage,
             UserStorage storage, UnauthenticatedRedditService unauthenticatedRedditService, AuthenticatedRedditService authenticatedRedditService,
             @Named("posts") GsonConverter postsConverter, @Named("markread") Converter markAsReadConverter) {
-        return new LatestPostsRetriever(downloader,
+        return new LatestPostsRetriever(
+                downloader,
                 tokenStorage,
                 storage,
                 unauthenticatedRedditService,
@@ -78,7 +80,8 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public AuthenticatedRedditService provideAuthenticatedRedditService(TokenStorage tokenStorage, RequestInterceptor requestInterceptor, @Named("token") Converter tokenConverter) {
+    public AuthenticatedRedditService provideAuthenticatedRedditService(TokenStorage tokenStorage, RequestInterceptor requestInterceptor,
+            @Named("token") Converter tokenConverter) {
         return new AuthenticatedRedditService(tokenStorage, requestInterceptor, tokenConverter);
     }
 
@@ -94,5 +97,11 @@ public class AppModule {
     @Named("ui")
     public Scheduler provideUi() {
         return AndroidSchedulers.mainThread();
+    }
+
+    @Provides
+    @Singleton
+    public BackgroundAlarmListener provideAlarmListener() {
+        return new BackgroundAlarmListener();
     }
 }

@@ -68,5 +68,6 @@
     <string name="reddit_settings">Reddit settings</string>
     <string name="wearable_options">Wearable options</string>
     <string name="debug_settings">Debug settings</string>
+    <string name="debug_information_explanation">Some debug information follows - if you are having an issue with the app, it\'d be appreciated if you leave it. Thanks!</string>
 
 </resources>

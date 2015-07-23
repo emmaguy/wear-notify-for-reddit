@@ -21,8 +21,8 @@ android {
         signingConfig signingConfigs.release
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 32
-        versionName "3.0.1a"
+        versionCode 33
+        versionName "3.0.2"
     }
     buildTypes {
         release {
@@ -51,8 +51,7 @@ dependencies {
 
     // Network
     compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'com.squareup.okhttp:okhttp-urlconnection:2.4.0'
-    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.okhttp:okhttp:2.3.0' // https://github.com/square/retrofit/issues/854
 
     // UI
     compile 'com.android.support:recyclerview-v7:22.2.0'

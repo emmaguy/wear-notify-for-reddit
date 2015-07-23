@@ -12,6 +12,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -54,29 +55,14 @@ public class SettingsActivity extends AppCompatActivity {
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_feedback, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_feedback) {
-            startActivity(Utils.getFeedbackEmailIntent(this));
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
         @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
         @Inject AuthenticatedRedditService mAuthenticatedRedditService;
         @Inject RedditAccessTokenRequester mRedditAccessTokenRequester;
         @Inject RedditRequestTokenUriParser mRequestTokenUriParser;
-        @Inject RequestInterceptor mRequestInterceptor;
+        @Inject BackgroundAlarmListener mAlarmListener;
         @Inject WearableActionStorage mWearableActionStorage;
+        @Inject RequestInterceptor mRequestInterceptor;
         @Inject TokenStorage mTokenStorage;
         @Inject UserStorage mUserStorage;
 
@@ -90,7 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             addPreferencesFromResource(R.xml.preferences);
 
-            WakefulIntentService.scheduleAlarms(new BackgroundAlarmListener(), getActivity().getApplicationContext());
+            WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
 
             initSummary();
 
@@ -108,6 +94,8 @@ public class SettingsActivity extends AppCompatActivity {
 
             toggleRedditSettings();
             toggleOpenOnPhoneAction();
+
+            setHasOptionsMenu(true);
         }
 
         private void toggleRedditSettings() {
@@ -121,6 +109,38 @@ public class SettingsActivity extends AppCompatActivity {
                 preference.setOnPreferenceClickListener(this);
             }
         }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            inflater.inflate(R.menu.menu_feedback, menu);
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            if (item.getItemId() == R.id.action_feedback) {
+                startActivity(Utils.getFeedbackEmailIntent(getActivity(), buildExtraInformation()));
+                return true;
+            }
+
+            return super.onOptionsItemSelected(item);
+        }
+
+        private String buildExtraInformation() {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(getString(R.string.debug_information_explanation) + "\n\n");
+            sb.append("Number of posts: " + mUserStorage.getNumberToRequest() + "\n");
+            sb.append("Sort order: " + mUserStorage.getSortType() + "\n");
+            sb.append("Refresh interval: " + mUserStorage.getRefreshInterval() + "\n");
+            sb.append("Selected subreddits: " + mUserStorage.getSubreddits() + "\n");
+            sb.append("Stored timestamp: " + mUserStorage.getTimestamp() + "\n");
+            sb.append("Is logged in: " + mTokenStorage.isLoggedIn() + "\n");
+            sb.append("Has token expired: " + mTokenStorage.hasTokenExpired() + "\n");
+            sb.append("\n\n");
+
+            return sb.toString();
+        }
+
 
         @Override
         public void onResume() {
@@ -208,8 +228,8 @@ public class SettingsActivity extends AppCompatActivity {
             } else if (preferenceKey.equals(getString(R.string.prefs_force_expire_token))) {
                 mTokenStorage.forceExpireToken();
             } else if (preferenceKey.equals(getString(R.string.prefs_force_refresh_now))) {
-                mUserStorage.setSeenTimestamp(0);
-                WakefulIntentService.scheduleAlarms(new BackgroundAlarmListener(), getActivity().getApplicationContext());
+                mUserStorage.clearTimestamp();
+                WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
             } else if (preferenceKey.equals(getString(R.string.prefs_key_actions_order))) {
                 Logger.sendEvent(getActivity(), Logger.LOG_EVENT_CUSTOMISE_ACTIONS, "");
             }
@@ -264,7 +284,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             if (key.equals(getString(R.string.prefs_key_sync_frequency))) {
                 Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_UPDATE_INTERVAL, sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency), ""));
-                WakefulIntentService.scheduleAlarms(new BackgroundAlarmListener(), getActivity().getApplicationContext());
+                WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
             } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();
             } else if (key.equals(getString(R.string.prefs_key_actions_order)) || key.equals(getString(R.string.prefs_key_actions_order_ordered))) {
@@ -296,7 +316,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void clearSavedUtcTime() {
-            mUserStorage.setSeenTimestamp(0);
+            mUserStorage.clearTimestamp();
         }
 
         protected void initSummary() {

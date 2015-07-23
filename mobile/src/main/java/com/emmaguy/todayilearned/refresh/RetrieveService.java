@@ -76,6 +76,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
 
         retrieveLatestPostsFromReddit(informWatchIfNoPosts);
+
+        Logger.log(getApplicationContext(), "doWakefulWork, interval: " + mUserStorage.getRefreshInterval() + ", is connected: " + mGoogleApiClient.isConnected() + " inform: " + informWatchIfNoPosts);
     }
 
     private void connectToWearable() {

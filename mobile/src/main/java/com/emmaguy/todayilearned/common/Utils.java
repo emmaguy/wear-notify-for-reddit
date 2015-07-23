@@ -8,16 +8,17 @@ import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.R;
 
 public class Utils {
-    public static final boolean sIsDebug = true;//BuildConfig.DEBUG;
+    public static final boolean sIsDebug = BuildConfig.DEBUG;
 
     public static final String FEEDBACK_EMAIL_ADDRESS = "ringthebellapp@gmail.com";
 
-    public static Intent getFeedbackEmailIntent(Context c) {
+    public static Intent getFeedbackEmailIntent(Context c, String extraInformation) {
         final String title = c.getString(R.string.app_name) + " " + c.getString(R.string.feedback_android_version);
 
         Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", FEEDBACK_EMAIL_ADDRESS, null));
         intent.putExtra(Intent.EXTRA_EMAIL, FEEDBACK_EMAIL_ADDRESS);
         intent.putExtra(Intent.EXTRA_SUBJECT, title + BuildConfig.VERSION_NAME);
+        intent.putExtra(Intent.EXTRA_TEXT, extraInformation);
         return intent;
     }
 }

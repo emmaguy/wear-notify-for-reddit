@@ -39,8 +39,8 @@ class SharedPreferencesUserStorage implements UserStorage {
         }
     }
 
-    private long getCreatedUtcOfRetrievedPosts() {
-        return mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_created_utc), 0);
+    @Override public void clearTimestamp() {
+        mSharedPreferences.edit().remove(mResources.getString(R.string.prefs_key_created_utc)).apply();
     }
 
     @Override
@@ -54,6 +54,14 @@ class SharedPreferencesUserStorage implements UserStorage {
         Set<String> subreddits = mSharedPreferences.getStringSet(key, Constants.sDefaultSelectedSubreddits);
 
         return TextUtils.join("+", new ArrayList(subreddits));
+    }
+
+    @Override public String getRefreshInterval() {
+        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_sync_frequency), "15");
+    }
+
+    @Override public String getTimestamp() {
+        return String.valueOf(getStoredTimestamp());
     }
 
     @Override
@@ -72,6 +80,11 @@ class SharedPreferencesUserStorage implements UserStorage {
     }
 
     @Override public boolean isTimestampNewerThanStored(long postCreatedUtc) {
-        return postCreatedUtc > getCreatedUtcOfRetrievedPosts();
+        return postCreatedUtc > getStoredTimestamp();
     }
+
+    private long getStoredTimestamp() {
+        return mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_created_utc), 0);
+    }
+
 }

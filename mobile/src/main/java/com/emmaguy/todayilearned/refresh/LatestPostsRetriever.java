@@ -66,9 +66,11 @@ public class LatestPostsRetriever {
                     .unreadMessages()
                     .flatMap(new Func1<List<Post>, Observable<List<Post>>>() {
                         @Override public Observable<List<Post>> call(List<Post> posts) {
-                            MarkAllRead markAllRead = getRedditServiceForLoggedInState(mMarkAsReadConverter).markAllMessagesRead();
-                            if (markAllRead.hasErrors()) {
-                                throw new RuntimeException("Failed to mark all messages as read: " + markAllRead);
+                            if (!posts.isEmpty()) {
+                                MarkAllRead markAllRead = getRedditServiceForLoggedInState(mMarkAsReadConverter).markAllMessagesRead();
+                                if (markAllRead.hasErrors()) {
+                                    throw new RuntimeException("Failed to mark all messages as read: " + markAllRead);
+                                }
                             }
 
                             return Observable.just(posts);
