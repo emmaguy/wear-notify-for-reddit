@@ -7,10 +7,10 @@ public interface UserStorage {
     void clearTimestamp();
     boolean isTimestampNewerThanStored(long timestamp);
 
+    String getTimestamp();
     String getSortType();
     String getSubreddits();
     String getRefreshInterval();
-    String getTimestamp();
 
     boolean messagesEnabled();
     boolean downloadFullSizedImages();

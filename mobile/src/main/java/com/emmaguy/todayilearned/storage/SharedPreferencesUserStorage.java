@@ -86,5 +86,4 @@ class SharedPreferencesUserStorage implements UserStorage {
     private long getStoredTimestamp() {
         return mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_created_utc), 0);
     }
-
 }
