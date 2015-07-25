@@ -76,12 +76,14 @@ public class SubredditPreference extends Preference {
         saveSelectedSubreddits(selectedSubreddits);
     }
 
-    public void saveSubreddits(List<String> srs) {
-        getSharedPreferences().edit().putStringSet(getKey(), new HashSet<String>(srs)).apply();
+    public void saveSubreddits(List<String> subreddits) {
+        final HashSet<String> values = new HashSet<>(subreddits);
+        values.addAll(getAllSubreddits());
+        getSharedPreferences().edit().putStringSet(getKey(), values).apply();
     }
 
     public void saveSelectedSubreddits(List<String> selectedSubreddits) {
-        getSharedPreferences().edit().putStringSet(getSelectedSubredditsKey(), new HashSet<String>(selectedSubreddits)).apply();
+        getSharedPreferences().edit().putStringSet(getSelectedSubredditsKey(), new HashSet<>(selectedSubreddits)).apply();
     }
 
     private void showSelectSubredditsDialog() {

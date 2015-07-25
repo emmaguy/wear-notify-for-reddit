@@ -250,12 +250,9 @@ public class SettingsActivity extends AppCompatActivity {
                             if (response.hasErrors()) {
                                 throw new RuntimeException("Failed to sync subreddits: " + response);
                             }
-                            List<String> subreddits = response.getSubreddits();
 
                             SubredditPreference pref = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
-
-                            pref.saveSubreddits(subreddits);
-                            pref.saveSelectedSubreddits(subreddits);
+                            pref.saveSubreddits(response.getSubreddits());
                         }
 
                         @Override
