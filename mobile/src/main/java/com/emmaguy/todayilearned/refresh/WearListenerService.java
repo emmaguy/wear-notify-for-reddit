@@ -33,7 +33,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import retrofit.converter.GsonConverter;
+import retrofit.converter.Converter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
@@ -44,8 +44,8 @@ public class WearListenerService extends WearableListenerService {
     @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
     @Inject AuthenticatedRedditService mAuthenticatedRedditService;
 
-    @Inject @Named("redditResponse") GsonConverter mResponseConverter;
-    @Inject @Named("comments") GsonConverter mCommentsConverter;
+    @Inject @Named("redditResponse") Converter mResponseConverter;
+    @Inject @Named("comments") Converter mCommentsConverter;
     @Inject TokenStorage mTokenStorage;
 
     private GoogleApiClient mGoogleApiClient;
@@ -141,7 +141,7 @@ public class WearListenerService extends WearableListenerService {
         }
     }
 
-    private RedditService getRedditServiceForLoggedInState(GsonConverter converter) {
+    private RedditService getRedditServiceForLoggedInState(Converter converter) {
         if (mTokenStorage.isLoggedIn()) {
             return mAuthenticatedRedditService.getRedditService(converter);
         }

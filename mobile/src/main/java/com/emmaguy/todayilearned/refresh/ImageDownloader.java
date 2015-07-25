@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.emmaguy.todayilearned.common.Logger;
-import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
@@ -26,8 +25,10 @@ public class ImageDownloader {
         mContext = context;
     }
 
-    public void downloadImage(Post post, String imageUrl) {
+    public byte[] downloadImage(String imageUrl) {
+        byte[] bytes = null;
         try {
+            Logger.log(mContext, "Downloading: " + imageUrl);
             URL url = new URL(imageUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);
@@ -49,13 +50,13 @@ public class ImageDownloader {
             Bitmap bitmap = BitmapFactory.decodeStream(markStream, null, options);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
 
-            post.setImage(byteStream.toByteArray());
-
+            bytes = byteStream.toByteArray();
             bitmap.recycle();
         } catch (Exception e) {
-            post.setHasHighResImage(false);
             Logger.sendThrowable(mContext, "Failed to download image", e);
         }
+
+        return bytes;
     }
 
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {

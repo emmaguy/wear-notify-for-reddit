@@ -1,84 +1,61 @@
 package com.emmaguy.todayilearned.sharedlib;
 
-import android.text.TextUtils;
-
-import com.google.gson.annotations.Expose;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-
 public class Post {
-    @Expose
-    private final String mSubreddit;
-    @Expose
-    private final String mTitle;
-    @Expose
-    private final String mDescription;
-    @Expose
-    private final String mFullname;
-    @Expose
-    private final String mPermalink;
-    @Expose
-    private final String mUrl;
-    @Expose
+    private final boolean mIsDirectMessage;
+    private final boolean mHasImageUrl;
     private final boolean mScoreHidden;
-    @Expose
-    private final int mScore;
-    @Expose
-    private final int mGilded;
-    @Expose
+
+    private final String mShortTitle;
+    private final String mPostContents;
+    private final String mSubreddit;
+    private final String mPermalink;
+    private final String mFullname;
+    private final String mImageUrl;
     private final String mAuthor;
-    @Expose
+    private final String mTitle;
+    private final String mUrl;
     private final String mId;
-    @Expose
-    private final String mThumbnail;
-    @Expose
+
     private final long mCreatedUtc;
-    @Expose
-    private List<Post> mReplies;
-    @Expose
-    private int mLevel;
-    @Expose
-    private boolean mHasHighResImage;
+    private final int mScore;
+    private final int mGilded;
 
-    // When we serialise the Post to send to the wearable, don't include the image - it will be added as an asset
-    // This field can contain a low res thumbnail, or a high res full image
-    private byte[] mImage;
+//    private List<Post> mReplies;
+//    private int mLevel;
+//
+//    // When we serialise the Post to send to the wearable, don't include the image - it will be added as an asset
+//    // This field can contain a low res thumbnail, or a high res full image
+//    private byte[] mImage;
 
-    public Post(String title, String subreddit, String selftext, String fullname, String permalink, String author, String id, String thumbnail, String url, long createdUtc, int score, boolean scoreHidden, int gilded) {
-        mTitle = title;
-        mDescription = selftext;
-        mFullname = fullname;
-        mPermalink = permalink;
-        mUrl = url;
-        mScoreHidden = scoreHidden;
-        mAuthor = author;
-        mCreatedUtc = createdUtc;
-        mSubreddit = subreddit;
-        mThumbnail = thumbnail;
-        mId = id;
-        mScore = score;
-        mGilded = gilded;
+    public Post(Builder builder) {
+        mId = builder.mId;
+        mUrl = builder.mUrl;
+        mScore = builder.mScore;
+        mTitle = builder.mTitle;
+        mGilded = builder.mGilded;
+        mAuthor = builder.mAuthor;
+        mImageUrl = builder.mImageUrl;
+        mFullname = builder.mFullname;
+        mSubreddit = builder.mSubreddit;
+        mPermalink = builder.mPermalink;
+        mShortTitle = builder.mShortTitle;
+        mCreatedUtc = builder.mCreatedUtc;
+        mPostContents = builder.mPostContents;
+        mScoreHidden = builder.mIsScoreHidden;
+        mHasImageUrl = builder.mHasImageUrl;
+        mIsDirectMessage = builder.mIsDirectMessage;
+    }
+
+    public boolean isDirectMessage() {
+        return mIsDirectMessage;
     }
 
     public String getTitle() {
-        if (TextUtils.isEmpty(mTitle)) {
-            return "";
-        }
-        return mTitle.trim();
+        return mTitle;
     }
 
     public String getSubreddit() {
         return mSubreddit;
-    }
-
-    public String getDescription() {
-        if (TextUtils.isEmpty(mDescription)) {
-            return "";
-        }
-        return mDescription.trim();
     }
 
     public String getFullname() {
@@ -90,96 +67,16 @@ public class Post {
     }
 
     public String getPermalink() {
-        if (isDirectMessage()) {
-            return "/message/messages/" + mId;
-        }
-
         return mPermalink;
-    }
-
-    public String getShortTitle() {
-        if (isDirectMessage()) {
-            return getShortDescription();
-        }
-
-        return getShortString(mTitle);
-    }
-
-    private String getShortString(String string) {
-        if (string.length() < 15) {
-            return string;
-        }
-        return string.substring(0, 12) + "...";
-    }
-
-    public boolean isDirectMessage() {
-        return mFullname.startsWith("t4");
     }
 
     public String getAuthor() {
         return mAuthor;
     }
 
-    public String getShortDescription() {
-        if (mDescription.contains("\n")) {
-            String title = mDescription.substring(0, mDescription.indexOf("\n"));
-            return getShortString(title);
-        }
-        return getShortString(mDescription);
-    }
-
-    public boolean hasThumbnail() {
-        String thumbnail = mThumbnail == null ? "" : mThumbnail.trim();
-        return !TextUtils.isEmpty(thumbnail) && !thumbnail.equals("default") && !thumbnail.equals("nsfw") && !thumbnail.equals("self");
-    }
-
-    public String getThumbnail() {
-        return mThumbnail;
-    }
-
-    public byte[] getImage() {
-        return mImage;
-    }
-
-    public void setImage(byte[] image) {
-        mImage = image;
-    }
-
     public String getId() {
         return mId;
     }
-
-    public String getPostContents() {
-        String title = getTitle();
-        String description = getDescription();
-
-        if (TextUtils.isEmpty(title)) {
-            return description;
-        }
-
-        if (TextUtils.isEmpty(description)) {
-            return title;
-        }
-
-        return title + "\n\n" + description;
-    }
-
-    public List<Post> getReplies() {
-        return mReplies;
-    }
-
-    public void setReplies(List<Post> replies) {
-        mReplies = replies;
-    }
-
-    public int getReplyLevel() {
-        return mLevel;
-    }
-
-    public void setReplyLevel(int level) {
-        mLevel = level;
-    }
-
     public int getScore() {
         return mScore;
     }
@@ -192,40 +89,128 @@ public class Post {
         return mScoreHidden;
     }
 
+    public String getShortTitle() {
+        return mShortTitle;
+    }
+
     public String getUrl() {
         return mUrl;
     }
 
-    public void setHasHighResImage(boolean hasHighResAvailable) {
-        mHasHighResImage = hasHighResAvailable;
+    public boolean hasImageUrl() {
+        return mHasImageUrl;
     }
 
-    public boolean hasHighResImage() {
-        return mHasHighResImage;
+    public String getImageUrl() {
+        return mImageUrl;
     }
 
-    public static Type getPostsListTypeToken() {
-        return new TypeToken<List<Post>>() {}.getType();
+    public String getPostContents() {
+        return mPostContents;
     }
 
-    @Override public String toString() {
-        return "Post{" +
-                "mSubreddit='" + mSubreddit + '\'' +
-                ", mTitle='" + mTitle + '\'' +
-                ", mDescription='" + mDescription + '\'' +
-                ", mFullname='" + mFullname + '\'' +
-                ", mPermalink='" + mPermalink + '\'' +
-                ", mUrl='" + mUrl + '\'' +
-                ", mScoreHidden=" + mScoreHidden +
-                ", mScore=" + mScore +
-                ", mGilded=" + mGilded +
-                ", mAuthor='" + mAuthor + '\'' +
-                ", mId='" + mId + '\'' +
-                ", mThumbnail='" + mThumbnail + '\'' +
-                ", mCreatedUtc=" + mCreatedUtc +
-                ", mReplies=" + mReplies +
-                ", mLevel=" + mLevel +
-                ", mHasHighResImage=" + mHasHighResImage +
-                '}';
+    public static final class Builder {
+        private boolean mIsDirectMessage;
+        private boolean mHasImageUrl;
+        private boolean mIsScoreHidden;
+
+        private String mPostContents;
+        private String mShortTitle;
+        private String mPermalink;
+        private String mSubreddit;
+        private String mImageUrl;
+        private String mFullname;
+        private String mAuthor;
+        private String mTitle;
+        private String mUrl;
+        private String mId;
+
+        private long mCreatedUtc;
+        private int mGilded;
+        private int mScore;
+
+        public Post build() {
+            return new Post(this);
+        }
+
+        public Builder setTitle(String title) {
+            mTitle = title;
+            return this;
+        }
+
+        public Builder setSubreddit(String subreddit) {
+            mSubreddit = subreddit;
+            return this;
+        }
+
+        public Builder setIsDirectMessage(boolean isDirectMessage) {
+            mIsDirectMessage = isDirectMessage;
+            return this;
+        }
+
+        public Builder setPermalink(String permalink) {
+            mPermalink = permalink;
+            return this;
+        }
+
+        public Builder setPostContents(String postContents) {
+            mPostContents = postContents;
+            return this;
+        }
+
+        public Builder setShortTitle(String shortTitle) {
+            mShortTitle = shortTitle;
+            return this;
+        }
+
+        public Builder hasImageUrl(boolean hasImageUrl) {
+            mHasImageUrl = hasImageUrl;
+            return this;
+        }
+
+        public Builder setCreatedUtc(long createdUtc) {
+            mCreatedUtc = createdUtc;
+            return this;
+        }
+
+        public Builder setIsScoreHidden(boolean isScoreHidden) {
+            mIsScoreHidden = isScoreHidden;
+            return this;
+        }
+
+        public Builder setImageUrl(String imageUrl) {
+            mImageUrl = imageUrl;
+            return this;
+        }
+
+        public Builder setId(String id) {
+            mId = id;
+            return this;
+        }
+
+        public Builder setGilded(int gilded) {
+            mGilded = gilded;
+            return this;
+        }
+
+        public Builder setFullname(String fullname) {
+            mFullname = fullname;
+            return this;
+        }
+
+        public Builder setUrl(String url) {
+            mUrl = url;
+            return this;
+        }
+
+        public Builder setAuthor(String author) {
+            mAuthor = author;
+            return this;
+        }
+
+        public Builder setScore(int score) {
+            mScore = score;
+            return this;
+        }
     }
 }

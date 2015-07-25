@@ -10,7 +10,6 @@ import android.view.WindowInsets;
 
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -27,11 +26,11 @@ public class CommentsActivity extends Activity implements ActionFragment.OnActio
 
         String stringComments = getIntent().getStringExtra(Constants.KEY_REDDIT_POSTS);
 
-        final ArrayList<Post> comments = mGson.fromJson(stringComments, Post.getPostsListTypeToken());
-        if (comments == null) {
-            finish();
-            return;
-        }
+//        final ArrayList<Post> comments = mGson.fromJson(stringComments, Post.getPostsListTypeToken());
+//        if (comments == null) {
+//            finish();
+//            return;
+//        }
 
         mGridViewPager = (GridViewPager) findViewById(R.id.pager);
         mGridViewPager.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
@@ -48,7 +47,7 @@ public class CommentsActivity extends Activity implements ActionFragment.OnActio
                 return insets;
             }
         });
-        mGridViewPager.setAdapter(new CommentsGridPagerAdapter(CommentsActivity.this, getFragmentManager(), comments));
+//        mGridViewPager.setAdapter(new CommentsGridPagerAdapter(CommentsActivity.this, getFragmentManager(), comments));
 
         DotsPageIndicator dotsPageIndicator = (DotsPageIndicator) findViewById(R.id.page_indicator);
         dotsPageIndicator.setPager(mGridViewPager);

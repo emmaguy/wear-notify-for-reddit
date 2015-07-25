@@ -1,6 +1,9 @@
 package com.emmaguy.todayilearned.refresh;
 
-import com.emmaguy.todayilearned.sharedlib.Post;
+import android.content.res.Resources;
+
+import com.emmaguy.todayilearned.storage.UserStorage;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import javax.inject.Named;
@@ -15,9 +18,21 @@ import retrofit.converter.GsonConverter;
 public class ConverterModule {
     @Provides
     @Singleton
+    public Gson provideGson() {
+        return new Gson();
+    }
+
+    @Provides
+    @Singleton
+    public GsonConverter provideGsonConverter(Gson gson) {
+        return new GsonConverter(gson);
+    }
+
+    @Provides
+    @Singleton
     @Named("token")
-    public Converter provideTokenConverter() {
-        return new TokenConverter(new GsonConverter(new GsonBuilder().create()));
+    public Converter provideTokenConverter(GsonConverter gsonConverter) {
+        return new TokenConverter(gsonConverter);
     }
 
     @Provides
@@ -30,21 +45,22 @@ public class ConverterModule {
     @Provides
     @Singleton
     @Named("posts")
-    public GsonConverter providePostsConverter() {
-        return new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new PostsDeserialiser()).create());
+    public Converter providePostConverter(GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
+        return new PostConverter(gsonConverter, resources, userStorage);
     }
 
     @Provides
     @Singleton
     @Named("redditResponse")
-    public GsonConverter provideRedditResponseConverter() {
+    public Converter provideRedditResponseConverter() {
         return new GsonConverter(new GsonBuilder().registerTypeAdapter(RedditResponse.class, new RedditResponse.CommentResponseJsonDeserializer()).create());
     }
 
     @Provides
     @Singleton
     @Named("comments")
-    public GsonConverter provideCommentsConverter() {
-        return new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new CommentsResponse.CommentsResponseJsonDeserialiser()).create());
+    public Converter provideCommentsConverter(GsonConverter converter) {
+        return converter;
+//        return new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new CommentsResponse.CommentsResponseJsonDeserialiser()).create());
     }
 }

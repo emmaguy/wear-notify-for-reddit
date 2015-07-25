@@ -33,6 +33,7 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -166,7 +167,8 @@ public class NotificationListenerService extends WearableListenerService {
                         final boolean openOnPhoneDismisses = dataMap.getBoolean(Constants.KEY_DISMISS_AFTER_ACTION);
                         final ArrayList<Integer> actionOrder = dataMap.getIntegerArrayList(Constants.KEY_ACTION_ORDER);
 
-                        ArrayList<Post> posts = mGson.fromJson(latestPosts, Post.getPostsListTypeToken());
+                        List<Post> posts = mGson.fromJson(latestPosts, new TypeToken<List<Post>>() {
+                        }.getType());
 
                         Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
                         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -203,29 +205,21 @@ public class NotificationListenerService extends WearableListenerService {
     private void createNotificationForPost(DataMap dataMap, boolean openOnPhoneDismisses, ArrayList<Integer> actionOrder, Bitmap themeBlueBitmap, NotificationManager notificationManager, Post post) {
         try {
             Bitmap backgroundBitmap = null;
-            if (post.hasThumbnail() || post.hasHighResImage()) {
-                Asset a = dataMap.getAsset(post.getId());
-                if (a != null) {
-                    backgroundBitmap = loadBitmapFromAsset(a);
-                }
+            Asset a = dataMap.getAsset(post.getId());
+            if (a != null) {
+                backgroundBitmap = loadBitmapFromAsset(a);
             }
-            String title = post.isDirectMessage() ? getString(R.string.message_from_x, post.getAuthor()) : post.getSubreddit();
 
             Notification.Builder builder = new Notification.Builder(this)
-                    .setContentTitle(title)
-                    .setContentText((post.isDirectMessage() ? post.getDescription() : post.getPostContents()))
+                    .setContentTitle(post.getTitle())
+                    .setContentText(post.getPostContents())
                     .setSmallIcon(R.drawable.ic_launcher);
 
             boolean hasCachedImage;
             if (backgroundBitmap != null) {
-                if (post.hasThumbnail()) {
-                    // If the post has a thumbnail, use it - this will filter out nfsw etc thumbnails
-                    // but will still allow the user to see the full image if they like
-                    builder.setLargeIcon(backgroundBitmap);
-                } else {
-                    setBlueBackground(themeBlueBitmap, builder);
-                    enableNotificationGrouping(builder);
-                }
+                // If the post has a thumbnail, use it - this will filter out nfsw etc thumbnails
+                // but will still allow the user to see the full image if they like
+                builder.setLargeIcon(backgroundBitmap);
                 hasCachedImage = cacheBackgroundToDisk(sNotificationId, backgroundBitmap);
             } else {
                 hasCachedImage = false;
@@ -239,7 +233,6 @@ public class NotificationListenerService extends WearableListenerService {
                 // When the notification is dismissed, we will remove this image from the file cache
                 builder.setDeleteIntent(getDeletePendingIntent(sNotificationId));
             }
-
 
             notificationManager.notify(sNotificationId, builder.build());
 
@@ -405,7 +398,7 @@ public class NotificationListenerService extends WearableListenerService {
         Intent intent = new Intent(ACTION_RESPONSE);
         intent.putExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE, post.isDirectMessage());
         intent.putExtra(Constants.PATH_KEY_MESSAGE_TO_USER, post.getAuthor());
-        intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getDescription());
+        intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getPostContents()); // todo: desc? postcontents?
         intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
         return PendingIntent.getService(this, REQUEST_CODE_REPLY + notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
     }

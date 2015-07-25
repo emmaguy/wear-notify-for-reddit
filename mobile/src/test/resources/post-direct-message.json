@@ -1,0 +1,33 @@
+{
+  "kind": "Listing",
+  "data": {
+    "modhash": "1058394f9s947868160b3bd4c7da9b8746d83fbb519700f321",
+    "children": [
+      {
+        "kind": "t4",
+        "data": {
+          "body": "a-direct-message",
+          "was_comment": false,
+          "first_message": null,
+          "name": "t4_3i88bo",
+          "first_message_name": null,
+          "created": 1432576355.0,
+          "dest": "a-destination-user",
+          "author": "an-author",
+          "created_utc": 1432572755.0,
+          "body_html": "&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;a-direct-message&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
+          "subreddit": null,
+          "parent_id": null,
+          "context": "",
+          "replies": "",
+          "id": "3i88bo",
+          "new": false,
+          "distinguished": null,
+          "subject": "subject-of-a-direct-message"
+        }
+      }
+    ],
+    "after": null,
+    "before": null
+  }
+}

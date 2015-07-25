@@ -59,9 +59,9 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(Context context, ImageDownloader downloader, TokenStorage tokenStorage,
+    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, TokenStorage tokenStorage,
             UserStorage storage, UnauthenticatedRedditService unauthenticatedRedditService, AuthenticatedRedditService authenticatedRedditService,
-            @Named("posts") GsonConverter postsConverter, @Named("markread") Converter markAsReadConverter) {
+            @Named("posts") Converter postsConverter, @Named("markread") Converter markAsReadConverter) {
         return new LatestPostsRetriever(
                 downloader,
                 tokenStorage,

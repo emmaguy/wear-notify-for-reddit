@@ -2,16 +2,18 @@ package com.emmaguy.todayilearned.refresh;
 
 import android.support.annotation.NonNull;
 
+import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
+import com.google.android.gms.wearable.Asset;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Named;
 
 import retrofit.converter.Converter;
-import retrofit.converter.GsonConverter;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action1;
@@ -26,14 +28,14 @@ public class LatestPostsRetriever {
     private final UnauthenticatedRedditService mUnauthenticatedRedditService;
     private final AuthenticatedRedditService mAuthenticatedRedditService;
     private final ImageDownloader mImageDownloader;
-    private final GsonConverter mPostsConverter;
     private final TokenStorage mTokenStorage;
     private final UserStorage mUserStorage;
     private final Converter mMarkAsReadConverter;
+    private final Converter mPostsConverter;
 
     public LatestPostsRetriever(ImageDownloader imageDownloader, TokenStorage tokenStorage, UserStorage userStorage,
             UnauthenticatedRedditService unauthenticatedRedditService, AuthenticatedRedditService authenticatedRedditService,
-            @Named("posts") GsonConverter postsConverter, @Named("markread") Converter markAsReadConverter) {
+            @Named("posts") Converter postsConverter, @Named("markread") Converter markAsReadConverter) {
         mImageDownloader = imageDownloader;
         mTokenStorage = tokenStorage;
         mUserStorage = userStorage;
@@ -43,6 +45,7 @@ public class LatestPostsRetriever {
         mMarkAsReadConverter = markAsReadConverter;
     }
 
+    // TODO: inject different RedditServices so converters don't need to be passed around
     private RedditService getRedditServiceForLoggedInState(Converter converter) {
         if (mTokenStorage.isLoggedIn()) {
             return mAuthenticatedRedditService.getRedditService(converter);
@@ -51,16 +54,41 @@ public class LatestPostsRetriever {
         return mUnauthenticatedRedditService.getRedditService(converter, null);
     }
 
-    @NonNull public Observable<List<Post>> getPosts() {
-        final Observable<List<Post>> newPostsObservable = getRedditServiceForLoggedInState(mPostsConverter)
+    @NonNull public Observable<List<PostAndImage>> getPosts() {
+        final Observable<List<PostAndImage>> newPostsObservable = getRedditServiceForLoggedInState(mPostsConverter)
                 .latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
                 .lift(LatestPostsRetriever.<Post>flattenList())
-                .filter(filterNewPosts())
-                .doOnNext(downloadThumbnailImage())
+                .filter(new Func1<Post, Boolean>() {
+                    @Override
+                    public Boolean call(Post post) {
+                        // Check that this post is new (i.e. we haven't retrieved it before)
+                        return post.getCreatedUtc() > mUserStorage.getTimestamp();
+                    }
+                })
+                .map(new Func1<Post, PostAndImage>() {
+                    @Override public PostAndImage call(Post post) {
+                        final PostAndImage postAndImage = new PostAndImage(post);
+                        if (post.hasImageUrl()) {
+                            final byte[] bytes = mImageDownloader.downloadImage(post.getImageUrl());
+                            if (bytes != null) {
+                                postAndImage.setImage(Asset.createFromBytes(bytes));
+                            }
+                        }
+                        return postAndImage;
+                    }
+                })
                 .toList()
-                .doOnNext(updateSeenTimestamp());
+                .doOnNext(new Action1<List<PostAndImage>>() {
+                    @Override public void call(List<PostAndImage> postAndImages) {
+                        // Once all the posts have been compared against last saved timestamp
+                        // save the timestamps from these posts, so we don't see these ones again
+                        for (PostAndImage postAndImage : postAndImages) {
+                            mUserStorage.setSeenTimestamp(postAndImage.getPost().getCreatedUtc());
+                        }
+                    }
+                });
 
-        final Observable<List<Post>> newMessagesOrEmptyObservable;
+        final Observable<List<PostAndImage>> newMessagesOrEmptyObservable;
         if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
             newMessagesOrEmptyObservable = getRedditServiceForLoggedInState(mPostsConverter)
                     .unreadMessages()
@@ -74,6 +102,14 @@ public class LatestPostsRetriever {
                             }
 
                             return Observable.just(posts);
+                        }
+                    }).map(new Func1<List<Post>, List<PostAndImage>>() {
+                        @Override public List<PostAndImage> call(List<Post> posts) {
+                            List<PostAndImage> postAndImages = new ArrayList<>();
+                            for (Post p : posts) {
+                                postAndImages.add(new PostAndImage(p));
+                            }
+                            return postAndImages;
                         }
                     });
         } else {
@@ -109,54 +145,24 @@ public class LatestPostsRetriever {
         };
     }
 
-    @NonNull private Func1<Post, Boolean> filterNewPosts() {
-        return new Func1<Post, Boolean>() {
-            @Override
-            public Boolean call(Post post) {
-                // Check that this post is new (i.e. we haven't retrieved it before)
-                return mUserStorage.isTimestampNewerThanStored(post.getCreatedUtc());
-            }
-        };
-    }
+    static class PostAndImage {
+        private final Post mPost;
+        private Asset mImage;
 
-    @NonNull private Action1<Post> downloadThumbnailImage() {
-        return new Action1<Post>() {
-            @Override
-            public void call(Post post) {
-                // Default to just getting the thumbnail, if available
-                String imageUrl = post.getThumbnail();
-                boolean hasHighResAvailable = false;
+        public PostAndImage(Post post) {
+            mPost = post;
+        }
 
-                // If user has chosen to get full images, only do so if we actually have a image based url
-                if (mUserStorage.downloadFullSizedImages()) {
-                    if (isImage(post.getUrl())) {
-                        imageUrl = post.getUrl();
-                        hasHighResAvailable = true;
-                    }
-                }
+        public void setImage(Asset image) {
+            mImage = image;
+        }
 
-                if (post.hasThumbnail() || hasHighResAvailable) {
-                    post.setHasHighResImage(hasHighResAvailable);
-                    mImageDownloader.downloadImage(post, imageUrl);
-                }
-            }
-        };
-    }
+        public Asset getImage() {
+            return mImage;
+        }
 
-    private boolean isImage(String pictureFileName) {
-        return pictureFileName.endsWith(".png")
-                || pictureFileName.endsWith(".jpg")
-                || pictureFileName.endsWith(".jpeg");
-    }
-
-    @NonNull private Action1<List<Post>> updateSeenTimestamp() {
-        return new Action1<List<Post>>() {
-            // once all the posts have been processed, find the newest timestamp so we don't see these ones again
-            @Override public void call(List<Post> posts) {
-                for (Post p : posts) {
-                    mUserStorage.setSeenTimestamp(p.getCreatedUtc());
-                }
-            }
-        };
+        public Post getPost() {
+            return mPost;
+        }
     }
 }

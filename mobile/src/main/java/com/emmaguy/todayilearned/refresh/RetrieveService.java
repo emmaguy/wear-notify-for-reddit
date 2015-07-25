@@ -24,6 +24,7 @@ import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -39,6 +40,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Inject ActionStorage mWearableActionStorage;
     @Inject TokenStorage mTokenStorage;
     @Inject UserStorage mUserStorage;
+    @Inject Gson mGson;
 
     @Inject @Named("io") Scheduler mIoScheduler;
     @Inject @Named("ui") Scheduler mUiScheduler;
@@ -97,9 +99,9 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         mLatestPostsRetriever.getPosts()
                 .subscribeOn(mIoScheduler)
                 .observeOn(mUiScheduler)
-                .subscribe(new Action1<List<Post>>() {
+                .subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
                     @Override
-                    public void call(List<Post> posts) {
+                    public void call(List<LatestPostsRetriever.PostAndImage> posts) {
                         Logger.log(getApplicationContext(), "Posts " + posts.size());
                         if (posts.size() > 0) {
                             sendNewPostsData(posts);
@@ -116,26 +118,26 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 });
     }
 
-    private void sendNewPostsData(List<Post> posts) {
+    private void sendNewPostsData(List<LatestPostsRetriever.PostAndImage> postAndImages) {
         if (mGoogleApiClient.isConnected()) {
-            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-            final String latestPosts = gson.toJson(posts);
-
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
             PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_REDDIT_POSTS);
             DataMap dataMap = mapRequest.getDataMap();
-            dataMap.putString(Constants.KEY_REDDIT_POSTS, latestPosts);
 
-            for (Post p : posts) {
-                if ((p.hasThumbnail() || p.hasHighResImage()) && p.getImage() != null) {
-                    Asset asset = Asset.createFromBytes(p.getImage());
-                    dataMap.putAsset(p.getId(), asset);
+            final List<Post> posts = new ArrayList<>(postAndImages.size());
+            for (LatestPostsRetriever.PostAndImage p : postAndImages) {
+                if (p.getImage() != null) {
+                    dataMap.putAsset(p.getPost().getId(), p.getImage());
                 }
+
+                posts.add(p.getPost());
             }
-            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, mWearableActionStorage.getSelectedActionIds());
-            dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION, mUserStorage.openOnPhoneDismissesAfterAction());
+
             dataMap.putLong("timestamp", System.currentTimeMillis());
+            dataMap.putString(Constants.KEY_REDDIT_POSTS, mGson.toJson(posts));
+            dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION, mUserStorage.openOnPhoneDismissesAfterAction());
+            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, mWearableActionStorage.getSelectedActionIds());
 
             PutDataRequest request = mapRequest.asPutDataRequest();
             Logger.log(getApplicationContext(), "Sending request with " + posts.size() + " posts");

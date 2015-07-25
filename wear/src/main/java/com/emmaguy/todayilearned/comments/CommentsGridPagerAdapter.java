@@ -43,16 +43,16 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
         mContext = context;
         mRows = new ArrayList<CommentsGridPagerAdapter.Row>();
 
-        for (Post p : comments) {
-            Fragment cardFragment = cardFragment(p);
-
-            if (p.getReplies() != null && !p.getReplies().isEmpty()) {
-                Fragment actionFragment = ActionFragment.create(p.getReplies());
-                mRows.add(new Row(cardFragment, actionFragment));
-            } else {
-                mRows.add(new Row(cardFragment));
-            }
-        }
+//        for (Post p : comments) {
+//            Fragment cardFragment = cardFragment(p);
+//
+//            if (p.getReplies() != null && !p.getReplies().isEmpty()) {
+//                Fragment actionFragment = ActionFragment.create(p.getReplies());
+//                mRows.add(new Row(cardFragment, actionFragment));
+//            } else {
+//                mRows.add(new Row(cardFragment));
+//            }
+//        }
     }
 
     private Fragment cardFragment(Post p) {

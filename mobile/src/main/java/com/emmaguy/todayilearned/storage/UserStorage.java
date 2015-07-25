@@ -5,9 +5,8 @@ public interface UserStorage {
 
     void setSeenTimestamp(long timestamp);
     void clearTimestamp();
-    boolean isTimestampNewerThanStored(long timestamp);
 
-    String getTimestamp();
+    long getTimestamp();
     String getSortType();
     String getSubreddits();
     String getRefreshInterval();

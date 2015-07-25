@@ -31,12 +31,10 @@ class SharedPreferencesUserStorage implements UserStorage {
     }
 
     public void setSeenTimestamp(long createdAtUtc) {
-        if (isTimestampNewerThanStored(createdAtUtc)) {
-            mSharedPreferences
-                    .edit()
-                    .putLong(mResources.getString(R.string.prefs_key_created_utc), createdAtUtc)
-                    .apply();
-        }
+        mSharedPreferences
+                .edit()
+                .putLong(mResources.getString(R.string.prefs_key_created_utc), createdAtUtc)
+                .apply();
     }
 
     @Override public void clearTimestamp() {
@@ -60,8 +58,8 @@ class SharedPreferencesUserStorage implements UserStorage {
         return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_sync_frequency), "15");
     }
 
-    @Override public String getTimestamp() {
-        return String.valueOf(getStoredTimestamp());
+    @Override public long getTimestamp() {
+        return mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_created_utc), 0);
     }
 
     @Override
@@ -77,13 +75,5 @@ class SharedPreferencesUserStorage implements UserStorage {
     @Override
     public boolean openOnPhoneDismissesAfterAction() {
         return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_open_on_phone_dismisses), false);
-    }
-
-    @Override public boolean isTimestampNewerThanStored(long postCreatedUtc) {
-        return postCreatedUtc > getStoredTimestamp();
-    }
-
-    private long getStoredTimestamp() {
-        return mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_created_utc), 0);
     }
 }

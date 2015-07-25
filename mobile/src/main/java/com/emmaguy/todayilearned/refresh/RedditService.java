@@ -14,6 +14,7 @@ import retrofit.http.Path;
 import retrofit.http.Query;
 import rx.Observable;
 
+// TODO: separate by endpoint
 public interface RedditService {
     @POST("/api/v1/access_token")
     @Headers("Content-Type: application/x-www-form-urlencoded")

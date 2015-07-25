@@ -47,20 +47,8 @@ public class SharedPreferencesUserStorageTest {
         assertThat(mStorage.getNumberToRequest(), equalTo(1));
     }
 
-    @Test public void olderTimestampThanStored_isNotNewer() {
-        assertThat(mStorage.isTimestampNewerThanStored(90l), equalTo(false));
-    }
-
-    @Test public void sameTimestampThanStored_isNotNewer() {
-        assertThat(mStorage.isTimestampNewerThanStored(100l), equalTo(false));
-    }
-
-    @Test public void newerTimestampThanStored_isNewer() {
-        assertThat(mStorage.isTimestampNewerThanStored(110l), equalTo(true));
-    }
-
     @Test public void getTimestamp_retrievesCorrectValue() {
-        assertThat(mStorage.getTimestamp(), equalTo("100"));
+        assertThat(mStorage.getTimestamp(), equalTo(100l));
     }
 
     @Test public void clearTimestamp_shouldRemoveTimestamp() {

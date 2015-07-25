@@ -74,10 +74,9 @@ public class SettingsActivity extends AppCompatActivity {
 
             App.with(getActivity()).getAppComponent().inject(this);
 
-            addPreferencesFromResource(R.xml.preferences);
-
             WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
 
+            addPreferencesFromResource(R.xml.preferences);
             initSummary();
 
             if (Utils.sIsDebug) {
@@ -229,7 +228,7 @@ public class SettingsActivity extends AppCompatActivity {
                 mTokenStorage.forceExpireToken();
             } else if (preferenceKey.equals(getString(R.string.prefs_force_refresh_now))) {
                 mUserStorage.clearTimestamp();
-                WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
+                mAlarmListener.sendWakefulWork(getActivity());
             } else if (preferenceKey.equals(getString(R.string.prefs_key_actions_order))) {
                 Logger.sendEvent(getActivity(), Logger.LOG_EVENT_CUSTOMISE_ACTIONS, "");
             }
