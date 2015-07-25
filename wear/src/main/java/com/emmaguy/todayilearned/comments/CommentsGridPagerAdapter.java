@@ -20,20 +20,8 @@ import java.util.List;
 
 public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
     private static final int TRANSITION_DURATION_MILLIS = 100;
-    LruCache<Point, Drawable> mPageBackgrounds = new LruCache<Point, Drawable>(1) {
-        @Override
-        protected Drawable create(final Point page) {
-            TransitionDrawable background = new TransitionDrawable(new Drawable[]{
-                    new ColorDrawable(R.color.primary),
-                    new ColorDrawable(R.color.primary_darkest)
-            });
-            mPageBackgrounds.put(page, background);
-            notifyPageBackgroundChanged(page.y, page.x);
-            background.startTransition(TRANSITION_DURATION_MILLIS);
 
-            return background;
-        }
-    };
+    private final LruCache<Point, Drawable> mPageBackgrounds;
     private final Context mContext;
     private final List<Row> mRows;
 
@@ -41,18 +29,32 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
         super(fm);
 
         mContext = context;
-        mRows = new ArrayList<CommentsGridPagerAdapter.Row>();
+        mRows = new ArrayList<>();
+        mPageBackgrounds = new LruCache<Point, Drawable>(1) {
+            @Override
+            protected Drawable create(final Point page) {
+                TransitionDrawable background = new TransitionDrawable(new Drawable[]{
+                        new ColorDrawable(mContext.getResources().getColor(R.color.primary)),
+                        new ColorDrawable(mContext.getResources().getColor(R.color.primary_dark))
+                });
+                mPageBackgrounds.put(page, background);
+                notifyPageBackgroundChanged(page.y, page.x);
+                background.startTransition(TRANSITION_DURATION_MILLIS);
 
-//        for (Post p : comments) {
-//            Fragment cardFragment = cardFragment(p);
-//
-//            if (p.getReplies() != null && !p.getReplies().isEmpty()) {
-//                Fragment actionFragment = ActionFragment.create(p.getReplies());
-//                mRows.add(new Row(cardFragment, actionFragment));
-//            } else {
-//                mRows.add(new Row(cardFragment));
-//            }
-//        }
+                return background;
+            }
+        };
+
+        for (Post p : comments) {
+            Fragment cardFragment = cardFragment(p);
+
+            if (p.getReplies() != null && !p.getReplies().isEmpty()) {
+                Fragment actionFragment = ActionFragment.create(p.getReplies());
+                mRows.add(new Row(cardFragment, actionFragment));
+            } else {
+                mRows.add(new Row(cardFragment));
+            }
+        }
     }
 
     private Fragment cardFragment(Post p) {

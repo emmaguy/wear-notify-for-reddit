@@ -1,5 +1,6 @@
 package com.emmaguy.todayilearned.refresh;
 
+import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -30,6 +31,8 @@ class PostResponse {
         private String name;
         private String url;
         private String id;
+
+        private JsonElement replies;
 
         private Media media;
 
@@ -104,6 +107,10 @@ class PostResponse {
 
         public String getName() {
             return name;
+        }
+
+        public JsonElement getReplies() {
+            return replies;
         }
 
         static class Media {

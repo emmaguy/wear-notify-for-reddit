@@ -30,8 +30,6 @@ import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.gson.GsonBuilder;
 
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 

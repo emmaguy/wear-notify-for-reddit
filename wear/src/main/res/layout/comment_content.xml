@@ -56,6 +56,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed-light"
                 android:paddingBottom="3dp"
+                android:singleLine="true"
                 android:textColor="@color/dark_grey"
                 android:textSize="12dp"
                 tools:text="/u/blah" />

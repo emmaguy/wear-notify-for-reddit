@@ -4,8 +4,6 @@ import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.squareup.okhttp.OkHttpClient;
 
-import javax.inject.Inject;
-
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;

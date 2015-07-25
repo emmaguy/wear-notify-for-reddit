@@ -27,7 +27,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class PostConverterTest {
-    private final GsonConverter mGsonConverter = new GsonConverter(new Gson());
+    private final Gson mGson = new Gson();
+    private final GsonConverter mGsonConverter = new GsonConverter(mGson);
 
     @Mock UserStorage mUserStorage;
     @Mock Resources mResources;
@@ -60,7 +61,8 @@ public class PostConverterTest {
         assertThat(post.getImageUrl(), equalTo("http://b.thumbs.redditmedia.com/09H4Gb80XZmwWw5fRqXCwxSAaNxoBycel5kdyX2czsQ.jpg"));
     }
 
-    @Test public void whenUserEnablesHighResImages_postUrlIsImgurWithoutJpgExtension_appendJpgAndUse() throws Exception {
+    @Test
+    public void whenUserEnablesHighResImages_postUrlIsImgurWithoutJpgExtension_appendJpgAndUse() throws Exception {
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
         Post post = convertPostResponse("post-url-is-imgur-blank.json");
@@ -95,7 +97,7 @@ public class PostConverterTest {
         final TypedInput body = mock(TypedInput.class);
         when(body.in()).thenReturn(TestUtils.loadFileFromStream(filename));
 
-        final PostConverter postConverter = new PostConverter(mGsonConverter, mResources, mUserStorage);
+        final PostConverter postConverter = new PostConverter(mGson, mGsonConverter, mResources, mUserStorage);
         final List<Post> posts = (List<Post>) postConverter.fromBody(body, new ParameterizedType() {
             @Override public Type[] getActualTypeArguments() {
                 return new Type[]{Post.class};

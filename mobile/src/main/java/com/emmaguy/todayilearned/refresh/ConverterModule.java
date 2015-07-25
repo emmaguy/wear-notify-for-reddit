@@ -45,8 +45,8 @@ public class ConverterModule {
     @Provides
     @Singleton
     @Named("posts")
-    public Converter providePostConverter(GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
-        return new PostConverter(gsonConverter, resources, userStorage);
+    public Converter providePostConverter(Gson gson, GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
+        return new PostConverter(gson, gsonConverter, resources, userStorage);
     }
 
     @Provides
@@ -59,8 +59,7 @@ public class ConverterModule {
     @Provides
     @Singleton
     @Named("comments")
-    public Converter provideCommentsConverter(GsonConverter converter) {
-        return converter;
-//        return new GsonConverter(new GsonBuilder().registerTypeAdapter(Post.getPostsListTypeToken(), new CommentsResponse.CommentsResponseJsonDeserialiser()).create());
+    public Converter provideCommentsConverter(Gson gson, GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
+        return new CommentsConverter(gson, gsonConverter, resources, userStorage);
     }
 }

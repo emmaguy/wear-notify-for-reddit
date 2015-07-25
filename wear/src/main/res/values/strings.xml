@@ -33,9 +33,9 @@
     <string name="force_finish_main_activity">FinishMainActivity</string>
 
     <plurals name="points">
-        <item quantity="one">pt</item>
-        <item quantity="zero">pts</item>
-        <item quantity="other">pts</item>
+        <item quantity="one">%1$s pt</item>
+        <item quantity="zero">%1$s pts</item>
+        <item quantity="other">%1$s pts</item>
     </plurals>
 
 </resources>

@@ -28,12 +28,12 @@ public class RedditCommentCardFragment extends CardFragment {
 
     public static CardFragment create(Post p) {
         Bundle args = new Bundle();
-//        args.putString(ARGS_KEY_TITLE, p.getAuthor());
-//        args.putString(ARGS_KEY_TEXT, p.getDescription());
-//        args.putBoolean(ARGS_KEY_SCORE_HIDDEN, p.isScoreHidden());
-//        args.putInt(ARGS_KEY_SCORE, p.getScore());
-//        args.putInt(ARGS_KEY_GILDED, p.getGilded());
-//        args.putInt(ARGS_KEY_REPLY_LEVEL, p.getReplyLevel());
+        args.putString(ARGS_KEY_TITLE, p.getAuthor());
+        args.putString(ARGS_KEY_TEXT, p.getPostContents());
+        args.putBoolean(ARGS_KEY_SCORE_HIDDEN, p.isScoreHidden());
+        args.putInt(ARGS_KEY_SCORE, p.getScore());
+        args.putInt(ARGS_KEY_GILDED, p.getGilded());
+        args.putInt(ARGS_KEY_REPLY_LEVEL, p.getReplyLevel());
 
         RedditCommentCardFragment fragment = new RedditCommentCardFragment();
         fragment.setArguments(args);
@@ -67,7 +67,7 @@ public class RedditCommentCardFragment extends CardFragment {
         if (mIsScoreHidden) {
             score.setText(getString(R.string.score_hidden));
         } else {
-            score.setText(mScore + " " + getResources().getQuantityString(R.plurals.points, mScore));
+            score.setText(getResources().getQuantityString(R.plurals.points, mScore, mScore));
         }
         levelView.setReplyLevel(mReplyLevel);
 

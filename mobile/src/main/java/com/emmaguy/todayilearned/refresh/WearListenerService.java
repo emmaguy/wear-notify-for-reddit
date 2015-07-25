@@ -47,6 +47,7 @@ public class WearListenerService extends WearableListenerService {
     @Inject @Named("redditResponse") Converter mResponseConverter;
     @Inject @Named("comments") Converter mCommentsConverter;
     @Inject TokenStorage mTokenStorage;
+    @Inject Gson mGson;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -155,13 +156,13 @@ public class WearListenerService extends WearableListenerService {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<Post>>() {
                     @Override
-                    public void call(List<Post> posts) {
-                        if (posts != null) {
-                            sendComments(posts);
-                            Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
-                        } else {
+                    public void call(List<Post> comments) {
+                        if (comments == null) {
                             Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
                             sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                        } else {
+                            sendComments(comments);
+                            Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
                         }
                     }
                 }, new Action1<Throwable>() {
@@ -174,12 +175,9 @@ public class WearListenerService extends WearableListenerService {
                 });
     }
 
-    private void sendComments(List<Post> posts) {
-        final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-        final String comments = gson.toJson(posts);
-
+    private void sendComments(final List<Post> comments) {
         PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_COMMENTS);
-        mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, comments);
+        mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, mGson.toJson(comments));
         mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
         PutDataRequest request = mapRequest.asPutDataRequest();
@@ -187,7 +185,7 @@ public class WearListenerService extends WearableListenerService {
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                     @Override
                     public void onResult(DataApi.DataItemResult dataItemResult) {
-                        Logger.log(WearListenerService.this, "Sent comments onResult: " + dataItemResult.getStatus());
+                        Logger.log(WearListenerService.this, "Sent " + comments.size() + " comments onResult: " + dataItemResult.getStatus());
                     }
                 });
     }

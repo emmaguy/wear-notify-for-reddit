@@ -1,5 +1,7 @@
 package com.emmaguy.todayilearned.sharedlib;
 
+import java.util.List;
+
 public class Post {
     private final boolean mIsDirectMessage;
     private final boolean mHasImageUrl;
@@ -17,15 +19,11 @@ public class Post {
     private final String mId;
 
     private final long mCreatedUtc;
+    private final int mReplyLevel;
     private final int mScore;
     private final int mGilded;
 
-//    private List<Post> mReplies;
-//    private int mLevel;
-//
-//    // When we serialise the Post to send to the wearable, don't include the image - it will be added as an asset
-//    // This field can contain a low res thumbnail, or a high res full image
-//    private byte[] mImage;
+    private final List<Post> mReplies;
 
     public Post(Builder builder) {
         mId = builder.mId;
@@ -34,15 +32,17 @@ public class Post {
         mTitle = builder.mTitle;
         mGilded = builder.mGilded;
         mAuthor = builder.mAuthor;
+        mReplies = builder.mReplies;
         mImageUrl = builder.mImageUrl;
         mFullname = builder.mFullname;
         mSubreddit = builder.mSubreddit;
         mPermalink = builder.mPermalink;
+        mReplyLevel = builder.mReplyLevel;
         mShortTitle = builder.mShortTitle;
         mCreatedUtc = builder.mCreatedUtc;
+        mHasImageUrl = builder.mHasImageUrl;
         mPostContents = builder.mPostContents;
         mScoreHidden = builder.mIsScoreHidden;
-        mHasImageUrl = builder.mHasImageUrl;
         mIsDirectMessage = builder.mIsDirectMessage;
     }
 
@@ -77,6 +77,7 @@ public class Post {
     public String getId() {
         return mId;
     }
+
     public int getScore() {
         return mScore;
     }
@@ -109,6 +110,14 @@ public class Post {
         return mPostContents;
     }
 
+    public int getReplyLevel() {
+        return mReplyLevel;
+    }
+
+    public List<Post> getReplies() {
+        return mReplies;
+    }
+
     public static final class Builder {
         private boolean mIsDirectMessage;
         private boolean mHasImageUrl;
@@ -124,10 +133,12 @@ public class Post {
         private String mTitle;
         private String mUrl;
         private String mId;
+        private List<Post> mReplies;
 
         private long mCreatedUtc;
         private int mGilded;
         private int mScore;
+        private int mReplyLevel;
 
         public Post build() {
             return new Post(this);
@@ -210,6 +221,16 @@ public class Post {
 
         public Builder setScore(int score) {
             mScore = score;
+            return this;
+        }
+
+        public Builder setReplies(List<Post> replies) {
+            mReplies = replies;
+            return this;
+        }
+
+        public Builder setReplyLevel(int replyLevel) {
+            mReplyLevel = replyLevel;
             return this;
         }
     }

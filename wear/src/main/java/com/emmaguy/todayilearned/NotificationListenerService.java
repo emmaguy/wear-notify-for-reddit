@@ -398,7 +398,7 @@ public class NotificationListenerService extends WearableListenerService {
         Intent intent = new Intent(ACTION_RESPONSE);
         intent.putExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE, post.isDirectMessage());
         intent.putExtra(Constants.PATH_KEY_MESSAGE_TO_USER, post.getAuthor());
-        intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getPostContents()); // todo: desc? postcontents?
+        intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getPostContents());
         intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
         return PendingIntent.getService(this, REQUEST_CODE_REPLY + notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
     }
