@@ -1,6 +1,7 @@
 package com.emmaguy.todayilearned.refresh;
 
 import com.emmaguy.todayilearned.settings.SubscriptionResponse;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.util.List;
@@ -33,8 +34,7 @@ public interface RedditService {
 
     @GET("/message/unread.json") Observable<List<Post>> unreadMessages();
 
-    @GET("/{permalink}.json") Observable<List<Post>> comments(
-            @Path(value = "permalink", encode = false) String permalink,
+    @GET("/{permalink}.json") Observable<List<Comment>> comments(@Path(value = "permalink", encode = false) String permalink,
             @Query("sort") String sort);
 
     @GET("/r/{subreddit}/{sort}.json") Observable<List<Post>> latestPosts(@Path("subreddit") String subreddit,

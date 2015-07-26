@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 
 import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.BasicAuthorisationRequestInterceptorBuilder;
+import com.emmaguy.todayilearned.refresh.CommentsConverter;
 import com.emmaguy.todayilearned.refresh.DelegatingConverter;
 import com.emmaguy.todayilearned.refresh.ImageDownloader;
 import com.emmaguy.todayilearned.refresh.LatestPostsRetriever;
@@ -97,7 +98,8 @@ public class AppModule {
                         new TokenConverter(gsonConverter),
                         new PostConverter(gson, gsonConverter, resources, userStorage),
                         new MarkAsReadConverter(),
-                        new SubscriptionConverter()))
+                        new SubscriptionConverter(),
+                        new CommentsConverter(gson, gsonConverter, resources, userStorage)))
                 .setRequestInterceptor(new BasicAuthorisationRequestInterceptorBuilder(new Base64Encoder()).build(credentials))
                 .build()
                 .create(RedditService.class);
@@ -118,7 +120,8 @@ public class AppModule {
                         new TokenConverter(gsonConverter),
                         new PostConverter(gson, gsonConverter, resources, userStorage),
                         new MarkAsReadConverter(),
-                        new SubscriptionConverter()))
+                        new SubscriptionConverter(),
+                        new CommentsConverter(gson, gsonConverter, resources, userStorage)))
                 .build()
                 .create(RedditService.class);
 

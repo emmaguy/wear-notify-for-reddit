@@ -18,17 +18,13 @@ import java.util.List;
 class ListingResponseConverter {
     private final UserStorage mUserStorage;
     private final Resources mResources;
-    private final Gson mGson;
 
-    ListingResponseConverter(Gson gson, UserStorage userStorage, Resources resources) {
-        mGson = gson;
+    ListingResponseConverter(UserStorage userStorage, Resources resources) {
         mUserStorage = userStorage;
         mResources = resources;
     }
 
-    @NonNull public List<Post> convert(ListingResponse listingResponse, int level) {
-        level++;
-
+    @NonNull public List<Post> convert(ListingResponse listingResponse) {
         final List<Post> result = new ArrayList<>();
         if (listingResponse == null || listingResponse.getData() == null ||
                 listingResponse.getData().getChildren() == null || listingResponse.getData().getChildren().isEmpty()) {
@@ -42,9 +38,6 @@ class ListingResponseConverter {
             }
 
             final boolean isDirectMessage = data.getName().startsWith("t4");
-            final boolean hasReplies = data.getReplies() != null && data.getReplies().isJsonObject();
-            final List<Post> repliesResponse = hasReplies ? convert(mGson.fromJson(data.getReplies(), ListingResponse.class), level) : null;
-
             final String title = StringUtils.isEmpty(data.getTitle()) ? "" : data.getTitle().trim();
             final String description = getDescription(data);
             final String subreddit = data.getSubreddit();
@@ -67,9 +60,6 @@ class ListingResponseConverter {
                     .setScore(data.getScore())
                     .hasImageUrl(!StringUtils.isEmpty(imageUrl))
                     .setIsDirectMessage(isDirectMessage)
-                    .setIsScoreHidden(data.isScoreHidden())
-                    .setReplyLevel(level)
-                    .setReplies(repliesResponse)
                     .build());
         }
 

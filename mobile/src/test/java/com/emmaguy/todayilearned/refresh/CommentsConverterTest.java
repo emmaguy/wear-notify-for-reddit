@@ -3,6 +3,7 @@ package com.emmaguy.todayilearned.refresh;
 import android.content.res.Resources;
 
 import com.emmaguy.todayilearned.TestUtils;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.gson.Gson;
@@ -37,30 +38,42 @@ public class CommentsConverterTest {
         initMocks(this);
     }
 
-    @Test public void parsesToPostsSuccessfully() throws Exception {
-        List<Post> posts = convertComments("comment-default.json");
+    @Test public void parsesCommentsSuccessfully() throws Exception {
+        List<Comment> comments = convertComments("comment-default.json");
 
-        assertThat(posts.size(), equalTo(2));
+        assertThat(comments.size(), equalTo(2));
 
-        assertThat(posts.get(0).getPostContents(), equalTo("first reply lol"));
-        assertThat(posts.get(0).getReplyLevel(), equalTo(1));
-        assertThat(posts.get(0).getScore(), equalTo(1));
-        assertThat(posts.get(0).getReplies().size(), equalTo(1));
-        assertThat(posts.get(0).getReplies().get(0).getPostContents(), equalTo("reply to first reply"));
-        assertThat(posts.get(0).getReplies().get(0).getReplyLevel(), equalTo(2));
+        assertThat(comments.get(0).getPostContents(), equalTo("first reply lol"));
+        assertThat(comments.get(0).getReplyLevel(), equalTo(1));
+        assertThat(comments.get(0).getScore(), equalTo(1));
+        assertThat(comments.get(0).getReplies().size(), equalTo(1));
+        assertThat(comments.get(0).getReplies().get(0).getPostContents(), equalTo("reply to first reply"));
+        assertThat(comments.get(0).getReplies().get(0).getReplyLevel(), equalTo(2));
 
-        assertThat(posts.get(1).getPostContents(), equalTo("second reply"));
-        assertThat(posts.get(1).getReplyLevel(), equalTo(1));
+        assertThat(comments.get(1).getPostContents(), equalTo("second reply"));
+        assertThat(comments.get(1).getReplyLevel(), equalTo(1));
     }
 
-    private List<Post> convertComments(String filename) throws IOException, ConversionException {
+    @Test public void parsesSingleCommentSuccessfully() throws Exception {
+        Comment comment = convertComments("comment-default.json").get(0);
+
+        assertThat(comment.getAuthor(), equalTo("awesomesaucetester"));
+        assertThat(comment.getPostContents(), equalTo("first reply lol"));
+        assertThat(comment.isScoreHidden(), equalTo(true));
+        assertThat(comment.getScore(), equalTo(1));
+        assertThat(comment.getGilded(), equalTo(0));
+        assertThat(comment.getReplyLevel(), equalTo(1));
+        assertThat(comment.getReplies().size(), equalTo(1));
+    }
+
+    private List<Comment> convertComments(String filename) throws IOException, ConversionException {
         final TypedInput body = mock(TypedInput.class);
         when(body.in()).thenReturn(TestUtils.loadFileFromStream(filename));
 
         final CommentsConverter commentsConverter = new CommentsConverter(mGson, mGsonConverter, mResources, mUserStorage);
-        final List<Post> posts = (List<Post>) commentsConverter.fromBody(body, new ParameterizedType() {
+        final List<Comment> comments = (List<Comment>) commentsConverter.fromBody(body, new ParameterizedType() {
             @Override public Type[] getActualTypeArguments() {
-                return new Type[]{Post.class};
+                return new Type[]{Comment.class};
             }
 
             @Override public Type getOwnerType() {
@@ -72,6 +85,6 @@ public class CommentsConverterTest {
             }
         });
 
-        return posts;
+        return comments;
     }
 }

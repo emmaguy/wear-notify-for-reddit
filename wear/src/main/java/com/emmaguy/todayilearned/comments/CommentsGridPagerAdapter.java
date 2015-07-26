@@ -13,6 +13,7 @@ import android.support.wearable.view.GridPagerAdapter;
 import android.util.LruCache;
 
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
     private final Context mContext;
     private final List<Row> mRows;
 
-    public CommentsGridPagerAdapter(Context context, FragmentManager fm, ArrayList<Post> comments) {
+    public CommentsGridPagerAdapter(Context context, FragmentManager fm, ArrayList<Comment> comments) {
         super(fm);
 
         mContext = context;
@@ -45,11 +46,11 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
             }
         };
 
-        for (Post p : comments) {
-            Fragment cardFragment = cardFragment(p);
+        for (Comment comment : comments) {
+            Fragment cardFragment = cardFragment(comment);
 
-            if (p.getReplies() != null && !p.getReplies().isEmpty()) {
-                Fragment actionFragment = ActionFragment.create(p.getReplies());
+            if (comment.getReplies() != null && !comment.getReplies().isEmpty()) {
+                Fragment actionFragment = ActionFragment.create(comment.getReplies());
                 mRows.add(new Row(cardFragment, actionFragment));
             } else {
                 mRows.add(new Row(cardFragment));
@@ -57,7 +58,7 @@ public class CommentsGridPagerAdapter extends FragmentGridPagerAdapter {
         }
     }
 
-    private Fragment cardFragment(Post p) {
+    private Fragment cardFragment(Comment p) {
         CardFragment fragment = RedditCommentCardFragment.create(p);
         // Add some extra bottom margin to leave room for the page indicator
         fragment.setCardMarginBottom(mContext.getResources().getDimensionPixelSize(R.dimen.card_margin_bottom));

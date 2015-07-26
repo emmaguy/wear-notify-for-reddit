@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.WindowInsets;
 
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.Gson;
@@ -28,7 +29,7 @@ public class CommentsActivity extends Activity implements ActionFragment.OnActio
         setContentView(R.layout.activity_comments);
 
         String stringComments = getIntent().getStringExtra(Constants.KEY_REDDIT_POSTS);
-        final ArrayList<Post> comments = mGson.fromJson(stringComments, new TypeToken<List<Post>>() {}.getType());
+        final ArrayList<Comment> comments = mGson.fromJson(stringComments, new TypeToken<List<Comment>>() {}.getType());
         if (comments == null) {
             finish();
             return;

@@ -141,7 +141,7 @@
             "downs": 0,
             "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;first reply lol&lt;/p&gt;\n&lt;/div&gt;",
             "subreddit": "test",
-            "score_hidden": false,
+            "score_hidden": true,
             "name": "t1_ctfvpqo",
             "created": 1437876896.0,
             "author_flair_text": null,

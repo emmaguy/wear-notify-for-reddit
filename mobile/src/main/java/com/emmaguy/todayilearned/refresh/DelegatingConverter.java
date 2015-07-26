@@ -1,6 +1,7 @@
 package com.emmaguy.todayilearned.refresh;
 
 import com.emmaguy.todayilearned.settings.SubscriptionResponse;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import java.lang.reflect.ParameterizedType;
@@ -17,16 +18,18 @@ import retrofit.mime.TypedOutput;
 public class DelegatingConverter implements Converter {
     private final SubscriptionConverter mSubscriptionConverter;
     private final MarkAsReadConverter mMarkAsReadConverter;
+    private final CommentsConverter mCommentsConverter;
     private final TokenConverter mTokenConverter;
     private final PostConverter mPostConverter;
     private final Converter mOriginalConverter;
 
-    public DelegatingConverter(Converter originalConverter, TokenConverter tokenConverter, PostConverter postConverter, MarkAsReadConverter markAsReadConverter, SubscriptionConverter subscriptionConverter) {
+    public DelegatingConverter(Converter originalConverter, TokenConverter tokenConverter, PostConverter postConverter, MarkAsReadConverter markAsReadConverter, SubscriptionConverter subscriptionConverter, CommentsConverter commentsConverter) {
+        mSubscriptionConverter = subscriptionConverter;
         mMarkAsReadConverter = markAsReadConverter;
         mOriginalConverter = originalConverter;
+        mCommentsConverter = commentsConverter;
         mTokenConverter = tokenConverter;
         mPostConverter = postConverter;
-        mSubscriptionConverter = subscriptionConverter;
     }
 
     @Override
@@ -37,17 +40,19 @@ public class DelegatingConverter implements Converter {
             return mMarkAsReadConverter.fromBody(body, type);
         } else if (type == SubscriptionResponse.class) {
             return mSubscriptionConverter.fromBody(body, type);
-        } else if (isListOfPosts(type)) {
+        } else if (isListOfDesiredType(type, Post.class)) {
             return mPostConverter.fromBody(body, type);
+        } else if (isListOfDesiredType(type, Comment.class)) {
+            return mCommentsConverter.fromBody(body, type);
         }
 
         return mOriginalConverter.fromBody(body, type);
     }
 
-    private boolean isListOfPosts(Type type) {
+    private boolean isListOfDesiredType(Type type, Type desiredType) {
         if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
-            return parameterizedType.getActualTypeArguments()[0] == Post.class;
+            return parameterizedType.getActualTypeArguments()[0] == desiredType;
         }
         return false;
     }

@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.Gson;
 
@@ -18,7 +19,7 @@ public class ActionFragment extends Fragment implements View.OnClickListener {
     private OnActionListener mListener;
     private String mReplies;
 
-    public static Fragment create(List<Post> replies) {
+    public static Fragment create(List<Comment> replies) {
         Bundle args = new Bundle();
         args.putString(ARGS_KEY_REPLIES, new Gson().toJson(replies));
 

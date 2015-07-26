@@ -29,7 +29,7 @@ public class PostConverter implements Converter {
     @Override
     public Object fromBody(TypedInput body, Type type) throws ConversionException {
         ListingResponse listingResponse = (ListingResponse) mOriginalConverter.fromBody(body, ListingResponse.class);
-        return new ListingResponseConverter(mGson, mUserStorage, mResources).convert(listingResponse, 0);
+        return new ListingResponseConverter(mUserStorage, mResources).convert(listingResponse);
     }
 
     @Override

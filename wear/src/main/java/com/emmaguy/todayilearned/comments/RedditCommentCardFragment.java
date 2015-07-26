@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 public class RedditCommentCardFragment extends CardFragment {
@@ -26,14 +27,14 @@ public class RedditCommentCardFragment extends CardFragment {
     private int mGildedCount;
     private int mReplyLevel;
 
-    public static CardFragment create(Post p) {
+    public static CardFragment create(Comment comment) {
         Bundle args = new Bundle();
-        args.putString(ARGS_KEY_TITLE, p.getAuthor());
-        args.putString(ARGS_KEY_TEXT, p.getPostContents());
-        args.putBoolean(ARGS_KEY_SCORE_HIDDEN, p.isScoreHidden());
-        args.putInt(ARGS_KEY_SCORE, p.getScore());
-        args.putInt(ARGS_KEY_GILDED, p.getGilded());
-        args.putInt(ARGS_KEY_REPLY_LEVEL, p.getReplyLevel());
+        args.putString(ARGS_KEY_TITLE, comment.getAuthor());
+        args.putString(ARGS_KEY_TEXT, comment.getPostContents());
+        args.putBoolean(ARGS_KEY_SCORE_HIDDEN, comment.isScoreHidden());
+        args.putInt(ARGS_KEY_SCORE, comment.getScore());
+        args.putInt(ARGS_KEY_GILDED, comment.getGilded());
+        args.putInt(ARGS_KEY_REPLY_LEVEL, comment.getReplyLevel());
 
         RedditCommentCardFragment fragment = new RedditCommentCardFragment();
         fragment.setArguments(args);

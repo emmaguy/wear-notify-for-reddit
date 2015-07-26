@@ -8,6 +8,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.common.PocketUtils;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.TokenStorage;
@@ -152,9 +153,9 @@ public class WearListenerService extends WearableListenerService {
         getRedditServiceForLoggedInState().comments(permalink, "best")
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<Post>>() {
+                .subscribe(new Action1<List<Comment>>() {
                     @Override
-                    public void call(List<Post> comments) {
+                    public void call(List<Comment> comments) {
                         if (comments == null) {
                             Logger.sendEvent(getApplicationContext(), Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
                             sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
@@ -173,7 +174,7 @@ public class WearListenerService extends WearableListenerService {
                 });
     }
 
-    private void sendComments(final List<Post> comments) {
+    private void sendComments(final List<Comment> comments) {
         PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_COMMENTS);
         mapRequest.getDataMap().putString(Constants.KEY_REDDIT_POSTS, mGson.toJson(comments));
         mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());

@@ -2,6 +2,7 @@ package com.emmaguy.todayilearned.refresh;
 
 import com.emmaguy.todayilearned.TestUtils;
 import com.emmaguy.todayilearned.settings.SubscriptionResponse;
+import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Post;
 
 import org.junit.Before;
@@ -25,6 +26,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class DelegatingConverterTest {
     @Mock SubscriptionConverter mSubscriptionConverter;
     @Mock MarkAsReadConverter mMarkAsReadConverter;
+    @Mock CommentsConverter mCommentsConverter;
     @Mock TokenConverter mTokenConverter;
     @Mock PostConverter mPostConverter;
     @Mock Converter mConverter;
@@ -35,10 +37,10 @@ public class DelegatingConverterTest {
         initMocks(this);
     }
 
-    private Type getListOfPostsType() {
+    private Type getListOfType(final Type desiredType) {
         return new ParameterizedType() {
             @Override public Type[] getActualTypeArguments() {
-                return new Type[]{Post.class};
+                return new Type[]{desiredType};
             }
 
             @Override public Type getOwnerType() {
@@ -52,35 +54,38 @@ public class DelegatingConverterTest {
     }
 
     @Test public void usesPostConverter_whenParsingPosts() throws Exception {
-        final Type listOfPostsType = getListOfPostsType();
+        final Type listOfPostsType = getListOfType(Post.class);
         convertResponse("post-default.json", listOfPostsType);
 
         verifyZeroInteractions(mSubscriptionConverter);
         verifyZeroInteractions(mMarkAsReadConverter);
+        verifyZeroInteractions(mCommentsConverter);
         verifyZeroInteractions(mTokenConverter);
         verifyZeroInteractions(mConverter);
 
         verify(mPostConverter).fromBody(mTypedInput, listOfPostsType);
     }
 
-    @Test public void usesPostConverter_whenParsingComments() throws Exception {
-        final Type listOfPostsType = getListOfPostsType();
+    @Test public void usesCommentsConverter_whenParsingComments() throws Exception {
+        final Type listOfPostsType = getListOfType(Comment.class);
         convertResponse("comments-default.json", listOfPostsType);
 
         verifyZeroInteractions(mSubscriptionConverter);
         verifyZeroInteractions(mMarkAsReadConverter);
         verifyZeroInteractions(mTokenConverter);
+        verifyZeroInteractions(mPostConverter);
         verifyZeroInteractions(mConverter);
 
-        verify(mPostConverter).fromBody(mTypedInput, listOfPostsType);
+        verify(mCommentsConverter).fromBody(mTypedInput, listOfPostsType);
     }
 
     @Test public void usesPostConverter_whenParsingDirectMessages() throws Exception {
-        final Type listOfPostsType = getListOfPostsType();
+        final Type listOfPostsType = getListOfType(Post.class);
         convertResponse("post-direct-message.json", listOfPostsType);
 
         verifyZeroInteractions(mSubscriptionConverter);
         verifyZeroInteractions(mMarkAsReadConverter);
+        verifyZeroInteractions(mCommentsConverter);
         verifyZeroInteractions(mTokenConverter);
         verifyZeroInteractions(mConverter);
 
@@ -92,6 +97,7 @@ public class DelegatingConverterTest {
         convertResponse("markasread", type);
 
         verifyZeroInteractions(mSubscriptionConverter);
+        verifyZeroInteractions(mCommentsConverter);
         verifyZeroInteractions(mTokenConverter);
         verifyZeroInteractions(mPostConverter);
         verifyZeroInteractions(mConverter);
@@ -105,6 +111,7 @@ public class DelegatingConverterTest {
 
         verifyZeroInteractions(mSubscriptionConverter);
         verifyZeroInteractions(mMarkAsReadConverter);
+        verifyZeroInteractions(mCommentsConverter);
         verifyZeroInteractions(mPostConverter);
         verifyZeroInteractions(mConverter);
 
@@ -117,6 +124,7 @@ public class DelegatingConverterTest {
 
         verifyZeroInteractions(mSubscriptionConverter);
         verifyZeroInteractions(mMarkAsReadConverter);
+        verifyZeroInteractions(mCommentsConverter);
         verifyZeroInteractions(mPostConverter);
         verifyZeroInteractions(mConverter);
 
@@ -128,6 +136,7 @@ public class DelegatingConverterTest {
         convertResponse("subscriptions-sync.json", type);
 
         verifyZeroInteractions(mMarkAsReadConverter);
+        verifyZeroInteractions(mCommentsConverter);
         verifyZeroInteractions(mTokenConverter);
         verifyZeroInteractions(mPostConverter);
         verifyZeroInteractions(mConverter);
@@ -139,6 +148,6 @@ public class DelegatingConverterTest {
         when(mTypedInput.in()).thenReturn(TestUtils.loadFileFromStream(filename));
 
         new DelegatingConverter(mConverter, mTokenConverter, mPostConverter,
-                mMarkAsReadConverter, mSubscriptionConverter).fromBody(mTypedInput, type);
+                mMarkAsReadConverter, mSubscriptionConverter, mCommentsConverter).fromBody(mTypedInput, type);
     }
 }
