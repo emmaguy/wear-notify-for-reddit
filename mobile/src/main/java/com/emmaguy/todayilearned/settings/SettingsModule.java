@@ -18,19 +18,6 @@ import retrofit.RequestInterceptor;
 public class SettingsModule {
     @Provides
     @Singleton
-    public Encoder provideEncoder() {
-        return new Base64Encoder();
-    }
-
-    @Provides
-    @Singleton
-    public RequestInterceptor provideBasicAuthorisationRequestInterceptor(Resources resources, Encoder encoder) {
-        final String credentials = resources.getString(R.string.client_id) + ":";
-        return new BasicAuthorisationRequestInterceptorBuilder(encoder).build(credentials);
-    }
-
-    @Provides
-    @Singleton
     public WearableActions provideWearableActions(Context context, Resources resources, TokenStorage tokenStorage) {
         return new WearableActions(context, resources, tokenStorage);
     }

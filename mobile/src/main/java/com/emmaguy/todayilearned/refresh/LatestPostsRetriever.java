@@ -2,18 +2,13 @@ package com.emmaguy.todayilearned.refresh;
 
 import android.support.annotation.NonNull;
 
-import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.android.gms.wearable.Asset;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Named;
-
-import retrofit.converter.Converter;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action1;
@@ -25,37 +20,32 @@ import rx.functions.Func1;
  * Created by emma on 14/06/15.
  */
 public class LatestPostsRetriever {
-    private final AuthenticatedRedditService mAuthenticatedRedditService;
-    private final ImageDownloader mImageDownloader;
     private final RedditService mUnauthenticatedRedditService;
+    private final RedditService mAuthenticatedRedditService;
+
+    private final ImageDownloader mImageDownloader;
     private final TokenStorage mTokenStorage;
     private final UserStorage mUserStorage;
-    private final Converter mMarkAsReadConverter;
-    private final Converter mPostsConverter;
 
     public LatestPostsRetriever(ImageDownloader imageDownloader, TokenStorage tokenStorage, UserStorage userStorage,
-            RedditService unauthenticatedRedditService, AuthenticatedRedditService authenticatedRedditService,
-            @Named("posts") Converter postsConverter, @Named("markread") Converter markAsReadConverter) {
+            RedditService unauthenticatedRedditService, RedditService authenticatedRedditService) {
         mImageDownloader = imageDownloader;
         mTokenStorage = tokenStorage;
         mUserStorage = userStorage;
         mUnauthenticatedRedditService = unauthenticatedRedditService;
         mAuthenticatedRedditService = authenticatedRedditService;
-        mPostsConverter = postsConverter;
-        mMarkAsReadConverter = markAsReadConverter;
     }
 
-    // TODO: inject different RedditServices so converters don't need to be passed around
-    private RedditService getRedditServiceForLoggedInState(Converter converter) {
+    private RedditService getRedditServiceForLoggedInState() {
         if (mTokenStorage.isLoggedIn()) {
-            return mAuthenticatedRedditService.getRedditService(converter);
+            return mAuthenticatedRedditService;
         }
 
         return mUnauthenticatedRedditService;
     }
 
     @NonNull public Observable<List<PostAndImage>> getPosts() {
-        final Observable<List<PostAndImage>> newPostsObservable = getRedditServiceForLoggedInState(mPostsConverter)
+        final Observable<List<PostAndImage>> newPostsObservable = getRedditServiceForLoggedInState()
                 .latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
                 .lift(LatestPostsRetriever.<Post>flattenList())
                 .filter(new Func1<Post, Boolean>() {
@@ -90,26 +80,24 @@ public class LatestPostsRetriever {
 
         final Observable<List<PostAndImage>> newMessagesOrEmptyObservable;
         if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
-            newMessagesOrEmptyObservable = getRedditServiceForLoggedInState(mPostsConverter)
-                    .unreadMessages()
-                    .flatMap(new Func1<List<Post>, Observable<List<Post>>>() {
-                        @Override public Observable<List<Post>> call(List<Post> posts) {
+            newMessagesOrEmptyObservable = mAuthenticatedRedditService.unreadMessages()
+                    .lift(LatestPostsRetriever.<Post>flattenList())
+                    .map(new Func1<Post, PostAndImage>() {
+                        @Override public PostAndImage call(Post post) {
+                            return new PostAndImage(post);
+                        }
+                    })
+                    .toList()
+                    .flatMap(new Func1<List<PostAndImage>, Observable<List<PostAndImage>>>() {
+                        @Override public Observable<List<PostAndImage>> call(List<PostAndImage> posts) {
                             if (!posts.isEmpty()) {
-                                MarkAllRead markAllRead = getRedditServiceForLoggedInState(mMarkAsReadConverter).markAllMessagesRead();
+                                MarkAllRead markAllRead = mAuthenticatedRedditService.markAllMessagesRead();
                                 if (markAllRead.hasErrors()) {
                                     throw new RuntimeException("Failed to mark all messages as read: " + markAllRead);
                                 }
                             }
 
                             return Observable.just(posts);
-                        }
-                    }).map(new Func1<List<Post>, List<PostAndImage>>() {
-                        @Override public List<PostAndImage> call(List<Post> posts) {
-                            List<PostAndImage> postAndImages = new ArrayList<>();
-                            for (Post p : posts) {
-                                postAndImages.add(new PostAndImage(p));
-                            }
-                            return postAndImages;
                         }
                     });
         } else {

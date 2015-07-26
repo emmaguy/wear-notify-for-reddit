@@ -21,7 +21,6 @@ import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.common.Utils;
-import com.emmaguy.todayilearned.refresh.AuthenticatedRedditService;
 import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.RedditService;
 import com.emmaguy.todayilearned.refresh.Token;
@@ -53,7 +52,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
         @Inject @Named("unauthenticated") RedditService mUnauthenticatedRedditService;
-        @Inject AuthenticatedRedditService mAuthenticatedRedditService;
+        @Inject @Named("authenticated") RedditService mAuthenticatedRedditService;
+
         @Inject RedditAccessTokenRequester mRedditAccessTokenRequester;
         @Inject RedditRequestTokenUriParser mRequestTokenUriParser;
         @Inject BackgroundAlarmListener mAlarmListener;
@@ -132,7 +132,6 @@ public class SettingsActivity extends AppCompatActivity {
 
             return sb.toString();
         }
-
 
         @Override
         public void onResume() {
@@ -234,9 +233,7 @@ public class SettingsActivity extends AppCompatActivity {
         private void syncSubreddits() {
             final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.syncing_subreddits));
 
-            final GsonConverter converter = new GsonConverter(new GsonBuilder().registerTypeAdapter(SubscriptionResponse.class, new SubscriptionResponse.SubscriptionResponseJsonDeserializer()).create());
             mAuthenticatedRedditService
-                    .getRedditService(converter)
                     .subredditSubscriptions()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())

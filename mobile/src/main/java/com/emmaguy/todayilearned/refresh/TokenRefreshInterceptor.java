@@ -17,13 +17,13 @@ import retrofit.RetrofitError;
  * <p/>
  * Created by emma on 14/06/15.
  */
-class TokenRefreshInterceptor implements Interceptor {
+public class TokenRefreshInterceptor implements Interceptor {
     private static final String BEARER_FORMAT = "bearer %s";
 
     private final TokenStorage mTokenStorage;
     private final RedditService mRefreshRedditService;
 
-    TokenRefreshInterceptor(TokenStorage tokenStorage, RedditService refreshRedditService) {
+    public TokenRefreshInterceptor(TokenStorage tokenStorage, RedditService refreshRedditService) {
         mTokenStorage = tokenStorage;
         mRefreshRedditService = refreshRedditService;
     }

@@ -14,7 +14,6 @@ import retrofit.http.Path;
 import retrofit.http.Query;
 import rx.Observable;
 
-// TODO: separate by endpoint
 public interface RedditService {
     @POST("/api/v1/access_token")
     @Headers("Content-Type: application/x-www-form-urlencoded")
@@ -30,7 +29,7 @@ public interface RedditService {
     @POST("/api/comment?api_type=json") Observable<RedditResponse> commentOnPost(@Query("text") String comment,
             @Query("thing_id") String postId);
 
-    @GET("/subreddits/mine/subscriber.json") Observable<SubscriptionResponse> subredditSubscriptions();
+    @GET("/subreddits/mine/subscriber.json?limit=1000") Observable<SubscriptionResponse> subredditSubscriptions();
 
     @GET("/message/unread.json") Observable<List<Post>> unreadMessages();
 

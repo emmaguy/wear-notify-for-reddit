@@ -13,28 +13,19 @@ public class TestUtils {
         return ClassLoader.getSystemResourceAsStream(filename);
     }
 
-    public static String loadFile(String filename) {
+    public static String loadFile(String filename) throws IOException {
         return convertStreamToString(ClassLoader.getSystemResourceAsStream(filename));
     }
 
-    private static String convertStreamToString(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-
+    private static String convertStreamToString(InputStream in) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        StringBuilder out = new StringBuilder();
+        String newLine = System.getProperty("line.separator");
         String line;
-        try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append('\n');
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        while ((line = reader.readLine()) != null) {
+            out.append(line);
+            out.append(newLine);
         }
-        return sb.toString();
+        return out.toString();
     }
 }

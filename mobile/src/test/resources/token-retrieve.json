@@ -1,0 +1,7 @@
+{
+  "access_token": "1234567-ZLdjrYyzsTLUc6mZgp5CLNy3mEs",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "refresh_token": "1234567-4uJcdv3d-BDfemR45Vg1ehBduHM",
+  "scope": "mysubreddits privatemessages read submit vote"
+}

@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
-import com.emmaguy.todayilearned.refresh.AuthenticatedRedditService;
 import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.BasicAuthorisationRequestInterceptorBuilder;
 import com.emmaguy.todayilearned.refresh.DelegatingConverter;
@@ -14,21 +13,23 @@ import com.emmaguy.todayilearned.refresh.LatestPostsRetriever;
 import com.emmaguy.todayilearned.refresh.MarkAsReadConverter;
 import com.emmaguy.todayilearned.refresh.PostConverter;
 import com.emmaguy.todayilearned.refresh.RedditService;
+import com.emmaguy.todayilearned.refresh.SubscriptionConverter;
 import com.emmaguy.todayilearned.refresh.TokenConverter;
+import com.emmaguy.todayilearned.refresh.TokenRefreshInterceptor;
 import com.emmaguy.todayilearned.settings.Base64Encoder;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.gson.Gson;
+import com.squareup.okhttp.OkHttpClient;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import retrofit.converter.Converter;
+import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
@@ -68,18 +69,18 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, TokenStorage tokenStorage,
-            UserStorage storage, @Named("unauthenticated")
-    RedditService unauthenticatedRedditService, AuthenticatedRedditService authenticatedRedditService,
-            @Named("posts") Converter postsConverter, @Named("markread") Converter markAsReadConverter) {
+    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader,
+            TokenStorage tokenStorage,
+            UserStorage storage,
+            @Named("unauthenticated") RedditService unauthenticatedRedditService,
+            @Named("authenticated") RedditService authenticatedRedditService) {
         return new LatestPostsRetriever(
                 downloader,
                 tokenStorage,
                 storage,
                 unauthenticatedRedditService,
-                authenticatedRedditService,
-                postsConverter,
-                markAsReadConverter);
+                authenticatedRedditService
+        );
     }
 
     @Provides
@@ -95,7 +96,8 @@ public class AppModule {
                 .setConverter(new DelegatingConverter(gsonConverter,
                         new TokenConverter(gsonConverter),
                         new PostConverter(gson, gsonConverter, resources, userStorage),
-                        new MarkAsReadConverter()))
+                        new MarkAsReadConverter(),
+                        new SubscriptionConverter()))
                 .setRequestInterceptor(new BasicAuthorisationRequestInterceptorBuilder(new Base64Encoder()).build(credentials))
                 .build()
                 .create(RedditService.class);
@@ -103,9 +105,26 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public AuthenticatedRedditService provideAuthenticatedRedditService(TokenStorage tokenStorage, RequestInterceptor requestInterceptor,
-            @Named("token") Converter tokenConverter) {
-        return new AuthenticatedRedditService(tokenStorage, requestInterceptor, tokenConverter);
+    @Named("authenticated")
+    public RedditService provideAuthenticatedRedditService(@Named("unauthenticated") RedditService redditService,
+            Resources resources, UserStorage userStorage, TokenStorage tokenStorage) {
+        final OkHttpClient okHttpClient = new OkHttpClient();
+        final Gson gson = new Gson();
+        final GsonConverter gsonConverter = new GsonConverter(gson);
+
+        RedditService authenticatedRedditService = new RestAdapter.Builder().setEndpoint(Constants.ENDPOINT_URL_OAUTH_REDDIT)
+                .setClient(new OkClient(okHttpClient))
+                .setConverter(new DelegatingConverter(gsonConverter,
+                        new TokenConverter(gsonConverter),
+                        new PostConverter(gson, gsonConverter, resources, userStorage),
+                        new MarkAsReadConverter(),
+                        new SubscriptionConverter()))
+                .build()
+                .create(RedditService.class);
+
+        okHttpClient.networkInterceptors().add(new TokenRefreshInterceptor(tokenStorage, redditService));
+        okHttpClient.setRetryOnConnectionFailure(true);
+        return authenticatedRedditService;
     }
 
     @Provides

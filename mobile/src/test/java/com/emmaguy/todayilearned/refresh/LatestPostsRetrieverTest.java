@@ -51,14 +51,11 @@ public class LatestPostsRetrieverTest {
     private static final long DEFAULT_TIMESTAMP_OLD = 90;
 
     @Mock RedditService mUnauthenticatedRedditService;
-    @Mock AuthenticatedRedditService mAuthenticatedRedditService;
-    @Mock RedditService mRedditService;
+    @Mock RedditService mAuthenticatedRedditService;
 
     @Mock ImageDownloader mImageDownloader;
     @Mock TokenStorage mTokenStorage;
     @Mock UserStorage mUserStorage;
-    @Mock GsonConverter mGsonConverter;
-    @Mock Converter mConverter;
 
     private Post mPost;
     private List<LatestPostsRetriever.PostAndImage> mResultingPosts;
@@ -85,9 +82,9 @@ public class LatestPostsRetrieverTest {
         when(mUserStorage.downloadFullSizedImages()).thenReturn(false);
 
         mPost = mockPost(DEFAULT_TIMESTAMP_NEWER);
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
+        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
 
-        mRetriever = new LatestPostsRetriever(mImageDownloader, mTokenStorage, mUserStorage, mUnauthenticatedRedditService, mAuthenticatedRedditService, mGsonConverter, mConverter);
+        mRetriever = new LatestPostsRetriever(mImageDownloader, mTokenStorage, mUserStorage, mUnauthenticatedRedditService, mAuthenticatedRedditService);
     }
 
     private void updateTimestampWhenSet(final long timestamp) {
@@ -127,7 +124,7 @@ public class LatestPostsRetrieverTest {
 
         verifyZeroInteractions(mImageDownloader);
         verifyZeroInteractions(mAuthenticatedRedditService);
-        verify(mRedditService, times(0)).unreadMessages();
+        verify(mAuthenticatedRedditService, times(0)).unreadMessages();
 
         verify(mUserStorage).getSubreddits();
         verify(mUserStorage).getNumberToRequest();
@@ -154,7 +151,7 @@ public class LatestPostsRetrieverTest {
 
         verifyZeroInteractions(mImageDownloader);
         verifyZeroInteractions(mAuthenticatedRedditService);
-        verify(mRedditService, times(0)).unreadMessages();
+        verify(mAuthenticatedRedditService, times(0)).unreadMessages();
 
         verify(mUserStorage).getSubreddits();
         verify(mUserStorage).getNumberToRequest();
@@ -195,26 +192,26 @@ public class LatestPostsRetrieverTest {
     }
 
     @Test public void loggedInButMessagesNotEnabled_doesntTryToRetrieveMessages() {
-        when(mAuthenticatedRedditService.getRedditService(mGsonConverter)).thenReturn(mRedditService);
+        when(mAuthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
 
         mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe();
 
-        verify(mRedditService, times(0)).unreadMessages();
+        verify(mAuthenticatedRedditService, times(0)).unreadMessages();
     }
 
     @Test public void loggedInAndMessagesEnabled_triesToRetrieveMessagesAndMarksAsRead() {
+        when(mAuthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
+
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
         when(mUserStorage.messagesEnabled()).thenReturn(true);
-        when(mAuthenticatedRedditService.getRedditService(mConverter)).thenReturn(mRedditService);
-        when(mAuthenticatedRedditService.getRedditService(mGsonConverter)).thenReturn(mRedditService);
 
         final Observable<List<Post>> observable = Observable.just(Arrays.asList(mockDirectMessage(DEFAULT_TIMESTAMP)));
-        when(mRedditService.unreadMessages()).thenReturn(observable);
+        when(mAuthenticatedRedditService.unreadMessages()).thenReturn(observable);
 
         final MarkAllRead markAllRead = mock(MarkAllRead.class);
         when(markAllRead.hasErrors()).thenReturn(false);
-        when(mRedditService.markAllMessagesRead()).thenReturn(markAllRead);
+        when(mAuthenticatedRedditService.markAllMessagesRead()).thenReturn(markAllRead);
 
         mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
             @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
@@ -223,19 +220,18 @@ public class LatestPostsRetrieverTest {
         });
 
         assertThat(mResultingPosts.size(), equalTo(1));
-        verify(mRedditService).unreadMessages();
-        verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+        verify(mAuthenticatedRedditService).unreadMessages();
+        verify(mAuthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
     }
 
     @Test public void retrievingMessageFailsButSucceedsRetrievingPosts_stillEmitsPosts() {
+        when(mAuthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
+
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
         when(mUserStorage.messagesEnabled()).thenReturn(true);
 
-        when(mAuthenticatedRedditService.getRedditService(mConverter)).thenReturn(mRedditService);
-        when(mAuthenticatedRedditService.getRedditService(mGsonConverter)).thenReturn(mRedditService);
-
         final RetrofitError networkError = RetrofitError.networkError("blah", mock(IOException.class));
-        when(mRedditService.unreadMessages()).thenThrow(networkError);
+        when(mAuthenticatedRedditService.unreadMessages()).thenThrow(networkError);
 
         mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
             @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
@@ -244,7 +240,7 @@ public class LatestPostsRetrieverTest {
         });
 
         assertThat(mResultingPosts.size(), equalTo(1));
-        verify(mRedditService).unreadMessages();
-        verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+        verify(mAuthenticatedRedditService).unreadMessages();
+        verify(mAuthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
     }
 }

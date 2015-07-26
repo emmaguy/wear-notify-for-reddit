@@ -38,7 +38,7 @@ public class SubscriptionResponse {
         mErrors = errors;
     }
 
-    static class SubscriptionResponseJsonDeserializer implements JsonDeserializer<SubscriptionResponse> {
+    public static class SubscriptionResponseJsonDeserializer implements JsonDeserializer<SubscriptionResponse> {
         @Override
         public SubscriptionResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             SubscriptionResponse l = new SubscriptionResponse();
