@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned;
+package com.emmaguy.todayilearned.common;
 
 public class StringUtils {
     /**

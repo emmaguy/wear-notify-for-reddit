@@ -4,7 +4,7 @@ import android.content.res.Resources;
 import android.support.annotation.NonNull;
 
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.StringUtils;
+import com.emmaguy.todayilearned.common.StringUtils;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.gson.Gson;
@@ -20,7 +20,7 @@ class ListingResponseConverter {
     private final Resources mResources;
     private final Gson mGson;
 
-    public ListingResponseConverter(Gson gson, UserStorage userStorage, Resources resources) {
+    ListingResponseConverter(Gson gson, UserStorage userStorage, Resources resources) {
         mGson = gson;
         mUserStorage = userStorage;
         mResources = resources;
