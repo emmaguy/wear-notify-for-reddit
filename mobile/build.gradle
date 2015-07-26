@@ -1,20 +1,12 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 
-Properties props = new Properties()
-props.load(new FileInputStream(file(project.property("signing.properties"))))
-
 android {
     compileSdkVersion 22
     buildToolsVersion '21.1.2'
 
     signingConfigs {
-        release {
-            storeFile file(props['keystore'])
-            storePassword props['keystore.password']
-            keyAlias props['keyalias']
-            keyPassword props['keyalias.password']
-        }
+        release
     }
     defaultConfig {
         applicationId "com.emmaguy.todayilearned"
@@ -66,4 +58,23 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.0.7-beta'
+}
+
+def Properties props = new Properties()
+if (project.hasProperty("signing.properties") && file(project.property("signing.properties")).canRead()) {
+    props.load(new FileInputStream(file(project.property("signing.properties"))))
+
+    if (props != null && props.containsKey('keystore') && props.containsKey('keystore.password') &&
+            props.containsKey('keyalias') && props.containsKey('keyalias.password')) {
+        android.signingConfigs.release.storeFile = file(props['keystore'])
+        android.signingConfigs.release.storePassword = props['keystore.password']
+        android.signingConfigs.release.keyAlias = props['keyalias']
+        android.signingConfigs.release.keyPassword = props['keyalias.password']
+    } else {
+        println 'signing.properties found but some entries are missing'
+        android.buildTypes.release.signingConfig = null
+    }
+} else {
+    println 'signing.properties not found'
+    android.buildTypes.release.signingConfig = null
 }
