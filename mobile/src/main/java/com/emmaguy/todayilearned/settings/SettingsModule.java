@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.refresh.BasicAuthorisationRequestInterceptor;
+import com.emmaguy.todayilearned.refresh.BasicAuthorisationRequestInterceptorBuilder;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 
 import javax.inject.Singleton;
@@ -26,7 +26,7 @@ public class SettingsModule {
     @Singleton
     public RequestInterceptor provideBasicAuthorisationRequestInterceptor(Resources resources, Encoder encoder) {
         final String credentials = resources.getString(R.string.client_id) + ":";
-        return new BasicAuthorisationRequestInterceptor(encoder).build(credentials);
+        return new BasicAuthorisationRequestInterceptorBuilder(encoder).build(credentials);
     }
 
     @Provides

@@ -25,16 +25,16 @@ import rx.functions.Func1;
  * Created by emma on 14/06/15.
  */
 public class LatestPostsRetriever {
-    private final UnauthenticatedRedditService mUnauthenticatedRedditService;
     private final AuthenticatedRedditService mAuthenticatedRedditService;
     private final ImageDownloader mImageDownloader;
+    private final RedditService mUnauthenticatedRedditService;
     private final TokenStorage mTokenStorage;
     private final UserStorage mUserStorage;
     private final Converter mMarkAsReadConverter;
     private final Converter mPostsConverter;
 
     public LatestPostsRetriever(ImageDownloader imageDownloader, TokenStorage tokenStorage, UserStorage userStorage,
-            UnauthenticatedRedditService unauthenticatedRedditService, AuthenticatedRedditService authenticatedRedditService,
+            RedditService unauthenticatedRedditService, AuthenticatedRedditService authenticatedRedditService,
             @Named("posts") Converter postsConverter, @Named("markread") Converter markAsReadConverter) {
         mImageDownloader = imageDownloader;
         mTokenStorage = tokenStorage;
@@ -51,7 +51,7 @@ public class LatestPostsRetriever {
             return mAuthenticatedRedditService.getRedditService(converter);
         }
 
-        return mUnauthenticatedRedditService.getRedditService(converter, null);
+        return mUnauthenticatedRedditService;
     }
 
     @NonNull public Observable<List<PostAndImage>> getPosts() {

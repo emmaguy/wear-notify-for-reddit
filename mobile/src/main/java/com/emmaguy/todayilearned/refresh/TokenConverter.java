@@ -14,10 +14,10 @@ import retrofit.mime.TypedOutput;
  * Converts a {@link TokenResponse} into a {@link Token}
  * Throws an exception if the token is null or missing its access token
  */
-class TokenConverter implements Converter {
+public class TokenConverter implements Converter {
     private final Converter mOriginalConverter;
 
-    TokenConverter(Converter originalConverter) {
+    public TokenConverter(Converter originalConverter) {
         mOriginalConverter = originalConverter;
     }
 

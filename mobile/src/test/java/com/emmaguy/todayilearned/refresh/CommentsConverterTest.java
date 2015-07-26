@@ -38,7 +38,7 @@ public class CommentsConverterTest {
     }
 
     @Test public void parsesToPostsSuccessfully() throws Exception {
-        List<Post> posts = convertPostResponse("comment-default.json");
+        List<Post> posts = convertComments("comment-default.json");
 
         assertThat(posts.size(), equalTo(2));
 
@@ -53,7 +53,7 @@ public class CommentsConverterTest {
         assertThat(posts.get(1).getReplyLevel(), equalTo(1));
     }
 
-    private List<Post> convertPostResponse(String filename) throws IOException, ConversionException {
+    private List<Post> convertComments(String filename) throws IOException, ConversionException {
         final TypedInput body = mock(TypedInput.class);
         when(body.in()).thenReturn(TestUtils.loadFileFromStream(filename));
 

@@ -19,12 +19,12 @@ import android.widget.Toast;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.common.Utils;
 import com.emmaguy.todayilearned.refresh.AuthenticatedRedditService;
+import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
+import com.emmaguy.todayilearned.refresh.RedditService;
 import com.emmaguy.todayilearned.refresh.Token;
-import com.emmaguy.todayilearned.refresh.UnauthenticatedRedditService;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
@@ -34,8 +34,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import de.psdev.licensesdialog.LicensesDialog;
-import retrofit.RequestInterceptor;
-import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -54,17 +52,14 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
-        @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
+        @Inject @Named("unauthenticated") RedditService mUnauthenticatedRedditService;
         @Inject AuthenticatedRedditService mAuthenticatedRedditService;
         @Inject RedditAccessTokenRequester mRedditAccessTokenRequester;
         @Inject RedditRequestTokenUriParser mRequestTokenUriParser;
         @Inject BackgroundAlarmListener mAlarmListener;
         @Inject WearableActionStorage mWearableActionStorage;
-        @Inject RequestInterceptor mRequestInterceptor;
         @Inject TokenStorage mTokenStorage;
         @Inject UserStorage mUserStorage;
-
-        @Inject @Named("token") Converter mTokenConverter;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -164,19 +159,14 @@ public class SettingsActivity extends AppCompatActivity {
             final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.logging_in));
             final String redirectUri = getString(R.string.redirect_url_scheme) + getString(R.string.redirect_url_callback);
 
-            mUnauthenticatedRedditService
-                    .getRedditService(mTokenConverter, mRequestInterceptor)
-                    .loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE, redirectUri, code)
+            // TODO: unit test this chain, verify retrieving an empty token errors
+            mUnauthenticatedRedditService.loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE, redirectUri, code)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<Token>() {
                         @Override
                         public void onCompleted() {
-                            toggleRedditSettings();
                             spinner.dismiss();
-                            initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
-                            Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
-                            Toast.makeText(getActivity(), R.string.successfully_logged_in, Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
@@ -190,6 +180,14 @@ public class SettingsActivity extends AppCompatActivity {
                         @Override
                         public void onNext(Token tokenResponse) {
                             mTokenStorage.saveToken(tokenResponse);
+                            if (mTokenStorage.isLoggedIn()) {
+                                toggleRedditSettings();
+                                initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
+                                Logger.sendEvent(getActivity().getApplicationContext(), Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
+                                Toast.makeText(getActivity(), R.string.successfully_logged_in, Toast.LENGTH_SHORT).show();
+                            } else {
+                                throw new RuntimeException("Failed to login " + tokenResponse);
+                            }
                         }
                     });
         }

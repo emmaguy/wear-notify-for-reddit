@@ -12,7 +12,7 @@ import retrofit.mime.TypedOutput;
 /**
  * Created by emma on 14/06/15.
  */
-class MarkAsReadConverter implements Converter {
+public class MarkAsReadConverter implements Converter {
     @Override
     public Object fromBody(TypedInput body, Type type) throws ConversionException {
         try {

@@ -13,13 +13,13 @@ import retrofit.converter.GsonConverter;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
 
-class PostConverter implements Converter {
+public class PostConverter implements Converter {
     private final GsonConverter mOriginalConverter;
     private final UserStorage mUserStorage;
     private final Resources mResources;
     private final Gson mGson;
 
-    PostConverter(Gson gson, GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
+    public PostConverter(Gson gson, GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
         mGson = gson;
         mOriginalConverter = gsonConverter;
         mResources = resources;

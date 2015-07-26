@@ -8,10 +8,10 @@ import retrofit.RequestInterceptor;
 /**
  * Created by emma on 14/06/15.
  */
-public class BasicAuthorisationRequestInterceptor {
+public class BasicAuthorisationRequestInterceptorBuilder {
     private Encoder mEncoder;
 
-    public BasicAuthorisationRequestInterceptor(Encoder encoder) {
+    public BasicAuthorisationRequestInterceptorBuilder(Encoder encoder) {
         mEncoder = encoder;
     }
 

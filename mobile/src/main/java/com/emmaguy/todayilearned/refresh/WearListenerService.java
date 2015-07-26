@@ -41,7 +41,7 @@ import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class WearListenerService extends WearableListenerService {
-    @Inject UnauthenticatedRedditService mUnauthenticatedRedditService;
+    @Inject @Named("unauthenticated") RedditService mUnauthenticatedRedditService;
     @Inject AuthenticatedRedditService mAuthenticatedRedditService;
 
     @Inject @Named("redditResponse") Converter mResponseConverter;
@@ -147,7 +147,7 @@ public class WearListenerService extends WearableListenerService {
             return mAuthenticatedRedditService.getRedditService(converter);
         }
 
-        return mUnauthenticatedRedditService.getRedditService(converter, null);
+        return mUnauthenticatedRedditService;
     }
 
     private void getComments(String permalink) {

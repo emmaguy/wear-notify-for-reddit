@@ -50,7 +50,7 @@ public class LatestPostsRetrieverTest {
     private static final long DEFAULT_TIMESTAMP = 100;
     private static final long DEFAULT_TIMESTAMP_OLD = 90;
 
-    @Mock UnauthenticatedRedditService mUnauthenticatedRedditService;
+    @Mock RedditService mUnauthenticatedRedditService;
     @Mock AuthenticatedRedditService mAuthenticatedRedditService;
     @Mock RedditService mRedditService;
 
@@ -70,7 +70,6 @@ public class LatestPostsRetrieverTest {
 
         when(mUserStorage.messagesEnabled()).thenReturn(false);
         when(mTokenStorage.isLoggedIn()).thenReturn(false);
-        when(mUnauthenticatedRedditService.getRedditService(mGsonConverter, null)).thenReturn(mRedditService);
 
         when(mUserStorage.getSortType()).thenReturn(DEFAULT_SORT);
         when(mUserStorage.getNumberToRequest()).thenReturn(DEFAULT_NUMBER);
@@ -115,7 +114,7 @@ public class LatestPostsRetrieverTest {
 
     @Test public void latestPostsWith2ThatAreNew_savesOnlyTheNewestTimestamps() {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_OLD), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_NEWER));
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
             @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
@@ -124,7 +123,7 @@ public class LatestPostsRetrieverTest {
         });
 
         assertThat(mResultingPosts.size(), equalTo(2));
-        verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+        verify(mUnauthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
 
         verifyZeroInteractions(mImageDownloader);
         verifyZeroInteractions(mAuthenticatedRedditService);
@@ -142,7 +141,7 @@ public class LatestPostsRetrieverTest {
 
     @Test public void latestPostsWith2ThatAreNewButNewestComeFirst_savesOnlyTheNewestTimestamps() {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_NEWER), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_OLD));
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
             @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
@@ -151,7 +150,7 @@ public class LatestPostsRetrieverTest {
         });
 
         assertThat(mResultingPosts.size(), equalTo(2));
-        verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+        verify(mUnauthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
 
         verifyZeroInteractions(mImageDownloader);
         verifyZeroInteractions(mAuthenticatedRedditService);

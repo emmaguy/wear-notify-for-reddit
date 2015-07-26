@@ -5,7 +5,7 @@ import android.util.Base64;
 /**
  * Created by emma on 14/06/15.
  */
-class Base64Encoder implements Encoder {
+public class Base64Encoder implements Encoder {
     public static final int ENCODING_FLAGS = Base64.NO_WRAP;
 
     public String encode(byte[] bytes) {
