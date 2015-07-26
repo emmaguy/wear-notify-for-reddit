@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 
-import com.emmaguy.todayilearned.background.BackgroundAlarmListener;
+import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.AuthenticatedRedditService;
 import com.emmaguy.todayilearned.refresh.ImageDownloader;
 import com.emmaguy.todayilearned.refresh.LatestPostsRetriever;
@@ -20,7 +20,6 @@ import dagger.Module;
 import dagger.Provides;
 import retrofit.RequestInterceptor;
 import retrofit.converter.Converter;
-import retrofit.converter.GsonConverter;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;

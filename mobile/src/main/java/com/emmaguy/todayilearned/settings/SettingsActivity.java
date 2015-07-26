@@ -19,7 +19,7 @@ import android.widget.Toast;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.background.BackgroundAlarmListener;
+import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.common.Utils;
 import com.emmaguy.todayilearned.refresh.AuthenticatedRedditService;

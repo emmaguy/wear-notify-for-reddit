@@ -1,4 +1,4 @@
-package com.emmaguy.todayilearned.background;
+package com.emmaguy.todayilearned.refresh;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;

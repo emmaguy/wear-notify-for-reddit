@@ -1,6 +1,6 @@
 package com.emmaguy.todayilearned;
 
-import com.emmaguy.todayilearned.background.BackgroundAlarmListener;
+import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.ConverterModule;
 import com.emmaguy.todayilearned.refresh.RetrieveService;
 import com.emmaguy.todayilearned.refresh.WearListenerService;
@@ -14,7 +14,6 @@ import javax.inject.Singleton;
 
 import dagger.Component;
 import retrofit.converter.Converter;
-import retrofit.converter.GsonConverter;
 
 /**
  * Created by emma on 04/07/15.
