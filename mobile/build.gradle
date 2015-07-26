@@ -1,3 +1,4 @@
+apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 
@@ -52,8 +53,8 @@ dependencies {
     }
 
     // Google Analytics
-    compile 'com.google.android.gms:play-services:7.3.0'
-    compile 'com.google.android.gms:play-services-wearable:7.3.0'
+    compile 'com.google.android.gms:play-services:7.5.0'
+    compile 'com.google.android.gms:play-services-wearable:7.5.0'
     wearApp project(':wear')
 
     testCompile 'junit:junit:4.12'
