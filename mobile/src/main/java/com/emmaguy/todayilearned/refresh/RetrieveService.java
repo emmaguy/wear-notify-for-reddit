@@ -15,14 +15,12 @@ import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +41,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Inject Gson mGson;
 
     @Inject @Named("io") Scheduler mIoScheduler;
-    @Inject @Named("ui") Scheduler mUiScheduler;
 
+    private boolean mSendInformationToWearableIfNoPosts = false;
     private GoogleApiClient mGoogleApiClient;
 
     public RetrieveService() {
@@ -72,14 +70,32 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     protected void doWakefulWork(Intent intent) {
         connectToWearable();
 
-        boolean informWatchIfNoPosts = false;
+        mSendInformationToWearableIfNoPosts = false;
         if (intent.hasExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS)) {
-            informWatchIfNoPosts = intent.getBooleanExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS, false);
+            mSendInformationToWearableIfNoPosts = intent.getBooleanExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS, false);
         }
 
-        retrieveLatestPostsFromReddit(informWatchIfNoPosts);
+        Logger.log(this, "refresh: " + mUserStorage.getRefreshInterval() + ", is connected: " + mGoogleApiClient.isConnected());
+        Logger.log(this, mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
 
-        Logger.log(getApplicationContext(), "doWakefulWork, interval: " + mUserStorage.getRefreshInterval() + ", is connected: " + mGoogleApiClient.isConnected() + " inform: " + informWatchIfNoPosts);
+        mLatestPostsRetriever.retrieve()
+                .subscribeOn(mIoScheduler)
+                .observeOn(mIoScheduler)
+                .subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+                    @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                        Logger.log(getApplicationContext(), "Posts " + postAndImages.size());
+                        if (postAndImages.size() > 0) {
+                            sendNewPostsData(postAndImages);
+                        } else if (mSendInformationToWearableIfNoPosts) {
+                            Logger.log(getApplicationContext(), "Sending no posts information");
+                            WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override public void call(Throwable throwable) {
+                        Logger.sendThrowable(getApplicationContext(), "Failed to get latest posts", throwable);
+                    }
+                });
     }
 
     private void connectToWearable() {
@@ -92,30 +108,6 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
-    }
-
-    private void retrieveLatestPostsFromReddit(final boolean sendInformationToWearableIfNoPosts) {
-        Logger.log(this, mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
-        mLatestPostsRetriever.getPosts()
-                .subscribeOn(mIoScheduler)
-                .observeOn(mUiScheduler)
-                .subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-                    @Override
-                    public void call(List<LatestPostsRetriever.PostAndImage> posts) {
-                        Logger.log(getApplicationContext(), "Posts " + posts.size());
-                        if (posts.size() > 0) {
-                            sendNewPostsData(posts);
-                        } else if (sendInformationToWearableIfNoPosts) {
-                            Logger.log(getApplicationContext(), "Sending no posts information");
-                            WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
-                        }
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Logger.sendThrowable(getApplicationContext(), "Failed to get latest posts", throwable);
-                    }
-                });
     }
 
     private void sendNewPostsData(List<LatestPostsRetriever.PostAndImage> postAndImages) {

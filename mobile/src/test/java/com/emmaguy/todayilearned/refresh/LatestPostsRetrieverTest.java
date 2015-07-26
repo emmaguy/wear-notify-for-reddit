@@ -13,12 +13,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import retrofit.RetrofitError;
-import retrofit.converter.Converter;
-import retrofit.converter.GsonConverter;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -58,7 +57,6 @@ public class LatestPostsRetrieverTest {
     @Mock UserStorage mUserStorage;
 
     private Post mPost;
-    private List<LatestPostsRetriever.PostAndImage> mResultingPosts;
 
     private LatestPostsRetriever mRetriever;
 
@@ -113,13 +111,14 @@ public class LatestPostsRetrieverTest {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_OLD), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_NEWER));
         when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
-                mResultingPosts = posts;
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                emittedElements.addAll(postAndImages);
             }
         });
 
-        assertThat(mResultingPosts.size(), equalTo(2));
+        assertThat(emittedElements.size(), equalTo(2));
         verify(mUnauthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
 
         verifyZeroInteractions(mImageDownloader);
@@ -140,13 +139,14 @@ public class LatestPostsRetrieverTest {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_NEWER), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_OLD));
         when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
-                mResultingPosts = posts;
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                emittedElements.addAll(postAndImages);
             }
         });
 
-        assertThat(mResultingPosts.size(), equalTo(2));
+        assertThat(emittedElements.size(), equalTo(2));
         verify(mUnauthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
 
         verifyZeroInteractions(mImageDownloader);
@@ -167,7 +167,7 @@ public class LatestPostsRetrieverTest {
         when(mPost.getImageUrl()).thenReturn(DEFAULT_THUMBNAIL_URL);
         when(mPost.hasImageUrl()).thenReturn(true);
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe();
 
         verify(mImageDownloader).downloadImage(DEFAULT_THUMBNAIL_URL);
     }
@@ -177,7 +177,7 @@ public class LatestPostsRetrieverTest {
         when(mPost.getImageUrl()).thenReturn(DEFAULT_IMAGE_URL);
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe();
 
         verify(mImageDownloader).downloadImage(DEFAULT_IMAGE_URL);
     }
@@ -186,18 +186,24 @@ public class LatestPostsRetrieverTest {
         when(mPost.getUrl()).thenReturn(DEFAULT_IMAGE_URL_NO_FILE_EXTENSION);
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe();
 
         verifyZeroInteractions(mImageDownloader);
     }
 
-    @Test public void loggedInButMessagesNotEnabled_doesntTryToRetrieveMessages() {
+    @Test public void loggedInButMessagesNotEnabled_emitsPostAndDoesntTryToRetrieveMessages() {
         when(mAuthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe();
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                emittedElements.addAll(postAndImages);
+            }
+        });
 
         verify(mAuthenticatedRedditService, times(0)).unreadMessages();
+        assertThat(emittedElements.size(), equalTo(1));
     }
 
     @Test public void loggedInAndMessagesEnabled_triesToRetrieveMessagesAndMarksAsRead() {
@@ -206,22 +212,81 @@ public class LatestPostsRetrieverTest {
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
         when(mUserStorage.messagesEnabled()).thenReturn(true);
 
-        final Observable<List<Post>> observable = Observable.just(Arrays.asList(mockDirectMessage(DEFAULT_TIMESTAMP)));
+        final Post directMessage = mockDirectMessage(DEFAULT_TIMESTAMP);
+        final Observable<List<Post>> observable = Observable.just(Arrays.asList(directMessage));
         when(mAuthenticatedRedditService.unreadMessages()).thenReturn(observable);
 
         final MarkAllRead markAllRead = mock(MarkAllRead.class);
         when(markAllRead.hasErrors()).thenReturn(false);
         when(mAuthenticatedRedditService.markAllMessagesRead()).thenReturn(markAllRead);
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
-                mResultingPosts = posts;
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                emittedElements.addAll(postAndImages);
             }
         });
 
-        assertThat(mResultingPosts.size(), equalTo(1));
+        // assert we emit both posts and messages
+        assertThat(emittedElements.size(), equalTo(2));
+        assertThat(emittedElements.get(0).getPost(), equalTo(mPost));
+        assertThat(emittedElements.get(1).getPost(), equalTo(directMessage));
+
         verify(mAuthenticatedRedditService).unreadMessages();
         verify(mAuthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+    }
+
+    @Test public void markAsReadFails_emitsOnlyPosts() throws Exception {
+        when(mAuthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
+
+        when(mTokenStorage.isLoggedIn()).thenReturn(true);
+        when(mUserStorage.messagesEnabled()).thenReturn(true);
+
+        final Observable<List<Post>> observable = Observable.just(Arrays.asList(mockDirectMessage(DEFAULT_TIMESTAMP)));
+        when(mAuthenticatedRedditService.unreadMessages()).thenReturn(observable);
+
+        final RetrofitError networkError = RetrofitError.networkError("Network error", mock(IOException.class));
+        when(mAuthenticatedRedditService.markAllMessagesRead()).thenThrow(networkError);
+
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                emittedElements.addAll(postAndImages);
+            }
+        });
+
+        assertThat(emittedElements.size(), equalTo(1));
+        assertThat(emittedElements.get(0).getPost(), equalTo(mPost));
+    }
+
+    @Test
+    public void retrievingPostsFailsButSucceedsRetrievingMessages_stillEmitsMessages() throws InterruptedException {
+        final RetrofitError networkError = RetrofitError.networkError("Network error", mock(IOException.class));
+        when(mAuthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenThrow(networkError);
+
+        final Post directMessage = mockDirectMessage(DEFAULT_TIMESTAMP);
+        final Observable<List<Post>> messagesObservable = Observable.just(Arrays.asList(directMessage));
+        when(mAuthenticatedRedditService.unreadMessages()).thenReturn(messagesObservable);
+
+        when(mTokenStorage.isLoggedIn()).thenReturn(true);
+        when(mUserStorage.messagesEnabled()).thenReturn(true);
+
+        final MarkAllRead markAllRead = mock(MarkAllRead.class);
+        when(markAllRead.hasErrors()).thenReturn(false);
+        when(mAuthenticatedRedditService.markAllMessagesRead()).thenReturn(markAllRead);
+
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+                    @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                        emittedElements.addAll(postAndImages);
+                    }
+                });
+
+        assertThat(emittedElements.size(), equalTo(1));
+        assertThat(emittedElements.get(0).getPost(), equalTo(directMessage));
     }
 
     @Test public void retrievingMessageFailsButSucceedsRetrievingPosts_stillEmitsPosts() {
@@ -230,17 +295,46 @@ public class LatestPostsRetrieverTest {
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
         when(mUserStorage.messagesEnabled()).thenReturn(true);
 
-        final RetrofitError networkError = RetrofitError.networkError("blah", mock(IOException.class));
+        final RetrofitError networkError = RetrofitError.networkError("Network error", mock(IOException.class));
         when(mAuthenticatedRedditService.unreadMessages()).thenThrow(networkError);
 
-        mRetriever.getPosts().subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> posts) {
-                mResultingPosts = posts;
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                emittedElements.addAll(postAndImages);
             }
         });
 
-        assertThat(mResultingPosts.size(), equalTo(1));
+        assertThat(emittedElements.size(), equalTo(1));
+        assertThat(emittedElements.get(0).getPost(), equalTo(mPost));
+
         verify(mAuthenticatedRedditService).unreadMessages();
         verify(mAuthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+    }
+
+    @Test public void imageDownloadFailsOnOnePost_stillEmitsTheOthers() throws Exception {
+        final Post post0 = mockPost(DEFAULT_TIMESTAMP_NEWER);
+        when(post0.hasImageUrl()).thenReturn(true);
+        when(post0.getImageUrl()).thenReturn(DEFAULT_IMAGE_URL);
+
+        final Throwable error = mock(RuntimeException.class);
+        when(mImageDownloader.downloadImage(DEFAULT_IMAGE_URL)).thenThrow(error);
+
+        final Post post1 = mockPost(DEFAULT_TIMESTAMP_NEWER);
+        final Post post2 = mockPost(DEFAULT_TIMESTAMP_NEWER);
+
+        final List<Post> posts = Arrays.asList(post0, post1, post2);
+        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+
+        final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                emittedElements.addAll(postAndImages);
+            }
+        });
+
+        assertThat(emittedElements.size(), equalTo(2));
+        assertThat(emittedElements.get(0).getPost(), equalTo(post1));
+        assertThat(emittedElements.get(1).getPost(), equalTo(post2));
     }
 }
