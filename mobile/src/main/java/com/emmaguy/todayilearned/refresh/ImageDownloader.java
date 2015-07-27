@@ -28,7 +28,6 @@ public class ImageDownloader {
     public byte[] downloadImage(String imageUrl) {
         byte[] bytes = null;
         try {
-            Logger.log(mContext, "Downloading: " + imageUrl);
             URL url = new URL(imageUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);
