@@ -1,4 +1,4 @@
-![banner](https://raw.githubusercontent.com/emmaguy/til/master/images/banner.png)
+<img src="images/banner.png" width="100%" />
 
 Wear Notify for Reddit (formerly 'Reddit for Wear')
 =================================
@@ -14,8 +14,11 @@ Features include (some may require sign in with your reddit account):
 - Get Direct messages and Reply with voice
 - Open on Phone
 
-|  ![preview](https://raw.githubusercontent.com/emmaguy/til/master/images/preview.png) |  ![view image](https://raw.githubusercontent.com/emmaguy/til/master/images/action_view_image.png) | ![view comments](https://raw.githubusercontent.com/emmaguy/til/master/images/action_view_comments.png) | ![save to Pocket](https://raw.githubusercontent.com/emmaguy/til/master/images/action_save_to_pocket.png) | ![upvote](https://raw.githubusercontent.com/emmaguy/til/master/images/action_upvote.png)  |
-|---|---|---|---|---|
+<img src="images/preview.png" width="30%" />
+<img src="images/action_view_image.png" width="30%" />
+<img src="images/action_view_comments.png" width="30%" />
+<img src="images/action_save_to_pocket.png" width="30%" />
+<img src="images/action_upvote.png" width="30%" />
 
 Choose:
 - What subreddits to get posts from
@@ -24,11 +27,13 @@ Choose:
 - How many posts to get per update
 - What sorting order to use (e.g. 'hot', 'new' or 'controversial')
 
-![phone1](https://raw.githubusercontent.com/emmaguy/til/master/images/phone_settings.png)
+<img src="images/phone_settings.png" width="30%" />
 
 Available on the Play Store: https://play.google.com/store/apps/details?id=com.emmaguy.todayilearned
 
 Note: this used to just be a 'Today I Learned' only thing (hence the package name!), but it has grown considerably since then.
+
+[![Build Status](https://travis-ci.org/emmaguy/wear-notify-for-reddit.png)](https://travis-ci.org/emmaguy/wear-notify-for-reddit)
 
 License
 --------
