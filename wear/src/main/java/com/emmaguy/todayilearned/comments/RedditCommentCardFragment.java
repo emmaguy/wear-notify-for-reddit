@@ -55,7 +55,7 @@ public class RedditCommentCardFragment extends CardFragment {
 
     @Override
     public View onCreateContentView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.comment_content, null);
+        View v = inflater.inflate(R.layout.comment_content, container, false);
 
         TextView title = (TextView) v.findViewById(R.id.title);
         TextView text = (TextView) v.findViewById(R.id.text);

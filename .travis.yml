@@ -14,10 +14,13 @@ android:
     - build-tools-${BUILD_TOOLS}  # specify build tools version as they might not be pre-installed
     - android-${TARGET_API}  # The SDK version used to compile your project
 
-     # Additional components
+  components:
     - extra-android-support
-    - extra-android-m2repository
     - extra-google-google_play_services
+    - extra-android-m2repository
+    - extra-google-m2repository
+  licenses:
+    - '.+'
 
 before_install:
   # environment info
@@ -27,7 +30,4 @@ before_install:
   - export TERM=dumb
 
 install:
-  ./gradlew clean build
-
-script:
-  ./gradlew check
+  ./gradlew clean assembleDebug test

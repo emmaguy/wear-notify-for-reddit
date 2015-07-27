@@ -1,5 +1,6 @@
 package com.emmaguy.todayilearned.settings;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -136,6 +137,7 @@ public class SubredditPreference extends Preference {
     }
 
     private void showAddSubredditDialog() {
+        @SuppressLint("InflateParams")
         final View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_subreddit, null, false);
 
         new AlertDialog.Builder(getContext())

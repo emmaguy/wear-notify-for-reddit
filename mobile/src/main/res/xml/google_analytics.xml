@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="TypographyDashes">
+    <bool name="ga_autoActivityTracking">true</bool>
+    <bool name="ga_reportUncaughtExceptions">true</bool>
+
+    <integer name="ga_sessionTimeout">300</integer>
+
+    <string name="ga_trackingId">@string/google_analytics_id</string>
+
+    <screenName name="com.emmaguy.todayilearned.settings.SettingsActivity">Settings</screenName>
+    <screenName name="com.emmaguy.todayilearned.settings.SubredditPreference">Subreddit Preference</screenName>
+    <screenName name="com.emmaguy.todayilearned.refresh.RetrieveService">Retrieve Service</screenName>
+</resources>

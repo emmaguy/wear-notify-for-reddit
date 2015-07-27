@@ -2,7 +2,7 @@
 <resources>
 
     <string name="dismiss_all">Dismiss All</string>
-    <string name="getting_new_posts">Getting <i>new</i> posts...</string>
+    <string name="getting_new_posts">Getting <i>new</i> posts…</string>
     <string name="posts_with_images_slower">Posts with images\nwill take longer</string>
 
     <string name="open_on_phone">Open on phone</string>

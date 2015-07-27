@@ -10,7 +10,6 @@ android {
     }
     defaultConfig {
         applicationId "com.emmaguy.todayilearned"
-        signingConfig signingConfigs.release
         minSdkVersion 20
         targetSdkVersion 22
         versionCode 34
@@ -19,7 +18,11 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
         }
+    }
+    lintOptions {
+        disable 'UnusedAttribute', 'Overdraw', 'UnusedResources', 'IconColors', 'IconDensities', 'IconMissingDensityFolder', 'ClickableViewAccessibility'
     }
 }
 

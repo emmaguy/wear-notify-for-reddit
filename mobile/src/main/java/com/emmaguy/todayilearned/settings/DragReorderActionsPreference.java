@@ -1,5 +1,6 @@
 package com.emmaguy.todayilearned.settings;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Rect;
@@ -124,6 +125,7 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
     }
 
     private void showDragReorderDialog() {
+        @SuppressLint("InflateParams")
         View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_reorder_actions, null);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.actions_reorder_recyclerview);

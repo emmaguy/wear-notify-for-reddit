@@ -23,12 +23,12 @@
         <receiver
             android:name=".comments.ActionReceiver"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <receiver
             android:name=".DeleteCachedImageReceiver"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity android:name="android.support.wearable.activity.ConfirmationActivity" />
         <activity

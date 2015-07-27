@@ -15,9 +15,12 @@ android {
             minifyEnabled false
         }
     }
+    lintOptions {
+        disable 'UnusedResources', 'IconDensities', 'IconMissingDensityFolder'
+    }
 }
 
 dependencies {
-    compile 'com.google.code.gson:gson:2.2.4'
+    compile 'com.google.code.gson:gson:2.3'
     compile 'com.android.support:appcompat-v7:22.2.0'
 }

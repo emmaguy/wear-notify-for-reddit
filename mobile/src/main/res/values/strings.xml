@@ -34,8 +34,8 @@
     <string name="login">Login</string>
     <string name="login_to_reddit">Login to reddit</string>
     <string name="failed_to_login">Failed to login</string>
-    <string name="logging_in">Logging in...</string>
-    <string name="syncing_subreddits">Syncing subreddits...</string>
+    <string name="logging_in">Logging in…</string>
+    <string name="syncing_subreddits">Syncing subreddits…</string>
     <string name="failed_to_sync_subreddits">Failed to sync subreddits</string>
     <string name="logged_in">Logged in</string>
     <string name="logged_out">Logged out</string>
@@ -70,5 +70,7 @@
     <string name="wearable_options">Wearable options</string>
     <string name="debug_settings">Debug settings</string>
     <string name="debug_information_explanation">Some debug information follows - if you are having an issue with the app, it\'d be appreciated if you leave it. Thanks!</string>
+
+    <string name="accessibility_action_icon">Action icon</string>
 
 </resources>

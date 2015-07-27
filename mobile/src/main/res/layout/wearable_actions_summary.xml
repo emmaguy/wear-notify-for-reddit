@@ -10,7 +10,7 @@
               android:paddingStart="?android:attr/listPreferredItemPaddingStart">
 
     <RelativeLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:paddingBottom="16dp"
@@ -40,10 +40,11 @@
 
     <ImageView
         android:id="@+id/icon_imageview"
-        android:layout_marginRight="-3dp"
+        android:layout_marginEnd="-3dp"
         android:layout_width="@dimen/action_background_size"
         android:layout_height="@dimen/action_background_size"
         android:background="@drawable/action_circle"
+        android:contentDescription="@string/accessibility_action_icon"
         android:padding="@dimen/action_drawable_padding"
         android:src="@drawable/view_image" />
 

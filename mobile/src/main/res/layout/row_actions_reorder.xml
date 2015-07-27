@@ -2,8 +2,8 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:layout_marginLeft="@dimen/reorder_action_inset"
-              android:layout_marginRight="@dimen/reorder_action_inset"
+              android:layout_marginStart="@dimen/reorder_action_inset"
+              android:layout_marginEnd="@dimen/reorder_action_inset"
               android:background="@color/primary_light"
               android:gravity="center_vertical"
               android:minHeight="60dp"
@@ -14,8 +14,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
         android:textAppearance="?android:textAppearanceListItem"
         android:textColor="@android:color/black"
         tools:text="1." />
@@ -24,6 +24,7 @@
         android:id="@+id/icon_imageview"
         android:layout_width="@dimen/action_background_size"
         android:layout_height="@dimen/action_background_size"
+        android:contentDescription="@string/accessibility_action_icon"
         android:background="@drawable/action_circle"
         android:padding="@dimen/action_drawable_padding"
         tools:src="@drawable/downvote" />
@@ -34,8 +35,8 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center_vertical"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp"
         android:textAppearance="?android:textAppearanceListItem"
         android:textColor="@android:color/black"
         tools:text="Downvote (requires login)" />
@@ -44,6 +45,7 @@
         android:id="@+id/action_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingRight="5dp" />
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp" />
 
 </LinearLayout>

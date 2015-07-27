@@ -11,16 +11,21 @@ android {
     }
     defaultConfig {
         applicationId "com.emmaguy.todayilearned"
-        signingConfig signingConfigs.release
         minSdkVersion 18
         targetSdkVersion 22
         versionCode 34
         versionName "3.0.3"
+        resValue "string", "client_id", "placeholderId"
+        resValue "string", "google_analytics_id", "placeholderId"
     }
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
         }
+    }
+    lintOptions {
+        disable 'Overdraw', 'InvalidPackage', 'UnusedResources'
     }
 }
 
@@ -74,6 +79,17 @@ if (project.hasProperty("signing.properties") && file(project.property("signing.
     } else {
         println 'signing.properties found but some entries are missing'
         android.buildTypes.release.signingConfig = null
+    }
+
+    if (props != null && props.containsKey('clientid')) {
+        android.defaultConfig.resValue "string", "client_id", props['clientid']
+    } else {
+        println 'Did not find client id'
+    }
+    if (props != null && props.containsKey('googleanalytics')) {
+        android.defaultConfig.resValue "string", "google_analytics_id", props['googleanalytics']
+    } else {
+        println 'Did not find GA tracker'
     }
 } else {
     println 'signing.properties not found'
