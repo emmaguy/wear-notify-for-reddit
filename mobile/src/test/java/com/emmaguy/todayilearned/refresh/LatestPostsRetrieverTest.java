@@ -24,10 +24,12 @@ import rx.schedulers.Schedulers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -336,5 +338,37 @@ public class LatestPostsRetrieverTest {
         assertThat(emittedElements.size(), equalTo(2));
         assertThat(emittedElements.get(0).getPost(), equalTo(post1));
         assertThat(emittedElements.get(1).getPost(), equalTo(post2));
+    }
+
+    @Test public void retrievingSame5PostsTwice_onlyEmitsThemThemFirstTime() {
+        updateTimestampWhenSet(1004);
+
+        final List<Post> posts = Arrays.asList(mockPost(1000), mockPost(1001), mockPost(1002), mockPost(1003), mockPost(1004));
+        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+
+        final List<LatestPostsRetriever.PostAndImage> elementsFirstTime = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                elementsFirstTime.addAll(postAndImages);
+            }
+        });
+
+        verify(mUserStorage).setSeenTimestamp(1000);
+        verify(mUserStorage).setSeenTimestamp(1001);
+        verify(mUserStorage).setSeenTimestamp(1002);
+        verify(mUserStorage).setSeenTimestamp(1003);
+        verify(mUserStorage).setSeenTimestamp(1004);
+
+        final List<LatestPostsRetriever.PostAndImage> elementsSecondTime = new ArrayList<>();
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
+            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+                elementsSecondTime.addAll(postAndImages);
+            }
+        });
+
+        verify(mUserStorage, times(0)).setSeenTimestamp(anyInt());
+
+        assertThat(elementsFirstTime.size(), equalTo(5));
+        assertThat(elementsSecondTime.size(), equalTo(0));
     }
 }
