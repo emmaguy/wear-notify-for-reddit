@@ -7,7 +7,6 @@ import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.common.StringUtils;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.UserStorage;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;

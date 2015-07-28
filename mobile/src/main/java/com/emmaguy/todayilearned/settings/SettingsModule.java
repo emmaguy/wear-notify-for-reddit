@@ -4,15 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 
-import com.emmaguy.todayilearned.R;
-import com.emmaguy.todayilearned.refresh.BasicAuthorisationRequestInterceptorBuilder;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import retrofit.RequestInterceptor;
 
 @Module
 public class SettingsModule {

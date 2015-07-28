@@ -27,13 +27,11 @@ import com.emmaguy.todayilearned.refresh.Token;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
-import com.google.gson.GsonBuilder;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import de.psdev.licensesdialog.LicensesDialog;
-import retrofit.converter.GsonConverter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;

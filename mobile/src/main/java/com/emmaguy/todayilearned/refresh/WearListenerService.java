@@ -10,7 +10,6 @@ import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.common.PocketUtils;
 import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -33,7 +32,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import retrofit.converter.Converter;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
@@ -44,7 +42,6 @@ public class WearListenerService extends WearableListenerService {
     @Inject @Named("unauthenticated") RedditService mUnauthenticatedRedditService;
     @Inject @Named("authenticated") RedditService mAuthenticatedRedditService;
 
-    @Inject @Named("redditResponse") Converter mResponseConverter;
     @Inject TokenStorage mTokenStorage;
     @Inject Gson mGson;
 

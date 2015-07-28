@@ -86,10 +86,15 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public Gson provideGson() {
+        return new Gson();
+    }
+
+    @Provides
+    @Singleton
     @Named("unauthenticated")
-    public RedditService provideUnauthenticatedRedditService(Resources resources, UserStorage userStorage) {
+    public RedditService provideUnauthenticatedRedditService(Gson gson, Resources resources, UserStorage userStorage) {
         final String credentials = resources.getString(R.string.client_id) + ":";
-        final Gson gson = new Gson();
         final GsonConverter gsonConverter = new GsonConverter(gson);
 
         return new RestAdapter.Builder()
@@ -108,10 +113,10 @@ public class AppModule {
     @Provides
     @Singleton
     @Named("authenticated")
-    public RedditService provideAuthenticatedRedditService(@Named("unauthenticated") RedditService redditService,
-            Resources resources, UserStorage userStorage, TokenStorage tokenStorage) {
+    public RedditService provideAuthenticatedRedditService(Gson gson,
+            @Named("unauthenticated") RedditService redditService, Resources resources,
+            UserStorage userStorage, TokenStorage tokenStorage) {
         final OkHttpClient okHttpClient = new OkHttpClient();
-        final Gson gson = new Gson();
         final GsonConverter gsonConverter = new GsonConverter(gson);
 
         RedditService authenticatedRedditService = new RestAdapter.Builder().setEndpoint(Constants.ENDPOINT_URL_OAUTH_REDDIT)

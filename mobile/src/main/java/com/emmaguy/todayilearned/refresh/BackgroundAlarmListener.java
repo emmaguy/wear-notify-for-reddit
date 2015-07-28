@@ -8,7 +8,6 @@ import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.App;
-import com.emmaguy.todayilearned.refresh.RetrieveService;
 import com.emmaguy.todayilearned.storage.UserStorage;
 
 import java.util.concurrent.TimeUnit;
