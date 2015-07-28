@@ -28,6 +28,7 @@ Choose:
 - What sorting order to use (e.g. 'hot', 'new' or 'controversial')
 
 <img src="images/phone_settings.png" width="30%" />
+<img src="images/phone-action-arrange.png" width="30%" />
 
 Available on the Play Store: https://play.google.com/store/apps/details?id=com.emmaguy.todayilearned
 
