@@ -23,6 +23,9 @@ android {
             minifyEnabled false
             signingConfig signingConfigs.release
         }
+        debug {
+            testCoverageEnabled true
+        }
     }
     lintOptions {
         disable 'Overdraw', 'InvalidPackage', 'UnusedResources'
