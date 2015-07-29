@@ -3,6 +3,8 @@ package com.emmaguy.todayilearned.refresh;
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 /**
  * An element in a listing, directly from the server
  */
@@ -31,6 +33,8 @@ class PostResponse {
         private String name;
         private String url;
         private String id;
+
+        private Preview preview;
 
         private JsonElement replies;
 
@@ -111,6 +115,37 @@ class PostResponse {
 
         public JsonElement getReplies() {
             return replies;
+        }
+
+        public Preview getPreview() {
+            return preview;
+        }
+
+        static class Preview {
+            private List<Image> images;
+
+            public List<Image> getImages() {
+                return images;
+            }
+        }
+
+        static class Image {
+            private PreviewItem source;
+            private List<PreviewItem> resolutions;
+
+            public List<PreviewItem> getResolutions() {
+                return resolutions;
+            }
+        }
+
+        static class PreviewItem {
+            private String url;
+            private String width;
+            private String height;
+
+            public String getUrl() {
+                return url;
+            }
         }
 
         static class Media {

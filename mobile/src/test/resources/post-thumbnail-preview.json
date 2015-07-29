@@ -39,7 +39,7 @@
                 },
                 "resolutions": [
                   {
-                    "url": "https://i.redditmedia.com/p89qgcQFIHHzH1WyxrUMlhqiZsBu7WLojBtPxvFlJPs.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=9444aa79db91d3957104429d01850c6d",
+                    "url": "https://smallestres",
                     "width": 108,
                     "height": 137
                   },
@@ -49,7 +49,7 @@
                     "height": 274
                   },
                   {
-                    "url": "https://i.redditmedia.com/p89qgcQFIHHzH1WyxrUMlhqiZsBu7WLojBtPxvFlJPs.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=320&amp;s=4e2fb348b290ab715401c0b88e755862",
+                    "url": "https://largestres",
                     "width": 320,
                     "height": 407
                   }

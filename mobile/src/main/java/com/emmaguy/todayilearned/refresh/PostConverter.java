@@ -16,20 +16,20 @@ import retrofit.mime.TypedOutput;
 public class PostConverter implements Converter {
     private final GsonConverter mOriginalConverter;
     private final UserStorage mUserStorage;
+    private final HtmlDecoder mHtmlDecoder;
     private final Resources mResources;
-    private final Gson mGson;
 
-    public PostConverter(Gson gson, GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
-        mGson = gson;
+    public PostConverter(GsonConverter gsonConverter, Resources resources, UserStorage userStorage, HtmlDecoder htmlDecoder) {
         mOriginalConverter = gsonConverter;
         mResources = resources;
         mUserStorage = userStorage;
+        mHtmlDecoder = htmlDecoder;
     }
 
     @Override
     public Object fromBody(TypedInput body, Type type) throws ConversionException {
         ListingResponse listingResponse = (ListingResponse) mOriginalConverter.fromBody(body, ListingResponse.class);
-        return new ListingResponseConverter(mUserStorage, mResources).convert(listingResponse);
+        return new ListingResponseConverter(mUserStorage, mResources, mHtmlDecoder).convert(listingResponse);
     }
 
     @Override

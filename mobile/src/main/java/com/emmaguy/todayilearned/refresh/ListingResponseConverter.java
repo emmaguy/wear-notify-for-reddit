@@ -16,11 +16,13 @@ import java.util.List;
  */
 class ListingResponseConverter {
     private final UserStorage mUserStorage;
+    private final HtmlDecoder mHtmlDecoder;
     private final Resources mResources;
 
-    ListingResponseConverter(UserStorage userStorage, Resources resources) {
+    ListingResponseConverter(UserStorage userStorage, Resources resources, HtmlDecoder htmlDecoder) {
         mUserStorage = userStorage;
         mResources = resources;
+        mHtmlDecoder = htmlDecoder;
     }
 
     @NonNull public List<Post> convert(ListingResponse listingResponse) {
@@ -85,31 +87,29 @@ class ListingResponseConverter {
     }
 
     private String getImageUrl(PostResponse.Data data) {
-        // TODO: use 'Preview' from json
-        String imageUrl = StringUtils.isEmpty(data.getThumbnail()) ? "" : data.getThumbnail().trim(); // TODO: what happens without default?
-        if (StringUtils.isEmpty(imageUrl) || imageUrl.equals("default") || imageUrl.equals("nsfw") || imageUrl.equals("self")) {
+        String imageUrl = StringUtils.isEmpty(data.getThumbnail()) ? "" : data.getThumbnail().trim();
+        if (imageUrl.equals("default") || imageUrl.equals("nsfw") || imageUrl.equals("self")) {
             return "";
         }
 
         if (data.getMedia() != null && data.getMedia().getOembed() != null) {
             imageUrl = data.getMedia().getOembed().getThumbnailUrl();
         }
-        // If user has chosen to get full images, only do so if we actually have a image url, else fallback to thumbnail
-        if (mUserStorage.downloadFullSizedImages()) {
-            final String url = data.getUrl();
-            if (isImage(url)) {
-                imageUrl = url;
-            } else if (url.contains("imgur.com") && !url.endsWith(".jpg")) {
-                // Some imgur urls submitted don't end with .jpg but are jpgs, e.g. http://imgur.com/iBYHBA3
-                imageUrl = url + ".jpg";
+
+        if (data.getPreview() != null) {
+            if (data.getPreview().getImages() != null && !data.getPreview().getImages().isEmpty()) {
+                final PostResponse.Data.Image image = data.getPreview().getImages().get(0);
+                if (image.getResolutions() != null && !image.getResolutions().isEmpty()) {
+                    imageUrl = mHtmlDecoder.decode(image.getResolutions().get(0).getUrl());
+
+                    if (mUserStorage.downloadFullSizedImages() && image.getResolutions().size() >= 2) {
+                        imageUrl = mHtmlDecoder.decode(image.getResolutions().get(image.getResolutions().size() - 1).getUrl());
+                    }
+                }
             }
         }
 
         return imageUrl;
-    }
-
-    private boolean isImage(String url) {
-        return url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg");
     }
 
     private String getShortString(String string) {

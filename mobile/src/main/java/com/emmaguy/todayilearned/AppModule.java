@@ -9,6 +9,7 @@ import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.BasicAuthorisationRequestInterceptorBuilder;
 import com.emmaguy.todayilearned.refresh.CommentsConverter;
 import com.emmaguy.todayilearned.refresh.DelegatingConverter;
+import com.emmaguy.todayilearned.refresh.HtmlDecoder;
 import com.emmaguy.todayilearned.refresh.ImageDownloader;
 import com.emmaguy.todayilearned.refresh.LatestPostsRetriever;
 import com.emmaguy.todayilearned.refresh.MarkAsReadConverter;
@@ -101,7 +102,7 @@ public class AppModule {
                 .setEndpoint(Constants.ENDPOINT_URL_SSL_REDDIT)
                 .setConverter(new DelegatingConverter(gsonConverter,
                         new TokenConverter(gsonConverter),
-                        new PostConverter(gson, gsonConverter, resources, userStorage),
+                        new PostConverter(gsonConverter, resources, userStorage, new HtmlDecoder()),
                         new MarkAsReadConverter(),
                         new SubscriptionConverter(),
                         new CommentsConverter(gson, gsonConverter, resources, userStorage)))
@@ -123,7 +124,7 @@ public class AppModule {
                 .setClient(new OkClient(okHttpClient))
                 .setConverter(new DelegatingConverter(gsonConverter,
                         new TokenConverter(gsonConverter),
-                        new PostConverter(gson, gsonConverter, resources, userStorage),
+                        new PostConverter(gsonConverter, resources, userStorage, new HtmlDecoder()),
                         new MarkAsReadConverter(),
                         new SubscriptionConverter(),
                         new CommentsConverter(gson, gsonConverter, resources, userStorage)))

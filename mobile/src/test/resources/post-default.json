@@ -29,53 +29,8 @@
           "approved_by": null,
           "over_18": false,
           "hidden": false,
-          "preview": {
-            "images": [
-              {
-                "source": {
-                  "url": "https://i.redditmedia.com/qoixCb_xQo_SgJyJfwnUC_nTzIn13XuZeNdLNnhWdAk.jpg?s=68bcc657a77825e14f17137840febc37",
-                  "width": 1400,
-                  "height": 786
-                },
-                "resolutions": [
-                  {
-                    "url": "https://i.redditmedia.com/qoixCb_xQo_SgJyJfwnUC_nTzIn13XuZeNdLNnhWdAk.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=5eb4406559b0dea1c1fcc06f9189df17",
-                    "width": 108,
-                    "height": 60
-                  },
-                  {
-                    "url": "https://i.redditmedia.com/qoixCb_xQo_SgJyJfwnUC_nTzIn13XuZeNdLNnhWdAk.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=216&amp;s=3c2abd90e1c14eaf1b7d08c41a59c7d7",
-                    "width": 216,
-                    "height": 121
-                  },
-                  {
-                    "url": "https://i.redditmedia.com/qoixCb_xQo_SgJyJfwnUC_nTzIn13XuZeNdLNnhWdAk.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=320&amp;s=f6a22314ac84ea2b89269f1b8c10b18c",
-                    "width": 320,
-                    "height": 179
-                  },
-                  {
-                    "url": "https://i.redditmedia.com/qoixCb_xQo_SgJyJfwnUC_nTzIn13XuZeNdLNnhWdAk.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=640&amp;s=42bd28081fbba7ce96f4a891024057dd",
-                    "width": 640,
-                    "height": 359
-                  },
-                  {
-                    "url": "https://i.redditmedia.com/qoixCb_xQo_SgJyJfwnUC_nTzIn13XuZeNdLNnhWdAk.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=960&amp;s=349b681e349aaf04aaf4c8de755cd112",
-                    "width": 960,
-                    "height": 538
-                  },
-                  {
-                    "url": "https://i.redditmedia.com/qoixCb_xQo_SgJyJfwnUC_nTzIn13XuZeNdLNnhWdAk.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=1080&amp;s=f476d63d97b3a4cef298cee31af7affe",
-                    "width": 1080,
-                    "height": 606
-                  }
-                ],
-                "variants": {},
-                "id": "EmYMSvscKx99eU4jSHG515MIa0uziuoYilJdHkDlpWo"
-              }
-            ]
-          },
           "num_comments": 180,
-          "thumbnail": "http://b.thumbs.redditmedia.com/FjpoyGMzecJTly92C7goT72YSSRG5voENhCu-McchIo.jpg",
+          "thumbnail": "http://thumbnail",
           "subreddit_id": "t5_2qqjc",
           "edited": false,
           "link_flair_css_class": null,

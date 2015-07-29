@@ -22,6 +22,8 @@ import retrofit.mime.TypedInput;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -30,8 +32,9 @@ public class PostConverterTest {
     private final Gson mGson = new Gson();
     private final GsonConverter mGsonConverter = new GsonConverter(mGson);
 
-    @Mock UserStorage mUserStorage;
-    @Mock Resources mResources;
+    @Mock private UserStorage mUserStorage;
+    @Mock private HtmlDecoder mHtmlDecoder;
+    @Mock private Resources mResources;
 
     @Before public void before() throws Exception {
         initMocks(this);
@@ -50,36 +53,17 @@ public class PostConverterTest {
         assertThat(post.getGilded(), equalTo(0));
         assertThat(post.getScore(), equalTo(2858));
         assertThat(post.hasImageUrl(), equalTo(true));
-        assertThat(post.getImageUrl(), equalTo("http://b.thumbs.redditmedia.com/FjpoyGMzecJTly92C7goT72YSSRG5voENhCu-McchIo.jpg"));
+        assertThat(post.getImageUrl(), equalTo("http://thumbnail"));
         assertThat(post.getPostContents(), equalTo("TIL that The Smokey Bear Effect is a bad thing, decades of preventing small fires leads to the accumulation of undergrowth, that fuels massive superfires today"));
-    }
-
-    @Test public void whenUserDoesntEnableHighResImages_postImageUrl_isHighRes() throws Exception {
-        Post post = convertPostResponse("post-url-is-image.json");
-
-        assertThat(post.hasImageUrl(), equalTo(true));
-        assertThat(post.getImageUrl(), equalTo("http://b.thumbs.redditmedia.com/09H4Gb80XZmwWw5fRqXCwxSAaNxoBycel5kdyX2czsQ.jpg"));
-    }
-
-    @Test
-    public void whenUserEnablesHighResImages_postUrlIsImgurWithoutJpgExtension_appendJpgAndUse() throws Exception {
-        when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
-
-        Post post = convertPostResponse("post-url-is-imgur-blank.json");
-
-        assertThat(post.hasImageUrl(), equalTo(true));
-        assertThat(post.getUrl(), equalTo("http://imgur.com/OWSVzoc"));
-        assertThat(post.getImageUrl(), equalTo("http://imgur.com/OWSVzoc.jpg"));
     }
 
     @Test public void whenUserEnablesHighResImages_postImageUrl_isHighRes() throws Exception {
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
-        Post post = convertPostResponse("post-url-is-image.json");
+        Post post = convertPostResponse("post-thumbnail-media.json");
 
         assertThat(post.hasImageUrl(), equalTo(true));
-        assertThat(post.getImageUrl(), equalTo(post.getUrl()));
-        assertThat(post.getImageUrl(), equalTo("http://i.imgur.com/7qVju5e.jpg"));
+        assertThat(post.getImageUrl(), equalTo("http://i.imgur.com/RKKdp5d.jpg"));
     }
 
     @Test public void parsesToPostSuccessfully_whenIsDirectMessage() throws Exception {
@@ -93,11 +77,33 @@ public class PostConverterTest {
         assertThat(post.getPostContents(), equalTo("subject-of-a-direct-message\na-direct-message"));
     }
 
+    @Test
+    public void whenHavePreview_userEnablesHighResImages_postThumbnailIsLargestOfTheGivenResolutions() throws Exception {
+        when(mHtmlDecoder.decode("https://largestres")).thenReturn("https://largestres");
+        when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
+
+        Post post = convertPostResponse("post-thumbnail-preview.json");
+
+        assertThat(post.hasImageUrl(), equalTo(true));
+        assertThat(post.getImageUrl(), equalTo("https://largestres"));
+    }
+
+    @Test
+    public void whenHavePreview_userDoesntEnableHighResImages_postThumbnailIsSmallestOfTheGivenResolutions() throws Exception {
+        when(mHtmlDecoder.decode("https://smallestres")).thenReturn("https://smallestres");
+        when(mUserStorage.downloadFullSizedImages()).thenReturn(false);
+
+        Post post = convertPostResponse("post-thumbnail-preview.json");
+
+        assertThat(post.hasImageUrl(), equalTo(true));
+        assertThat(post.getImageUrl(), equalTo("https://smallestres"));
+    }
+
     private Post convertPostResponse(String filename) throws IOException, ConversionException {
         final TypedInput body = mock(TypedInput.class);
         when(body.in()).thenReturn(TestUtils.loadFileFromStream(filename));
 
-        final PostConverter postConverter = new PostConverter(mGson, mGsonConverter, mResources, mUserStorage);
+        final PostConverter postConverter = new PostConverter(mGsonConverter, mResources, mUserStorage, mHtmlDecoder);
         final List<Post> posts = (List<Post>) postConverter.fromBody(body, new ParameterizedType() {
             @Override public Type[] getActualTypeArguments() {
                 return new Type[]{Post.class};
