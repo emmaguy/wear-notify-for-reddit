@@ -29,7 +29,7 @@
     <string name="score_hidden">[hidden]</string>
     <string name="view_image">View Image</string>
     <string name="long_press_information">Long press anywhere to exit</string>
-    <string name="no_posts_to_retrieve">No new posts to retrieve from your subscribed subreddits!</string>
+    <string name="no_posts_to_retrieve">No new posts to retrieve from your selected subreddits!</string>
     <string name="force_finish_main_activity">FinishMainActivity</string>
 
     <plurals name="points">
