@@ -13,8 +13,8 @@ android {
         applicationId "com.emmaguy.todayilearned"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 34
-        versionName "3.0.3"
+        versionCode 35
+        versionName "3.0.4"
         resValue "string", "client_id", "placeholderId"
         resValue "string", "google_analytics_id", "placeholderId"
     }
