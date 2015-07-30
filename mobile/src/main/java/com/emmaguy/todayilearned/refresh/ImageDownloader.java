@@ -12,6 +12,8 @@ import java.net.URL;
 
 import javax.inject.Inject;
 
+import timber.log.Timber;
+
 /**
  * Created by emma on 19/07/15.
  */
@@ -52,7 +54,7 @@ public class ImageDownloader {
             bytes = byteStream.toByteArray();
             bitmap.recycle();
         } catch (Exception e) {
-            Logger.sendThrowable(mContext, "Failed to download image", e);
+            Timber.e(e, "Failed to download image");
         }
 
         return bytes;

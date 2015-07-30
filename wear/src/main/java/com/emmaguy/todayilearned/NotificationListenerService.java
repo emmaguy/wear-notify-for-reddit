@@ -10,8 +10,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.wearable.activity.ConfirmationActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.emmaguy.todayilearned.comments.ActionReceiver;
@@ -30,6 +33,7 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.google.gson.Gson;
@@ -106,6 +110,28 @@ public class NotificationListenerService extends WearableListenerService {
         updateUser(message, finishActivity);
     }
 
+    private void logErrorToPhone(@NonNull String message, @Nullable Exception e) {
+        PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_LOGGING);
+        mapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE, message + " " + getExceptionInfo(e));
+        mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
+
+        PutDataRequest request = mapRequest.asPutDataRequest();
+        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                    @Override
+                    public void onResult(DataApi.DataItemResult dataItemResult) {
+                        Logger.log("Result from sending log to phone: " + dataItemResult.getStatus());
+                    }
+                });
+    }
+
+    @NonNull private String getExceptionInfo(@Nullable Exception e) {
+        if (e == null) {
+            return "";
+        }
+        return e.getMessage() + ", " + Log.getStackTraceString(e);
+    }
+
     private void updateUser(String message, final boolean finishActivity) {
         if (!TextUtils.isEmpty(message)) {
             final String msg = message;
@@ -141,14 +167,13 @@ public class NotificationListenerService extends WearableListenerService {
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
-        Logger.log("onDataChanged");
         final List<DataEvent> events = FreezableUtils.freezeIterable(dataEvents);
         dataEvents.close();
 
         if (!mGoogleApiClient.isConnected()) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                Logger.log("onDataChanged, service failed to connect: " + connectionResult);
+                logErrorToPhone("onDataChanged, service failed to connect: " + connectionResult, null);
                 return;
             }
         }
@@ -156,8 +181,6 @@ public class NotificationListenerService extends WearableListenerService {
         for (DataEvent event : events) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 String path = event.getDataItem().getUri().getPath();
-                Logger.log("onDataChanged path: " + path);
-
                 if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     try {
                         DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
@@ -173,13 +196,13 @@ public class NotificationListenerService extends WearableListenerService {
                         Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
                         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-                        Logger.log("onDataChanged creating notifications for " + posts.size() + " posts");
+                        logErrorToPhone("onDataChanged creating notifications for " + posts.size() + " posts", null);
                         for (int i = 0; i < posts.size(); i++) {
                             Post post = posts.get(i);
                             createNotificationForPost(dataMap, openOnPhoneDismisses, actionOrder, themeBlueBitmap, notificationManager, post);
                         }
                     } catch (Exception e) {
-                        Logger.log("Failed to get reddit posts from data event", e);
+                        logErrorToPhone("Failed to get reddit posts from data event", e);
                     }
                 } else if (path.equals(Constants.PATH_COMMENTS)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
@@ -243,7 +266,7 @@ public class NotificationListenerService extends WearableListenerService {
             sNotificationId += NOTIFICATION_ID_INCREMENT;
             sendBroadcast(new Intent(getString(R.string.force_finish_main_activity)));
         } catch (Exception e) {
-            Logger.log("Failed to create notification for post: " + post, e);
+            logErrorToPhone("Failed to create notification for post: " + post, e);
         }
     }
 
@@ -267,7 +290,7 @@ public class NotificationListenerService extends WearableListenerService {
             out = new FileOutputStream(localCache);
             backgroundBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (IOException e) {
-            Logger.log("Error writing local cache", e);
+            logErrorToPhone("Error writing local cache", e);
         } finally {
             try {
                 if (out != null) {
@@ -275,7 +298,7 @@ public class NotificationListenerService extends WearableListenerService {
                 }
                 isCached = true;
             } catch (IOException e) {
-                Logger.log("Error closing local cache file", e);
+                logErrorToPhone("Error closing local cache file", e);
             }
         }
 

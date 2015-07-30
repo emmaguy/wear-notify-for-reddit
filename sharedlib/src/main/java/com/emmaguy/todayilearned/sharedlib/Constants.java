@@ -24,6 +24,7 @@ public class Constants {
     public static final String PATH_VOTE = "/vote";
     public static final String PATH_COMMENTS = "/comments";
     public static final String PATH_NO_NEW_POSTS = "/no_new_posts";
+    public static final String PATH_LOGGING = "/logging";
 
     public static final String KEY_REDDIT_POSTS = "posts";
     public static final String KEY_POST_PERMALINK = "post_permalink";

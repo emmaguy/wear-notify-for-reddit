@@ -30,6 +30,7 @@ import javax.inject.Named;
 
 import rx.Scheduler;
 import rx.functions.Action1;
+import timber.log.Timber;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String INTENT_KEY_INFORM_WATCH_NO_POSTS = "inform_no_posts";
@@ -75,25 +76,25 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             mSendInformationToWearableIfNoPosts = intent.getBooleanExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS, false);
         }
 
-        Logger.log(this, "refresh: " + mUserStorage.getRefreshInterval() + ", is connected: " + mGoogleApiClient.isConnected());
-        Logger.log(this, mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
+
+        final String message = "refresh: " + mUserStorage.getRefreshInterval() + ", subreddits: " +
+                mUserStorage.getSubreddits() + ", sort: " + mUserStorage.getSortType() + ", number: " + mUserStorage.getNumberToRequest();
 
         mLatestPostsRetriever.retrieve()
                 .subscribeOn(mIoScheduler)
                 .observeOn(mIoScheduler)
                 .subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
                     @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
-                        Logger.log(getApplicationContext(), "Posts " + postAndImages.size());
                         if (postAndImages.size() > 0) {
-                            sendNewPostsData(postAndImages);
+                            String msg = message + ", posts " + postAndImages.size();
+                            sendNewPostsData(postAndImages, msg);
                         } else if (mSendInformationToWearableIfNoPosts) {
-                            Logger.log(getApplicationContext(), "Sending no posts information");
                             WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
                         }
                     }
                 }, new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
-                        Logger.sendThrowable(getApplicationContext(), "Failed to get latest posts", throwable);
+                        Timber.e(throwable, "Failed to get latest posts");
                     }
                 });
     }
@@ -110,7 +111,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
-    private void sendNewPostsData(List<LatestPostsRetriever.PostAndImage> postAndImages) {
+    private void sendNewPostsData(List<LatestPostsRetriever.PostAndImage> postAndImages, final String msg) {
         if (mGoogleApiClient.isConnected()) {
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
@@ -132,12 +133,11 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, mWearableActionStorage.getSelectedActionIds());
 
             PutDataRequest request = mapRequest.asPutDataRequest();
-            Logger.log(getApplicationContext(), "Sending request with " + posts.size() + " posts");
             Wearable.DataApi.putDataItem(mGoogleApiClient, request)
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Logger.log(getApplicationContext(), "onResult: " + dataItemResult.getStatus());
+                            Timber.d(msg + " result: " + dataItemResult.getStatus());
 
                             if (dataItemResult.getStatus().isSuccess()) {
                                 if (mGoogleApiClient.isConnected()) {
