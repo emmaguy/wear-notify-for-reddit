@@ -1,16 +1,11 @@
 package com.emmaguy.todayilearned.refresh;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-
-import com.emmaguy.todayilearned.common.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import javax.inject.Inject;
 
 import timber.log.Timber;
 
@@ -20,12 +15,6 @@ import timber.log.Timber;
 public class ImageDownloader {
     private static final int WATCH_SCREEN_SIZE = 320;
     private static final int MARKER = 65536;
-
-    private final Context mContext;
-
-    @Inject public ImageDownloader(Context context) {
-        mContext = context;
-    }
 
     public byte[] downloadImage(String imageUrl) {
         byte[] bytes = null;

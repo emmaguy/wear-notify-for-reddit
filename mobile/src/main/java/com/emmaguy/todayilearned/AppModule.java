@@ -66,7 +66,7 @@ public class AppModule {
     @Provides
     @Singleton
     public ImageDownloader provideImageDownloader() {
-        return new ImageDownloader(mContext);
+        return new ImageDownloader();
     }
 
     @Provides

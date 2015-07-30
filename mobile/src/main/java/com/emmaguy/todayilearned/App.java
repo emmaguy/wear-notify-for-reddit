@@ -6,14 +6,13 @@ import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Logger;
 import com.google.android.gms.analytics.Tracker;
 
 import java.util.UUID;
 
 import retrofit.RetrofitError;
 import timber.log.Timber;
-
-import static com.google.android.gms.analytics.Logger.LogLevel;
 
 public class App extends Application {
     private final boolean mIsDebug = BuildConfig.DEBUG;
@@ -37,14 +36,15 @@ public class App extends Application {
         sGoogleAnalytics.setLocalDispatchPeriod(1800);
 
         sTracker = sGoogleAnalytics.newTracker(getString(R.string.google_analytics_id));
+        sTracker.set("&uid", UUID.randomUUID().toString());
         sTracker.enableExceptionReporting(true);
         sTracker.enableAdvertisingIdCollection(false);
         sTracker.enableAutoActivityTracking(true);
 
         if (mIsDebug) {
             Timber.plant(new Timber.DebugTree());
+            GoogleAnalytics.getInstance(this).getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
         } else {
-            GoogleAnalytics.getInstance(this).getLogger().setLogLevel(LogLevel.VERBOSE);
             Timber.plant(new GoogleAnalyticsTree(sTracker));
         }
     }
