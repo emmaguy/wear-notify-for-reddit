@@ -12,7 +12,7 @@ android {
         applicationId "com.emmaguy.todayilearned"
         minSdkVersion 20
         targetSdkVersion 22
-        versionCode 37
+        versionCode 38
         versionName "3.0.5"
     }
     buildTypes {

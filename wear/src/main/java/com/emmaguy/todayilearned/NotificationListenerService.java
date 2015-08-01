@@ -84,9 +84,8 @@ public class NotificationListenerService extends WearableListenerService {
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         final String path = messageEvent.getPath();
-        Logger.log("onMessageReceived, path: " + path);
-        String message = "";
         boolean finishActivity = false;
+        String message = "";
 
         if (path.equals(Constants.PATH_POST_REPLY_RESULT_SUCCESS)) {
             message = getString(R.string.reply_successful);
@@ -107,12 +106,17 @@ public class NotificationListenerService extends WearableListenerService {
             finishActivity = true;
         }
 
+        logToPhone("Message received, path: " + path + " message: " + message + " finishActivity: " + finishActivity);
         updateUser(message, finishActivity);
+    }
+
+    private void logToPhone(@NonNull String message) {
+        logErrorToPhone(message, null);
     }
 
     private void logErrorToPhone(@NonNull String message, @Nullable Exception e) {
         PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_LOGGING);
-        mapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE, message + " " + getExceptionInfo(e));
+        mapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE, message + " " + getExceptionAsString(e));
         mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
         PutDataRequest request = mapRequest.asPutDataRequest();
@@ -125,7 +129,7 @@ public class NotificationListenerService extends WearableListenerService {
                 });
     }
 
-    @NonNull private String getExceptionInfo(@Nullable Exception e) {
+    @NonNull private String getExceptionAsString(@Nullable Exception e) {
         if (e == null) {
             return "";
         }
@@ -173,15 +177,21 @@ public class NotificationListenerService extends WearableListenerService {
         if (!mGoogleApiClient.isConnected()) {
             ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
-                logErrorToPhone("onDataChanged, service failed to connect: " + connectionResult, null);
+                logToPhone("onDataChanged, service failed to connect: " + connectionResult);
                 return;
             }
         }
 
+        String msg = "";
         for (DataEvent event : events) {
+            msg += "Event type: " + event.getType();
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 String path = event.getDataItem().getUri().getPath();
-                if (path.equals(Constants.PATH_REDDIT_POSTS)) {
+
+                msg += ", path: " + path;
+                if (path.equals(Constants.PATH_LOGGING)) {
+                    return;
+                } else if (path.equals(Constants.PATH_REDDIT_POSTS)) {
                     try {
                         DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                         DataMap dataMap = dataMapItem.getDataMap();
@@ -196,7 +206,7 @@ public class NotificationListenerService extends WearableListenerService {
                         Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
                         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-                        logErrorToPhone("onDataChanged creating notifications for " + posts.size() + " posts", null);
+                        msg += ", posts: " + posts.size();
                         for (int i = 0; i < posts.size(); i++) {
                             Post post = posts.get(i);
                             createNotificationForPost(dataMap, openOnPhoneDismisses, actionOrder, themeBlueBitmap, notificationManager, post);
@@ -210,10 +220,13 @@ public class NotificationListenerService extends WearableListenerService {
 
                     final String comments = dataMap.getString(Constants.KEY_REDDIT_POSTS);
 
+                    msg += ", comments: " + (TextUtils.isEmpty(comments) ? "empty" : comments.length());
                     if (!TextUtils.isEmpty(comments)) {
                         if (comments.equals("[]")) {
+                            logToPhone("No comments received, showing toast");
                             Toast.makeText(NotificationListenerService.this, R.string.thread_has_no_comments_yet, Toast.LENGTH_LONG).show();
                         } else {
+                            logToPhone("Comments received, starting activity");
                             Intent intent = new Intent(this, CommentsActivity.class);
                             intent.putExtra(Constants.KEY_REDDIT_POSTS, comments);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -221,16 +234,20 @@ public class NotificationListenerService extends WearableListenerService {
                         }
                     }
                 }
+            } else if (event.getType() == DataEvent.TYPE_DELETED) {
+                String path = event.getDataItem().getUri().getPath();
+
+                msg += ", path: " + path;
             }
         }
+        logToPhone(msg);
     }
 
     private void createNotificationForPost(DataMap dataMap, boolean openOnPhoneDismisses, ArrayList<Integer> actionOrder, Bitmap themeBlueBitmap, NotificationManager notificationManager, Post post) {
         try {
             Bitmap backgroundBitmap = null;
-            Asset a = dataMap.getAsset(post.getId());
-            if (a != null) {
-                backgroundBitmap = loadBitmapFromAsset(a);
+            if (dataMap.containsKey(post.getId()) && dataMap.getAsset(post.getId()) != null) {
+                backgroundBitmap = loadBitmapFromAsset(dataMap.getAsset(post.getId()));
             }
 
             Notification.Builder builder = new Notification.Builder(this)
@@ -382,7 +399,7 @@ public class NotificationListenerService extends WearableListenerService {
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                     @Override
                     public void onResult(DataApi.DataItemResult dataItemResult) {
-                        Logger.log("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
+                        logToPhone("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
                     }
                 });
     }

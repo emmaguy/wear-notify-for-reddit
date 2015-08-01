@@ -17,7 +17,7 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 
 /**
- * Retrieves the latest n posts from the user's preferred subreddit(s) and all unread direct messages
+ * Retrieves the latest n posts from the user's preferred subreddit(s)
  */
 public class LatestPostsRetriever {
     private final RedditService mUnauthenticatedRedditService;
@@ -45,7 +45,8 @@ public class LatestPostsRetriever {
     }
 
     @NonNull public Observable<List<PostAndImage>> retrieve() {
-        final Observable<List<PostAndImage>> postsObservable = Observable.defer(new Func0<Observable<List<PostAndImage>>>() {
+        final long currentSavedTimestamp = mUserStorage.getTimestamp();
+        return Observable.defer(new Func0<Observable<List<PostAndImage>>>() {
             @Override public Observable<List<PostAndImage>> call() {
                 return getRedditServiceForLoggedInState()
                         .latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
@@ -54,7 +55,13 @@ public class LatestPostsRetriever {
                             @Override
                             public Boolean call(Post post) {
                                 // Check that this post is new (i.e. we haven't retrieved it before)
-                                return post.getCreatedUtc() > mUserStorage.getTimestamp();
+                                return post.getCreatedUtc() > currentSavedTimestamp;
+                            }
+                        })
+                        .doOnNext(new Action1<Post>() {
+                            @Override public void call(Post post) {
+                                // Save the timestamps from these new posts, so we don't see them again
+                                mUserStorage.setSeenTimestamp(post.getCreatedUtc());
                             }
                         })
                         .flatMap(new Func1<Post, Observable<PostAndImage>>() {
@@ -78,16 +85,7 @@ public class LatestPostsRetriever {
                                 });
                             }
                         })
-                        .toList()
-                        .doOnNext(new Action1<List<PostAndImage>>() {
-                            @Override public void call(List<PostAndImage> postAndImages) {
-                                // Once all the posts have been compared against last saved timestamp
-                                // save the timestamps from these posts, so we don't see these ones again
-                                for (PostAndImage postAndImage : postAndImages) {
-                                    mUserStorage.setSeenTimestamp(postAndImage.getPost().getCreatedUtc());
-                                }
-                            }
-                        });
+                        .toList();
             }
         }).onErrorResumeNext(new Func1<Throwable, Observable<List<PostAndImage>>>() {
             @Override public Observable<List<PostAndImage>> call(Throwable throwable) {
@@ -95,42 +93,6 @@ public class LatestPostsRetriever {
                 return Observable.just(Collections.<PostAndImage>emptyList());
             }
         });
-
-        final Observable<List<PostAndImage>> messagesObservable = Observable.defer(new Func0<Observable<List<PostAndImage>>>() {
-            @Override public Observable<List<PostAndImage>> call() {
-                if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
-                    return mAuthenticatedRedditService.unreadMessages()
-                            .lift(LatestPostsRetriever.<Post>flattenList())
-                            .map(new Func1<Post, PostAndImage>() {
-                                @Override public PostAndImage call(Post post) {
-                                    return new PostAndImage(post);
-                                }
-                            })
-                            .toList()
-                            .flatMap(new Func1<List<PostAndImage>, Observable<List<PostAndImage>>>() {
-                                @Override public Observable<List<PostAndImage>> call(List<PostAndImage> posts) {
-                                    if (!posts.isEmpty()) {
-                                        MarkAllRead markAllRead = mAuthenticatedRedditService.markAllMessagesRead();
-                                        if (markAllRead.hasErrors()) {
-                                            throw new RuntimeException("Failed to mark all messages as read: " + markAllRead);
-                                        }
-                                    }
-
-                                    return Observable.just(posts);
-                                }
-                            });
-                } else {
-                    return Observable.just(Collections.<PostAndImage>emptyList());
-                }
-            }
-        }).onErrorResumeNext(new Func1<Throwable, Observable<List<PostAndImage>>>() {
-            @Override public Observable<List<PostAndImage>> call(Throwable throwable) {
-                // If we fail somewhere whilst retrieving messages, just emit an empty list
-                return Observable.just(Collections.<PostAndImage>emptyList());
-            }
-        });
-
-        return Observable.merge(postsObservable, messagesObservable);
     }
 
     @NonNull private static <T> Observable.Operator<T, List<T>> flattenList() {
@@ -163,7 +125,7 @@ public class LatestPostsRetriever {
         private final Post mPost;
         private Asset mImage;
 
-        public PostAndImage(Post post) {
+        PostAndImage(Post post) {
             mPost = post;
         }
 

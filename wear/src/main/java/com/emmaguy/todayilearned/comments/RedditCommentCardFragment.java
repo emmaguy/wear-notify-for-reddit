@@ -9,15 +9,14 @@ import android.widget.TextView;
 
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Comment;
-import com.emmaguy.todayilearned.sharedlib.Post;
 
 public class RedditCommentCardFragment extends CardFragment {
-    private static final String ARGS_KEY_TITLE = "card_title";
-    private static final String ARGS_KEY_TEXT = "card_text";
     private static final String ARGS_KEY_SCORE_HIDDEN = "card_score_hidden";
-    private static final String ARGS_KEY_SCORE = "card_score";
-    private static final String ARGS_KEY_GILDED = "card_gilded";
     private static final String ARGS_KEY_REPLY_LEVEL = "card_reply_level";
+    private static final String ARGS_KEY_GILDED = "card_gilded";
+    private static final String ARGS_KEY_TITLE = "card_title";
+    private static final String ARGS_KEY_SCORE = "card_score";
+    private static final String ARGS_KEY_TEXT = "card_text";
 
     private String mTitle;
     private String mText;

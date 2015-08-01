@@ -18,6 +18,7 @@ import com.emmaguy.todayilearned.refresh.RedditService;
 import com.emmaguy.todayilearned.refresh.SubscriptionConverter;
 import com.emmaguy.todayilearned.refresh.TokenConverter;
 import com.emmaguy.todayilearned.refresh.TokenRefreshInterceptor;
+import com.emmaguy.todayilearned.refresh.UnreadDirectMessageRetriever;
 import com.emmaguy.todayilearned.settings.Base64Encoder;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.TokenStorage;
@@ -81,6 +82,17 @@ public class AppModule {
                 tokenStorage,
                 storage,
                 unauthenticatedRedditService,
+                authenticatedRedditService
+        );
+    }
+
+    @Provides
+    @Singleton
+    public UnreadDirectMessageRetriever provideUnreadDirectMessageRetriever(TokenStorage tokenStorage, UserStorage storage,
+            @Named("authenticated") RedditService authenticatedRedditService) {
+        return new UnreadDirectMessageRetriever(
+                tokenStorage,
+                storage,
                 authenticatedRedditService
         );
     }
