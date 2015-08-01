@@ -12,8 +12,8 @@ android {
         applicationId "com.emmaguy.todayilearned"
         minSdkVersion 20
         targetSdkVersion 22
-        versionCode 38
-        versionName "3.0.5"
+        versionCode 39
+        versionName "3.0.6"
     }
     buildTypes {
         release {
@@ -37,8 +37,7 @@ def Properties props = new Properties()
 if (project.hasProperty("signing.properties") && file(project.property("signing.properties")).canRead()) {
     props.load(new FileInputStream(file(project.property("signing.properties"))))
 
-    if (props != null && props.containsKey('keystore') && props.containsKey('keystore.password') &&
-            props.containsKey('keyalias') && props.containsKey('keyalias.password')) {
+    if (props != null && props.containsKey('keystore') && props.containsKey('keystore.password') && props.containsKey('keyalias') && props.containsKey('keyalias.password')) {
         android.signingConfigs.release.storeFile = file(props['keystore'])
         android.signingConfigs.release.storePassword = props['keystore.password']
         android.signingConfigs.release.keyAlias = props['keyalias']
