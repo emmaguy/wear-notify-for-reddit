@@ -14,6 +14,7 @@ import com.emmaguy.todayilearned.refresh.ImageDownloader;
 import com.emmaguy.todayilearned.refresh.LatestPostsRetriever;
 import com.emmaguy.todayilearned.refresh.MarkAsReadConverter;
 import com.emmaguy.todayilearned.refresh.PostConverter;
+import com.emmaguy.todayilearned.refresh.RedditAuthenticationService;
 import com.emmaguy.todayilearned.refresh.RedditService;
 import com.emmaguy.todayilearned.refresh.SubscriptionConverter;
 import com.emmaguy.todayilearned.refresh.TokenConverter;
@@ -21,7 +22,9 @@ import com.emmaguy.todayilearned.refresh.TokenRefreshInterceptor;
 import com.emmaguy.todayilearned.refresh.UnreadDirectMessageRetriever;
 import com.emmaguy.todayilearned.settings.Base64Encoder;
 import com.emmaguy.todayilearned.sharedlib.Constants;
+import com.emmaguy.todayilearned.storage.SharedPreferencesUniqueIdentifierStorage;
 import com.emmaguy.todayilearned.storage.TokenStorage;
+import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.gson.Gson;
 import com.squareup.okhttp.OkHttpClient;
@@ -72,29 +75,14 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader,
-            TokenStorage tokenStorage,
-            UserStorage storage,
-            @Named("unauthenticated") RedditService unauthenticatedRedditService,
-            @Named("authenticated") RedditService authenticatedRedditService) {
-        return new LatestPostsRetriever(
-                downloader,
-                tokenStorage,
-                storage,
-                unauthenticatedRedditService,
-                authenticatedRedditService
-        );
+    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, UserStorage storage, RedditService redditService) {
+        return new LatestPostsRetriever(downloader, storage, redditService);
     }
 
     @Provides
     @Singleton
-    public UnreadDirectMessageRetriever provideUnreadDirectMessageRetriever(TokenStorage tokenStorage, UserStorage storage,
-            @Named("authenticated") RedditService authenticatedRedditService) {
-        return new UnreadDirectMessageRetriever(
-                tokenStorage,
-                storage,
-                authenticatedRedditService
-        );
+    public UnreadDirectMessageRetriever provideUnreadDirectMessageRetriever(TokenStorage tokenStorage, UserStorage storage, RedditService redditService) {
+        return new UnreadDirectMessageRetriever(tokenStorage, storage, redditService);
     }
 
     @Provides
@@ -105,32 +93,23 @@ public class AppModule {
 
     @Provides
     @Singleton
-    @Named("unauthenticated")
-    public RedditService provideUnauthenticatedRedditService(Gson gson, Resources resources, UserStorage userStorage) {
-        final String credentials = resources.getString(R.string.client_id) + ":";
+    public RedditAuthenticationService provideRedditAuthenticationService(Gson gson, Resources resources) {
         final GsonConverter gsonConverter = new GsonConverter(gson);
-
+        final String credentials = resources.getString(R.string.client_id) + ":";
         return new RestAdapter.Builder()
                 .setEndpoint(Constants.ENDPOINT_URL_SSL_REDDIT)
-                .setConverter(new DelegatingConverter(gsonConverter,
-                        new TokenConverter(gsonConverter),
-                        new PostConverter(gsonConverter, resources, userStorage, new HtmlDecoder()),
-                        new MarkAsReadConverter(),
-                        new SubscriptionConverter(),
-                        new CommentsConverter(gson, gsonConverter, resources, userStorage)))
+                .setConverter(new TokenConverter(gsonConverter))
                 .setRequestInterceptor(new BasicAuthorisationRequestInterceptorBuilder(new Base64Encoder()).build(credentials))
                 .build()
-                .create(RedditService.class);
+                .create(RedditAuthenticationService.class);
     }
 
     @Provides
     @Singleton
-    @Named("authenticated")
-    public RedditService provideAuthenticatedRedditService(Gson gson,
-            @Named("unauthenticated") RedditService redditService, Resources resources,
-            UserStorage userStorage, TokenStorage tokenStorage) {
-        final OkHttpClient okHttpClient = new OkHttpClient();
+    public RedditService provideRedditService(Gson gson, Resources resources, UserStorage userStorage, TokenStorage tokenStorage, RedditAuthenticationService authService) {
         final GsonConverter gsonConverter = new GsonConverter(gson);
+
+        final OkHttpClient okHttpClient = new OkHttpClient();
 
         RedditService authenticatedRedditService = new RestAdapter.Builder().setEndpoint(Constants.ENDPOINT_URL_OAUTH_REDDIT)
                 .setClient(new OkClient(okHttpClient))
@@ -143,7 +122,7 @@ public class AppModule {
                 .build()
                 .create(RedditService.class);
 
-        okHttpClient.networkInterceptors().add(new TokenRefreshInterceptor(tokenStorage, redditService));
+        okHttpClient.networkInterceptors().add(new TokenRefreshInterceptor(tokenStorage, authService));
         okHttpClient.setRetryOnConnectionFailure(true);
         return authenticatedRedditService;
     }
@@ -160,6 +139,13 @@ public class AppModule {
     @Named("ui")
     public Scheduler provideUi() {
         return AndroidSchedulers.mainThread();
+    }
+
+    @Provides
+    @Singleton
+    @Named("analytics")
+    public UniqueIdentifierStorage provideAnalyticsUniqueIdentifierStorage(SharedPreferences preferences, Resources resources) {
+        return new SharedPreferencesUniqueIdentifierStorage(preferences, resources.getString(R.string.prefs_key_analytics_id));
     }
 
     @Provides

@@ -16,17 +16,6 @@ import retrofit.http.Query;
 import rx.Observable;
 
 public interface RedditService {
-    @POST("/api/v1/access_token")
-    @Headers("Content-Type: application/x-www-form-urlencoded")
-    @FormUrlEncoded Observable<Token> loginToken(@Field("grant_type") String grantType,
-            @Field("redirect_uri") String redirectUri,
-            @Field("code") String code);
-
-    @POST("/api/v1/access_token")
-    @Headers("Content-Type: application/x-www-form-urlencoded")
-    @FormUrlEncoded Token refreshToken(@Field("grant_type") String grantType,
-            @Field("refresh_token") String refreshToken);
-
     @POST("/api/comment?api_type=json") Observable<RedditResponse> commentOnPost(@Query("text") String comment,
             @Query("thing_id") String postId);
 

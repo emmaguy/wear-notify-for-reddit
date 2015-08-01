@@ -12,12 +12,10 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import retrofit.RetrofitError;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -29,7 +27,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -51,8 +48,7 @@ public class LatestPostsRetrieverTest {
     private static final long DEFAULT_TIMESTAMP = 100;
     private static final long DEFAULT_TIMESTAMP_OLD = 90;
 
-    @Mock RedditService mUnauthenticatedRedditService;
-    @Mock RedditService mAuthenticatedRedditService;
+    @Mock RedditService mRedditService;
 
     @Mock ImageDownloader mImageDownloader;
     @Mock TokenStorage mTokenStorage;
@@ -82,9 +78,9 @@ public class LatestPostsRetrieverTest {
         when(mUserStorage.downloadFullSizedImages()).thenReturn(false);
 
         mPost = mockPost(DEFAULT_TIMESTAMP_NEWER);
-        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
 
-        mRetriever = new LatestPostsRetriever(mImageDownloader, mTokenStorage, mUserStorage, mUnauthenticatedRedditService, mAuthenticatedRedditService);
+        mRetriever = new LatestPostsRetriever(mImageDownloader, mUserStorage, mRedditService);
     }
 
     private void updateTimestampWhenSet(final long timestamp) {
@@ -105,7 +101,7 @@ public class LatestPostsRetrieverTest {
 
     @Test public void latestPostsWith2ThatAreNew_savesOnlyTheNewestTimestamps() {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_OLD), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_NEWER));
-        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
         mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
@@ -115,10 +111,10 @@ public class LatestPostsRetrieverTest {
         });
 
         assertThat(emittedElements.size(), equalTo(2));
-        verify(mUnauthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+        verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
 
         verifyZeroInteractions(mImageDownloader);
-        verifyZeroInteractions(mAuthenticatedRedditService);
+        verifyZeroInteractions(mRedditService);
 
         verify(mUserStorage).getSubreddits();
         verify(mUserStorage).getNumberToRequest();
@@ -132,7 +128,7 @@ public class LatestPostsRetrieverTest {
 
     @Test public void latestPostsWith2ThatAreNewButNewestComeFirst_savesOnlyTheNewestTimestamps() {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_NEWER), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_OLD));
-        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
         mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
@@ -142,10 +138,10 @@ public class LatestPostsRetrieverTest {
         });
 
         assertThat(emittedElements.size(), equalTo(2));
-        verify(mUnauthenticatedRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
+        verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
 
         verifyZeroInteractions(mImageDownloader);
-        verifyZeroInteractions(mAuthenticatedRedditService);
+        verifyZeroInteractions(mRedditService);
 
         verify(mUserStorage).getSubreddits();
         verify(mUserStorage).getNumberToRequest();
@@ -197,7 +193,7 @@ public class LatestPostsRetrieverTest {
         final Post post2 = mockPost(DEFAULT_TIMESTAMP_NEWER);
 
         final List<Post> posts = Arrays.asList(post0, post1, post2);
-        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
         mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
@@ -215,7 +211,7 @@ public class LatestPostsRetrieverTest {
         updateTimestampWhenSet(1004);
 
         final List<Post> posts = Arrays.asList(mockPost(1000), mockPost(1001), mockPost(1002), mockPost(1003), mockPost(1004));
-        when(mUnauthenticatedRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> elementsFirstTime = new ArrayList<>();
         mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {

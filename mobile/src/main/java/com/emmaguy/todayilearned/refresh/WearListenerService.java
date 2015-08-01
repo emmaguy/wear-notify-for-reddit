@@ -40,8 +40,7 @@ import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class WearListenerService extends WearableListenerService {
-    @Inject @Named("unauthenticated") RedditService mUnauthenticatedRedditService;
-    @Inject @Named("authenticated") RedditService mAuthenticatedRedditService;
+    @Inject RedditService mRedditService;
 
     @Inject TokenStorage mTokenStorage;
     @Inject Gson mGson;
@@ -141,17 +140,8 @@ public class WearListenerService extends WearableListenerService {
             }
         }
     }
-
-    private RedditService getRedditServiceForLoggedInState() {
-        if (mTokenStorage.isLoggedIn()) {
-            return mAuthenticatedRedditService;
-        }
-
-        return mUnauthenticatedRedditService;
-    }
-
     private void getComments(String permalink) {
-        getRedditServiceForLoggedInState().comments(permalink, "best")
+        mRedditService.comments(permalink, "best")
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<Comment>>() {
@@ -191,7 +181,7 @@ public class WearListenerService extends WearableListenerService {
     }
 
     private void vote(String fullname, final int voteDirection) {
-        getRedditServiceForLoggedInState().vote(fullname, voteDirection)
+        mRedditService.vote(fullname, voteDirection)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<Void>() {
@@ -216,7 +206,7 @@ public class WearListenerService extends WearableListenerService {
     }
 
     private void replyToDirectMessage(String subject, String message, String toUser) {
-        getRedditServiceForLoggedInState().replyToDirectMessage(subject, message, toUser)
+        mRedditService.replyToDirectMessage(subject, message, toUser)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<RedditResponse>() {
@@ -243,7 +233,7 @@ public class WearListenerService extends WearableListenerService {
     }
 
     private void replyToRedditPost(String fullname, String message) {
-        getRedditServiceForLoggedInState().commentOnPost(message, fullname)
+        mRedditService.commentOnPost(message, fullname)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<RedditResponse>() {

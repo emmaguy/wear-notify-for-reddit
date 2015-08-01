@@ -23,4 +23,5 @@ public interface AppComponent {
     void inject(SettingsActivity.SettingsFragment fragment);
     void inject(WearListenerService wearListenerService);
     void inject(RetrieveService retrieveService);
+    void inject(App app);
 }

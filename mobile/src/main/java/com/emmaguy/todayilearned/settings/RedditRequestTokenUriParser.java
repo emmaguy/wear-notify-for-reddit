@@ -9,6 +9,7 @@ import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Parses a request token from a given {@link Uri}
@@ -16,17 +17,16 @@ import javax.inject.Inject;
 class RedditRequestTokenUriParser {
     private final Resources mResources;
     private final TokenStorage mTokenStorage;
-    private final UniqueIdentifierStorage mUniqueIdentifierStorage;
+    private final UniqueIdentifierStorage mStateStorage;
 
     private boolean mHasValidCode;
     private boolean mShowError;
     private String mCode;
 
-    @Inject
-    RedditRequestTokenUriParser(Resources resources, TokenStorage tokenStorage, UniqueIdentifierStorage uniqueIdentifierStorage) {
+    @Inject RedditRequestTokenUriParser(Resources resources, TokenStorage tokenStorage, @Named("state") UniqueIdentifierStorage stateStorage) {
         mResources = resources;
         mTokenStorage = tokenStorage;
-        mUniqueIdentifierStorage = uniqueIdentifierStorage;
+        mStateStorage = stateStorage;
     }
 
     public void setUri(Uri uri) {
@@ -42,7 +42,7 @@ class RedditRequestTokenUriParser {
                 mCode = uri.getQueryParameter("code");
                 String state = uri.getQueryParameter("state");
 
-                if (state.equals(mUniqueIdentifierStorage.getUniqueIdentifier())) {
+                if (state.equals(mStateStorage.getUniqueIdentifier())) {
                     mHasValidCode = true;
                 } else {
                     mShowError = true;

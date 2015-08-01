@@ -3,6 +3,9 @@ package com.emmaguy.todayilearned.storage;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 
+import com.emmaguy.todayilearned.R;
+
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -15,8 +18,9 @@ import dagger.Provides;
 public class StorageModule {
     @Provides
     @Singleton
+    @Named("state")
     public UniqueIdentifierStorage provideUniqueIdentifierStorage(SharedPreferences preferences, Resources resources) {
-        return new SharedPreferencesUniqueIdentifierStorage(preferences, resources);
+        return new SharedPreferencesUniqueIdentifierStorage(preferences, resources.getString(R.string.prefs_key_state));
     }
 
     @Provides

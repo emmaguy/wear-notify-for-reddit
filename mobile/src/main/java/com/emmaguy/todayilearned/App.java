@@ -4,12 +4,13 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
+import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Logger;
 import com.google.android.gms.analytics.Tracker;
 
-import java.util.UUID;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import retrofit.RetrofitError;
 import timber.log.Timber;
@@ -22,6 +23,8 @@ public class App extends Application {
     private static GoogleAnalytics sGoogleAnalytics;
     private static Tracker sTracker;
 
+    @Inject @Named("analytics") UniqueIdentifierStorage mStorage;
+
     public static App with(Context context) {
         return (App) context.getApplicationContext();
     }
@@ -31,21 +34,21 @@ public class App extends Application {
         super.onCreate();
 
         mAppComponent = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
+        mAppComponent.inject(this);
 
         sGoogleAnalytics = GoogleAnalytics.getInstance(this);
         sGoogleAnalytics.setLocalDispatchPeriod(1800);
 
         sTracker = sGoogleAnalytics.newTracker(getString(R.string.google_analytics_id));
-        sTracker.set("&uid", UUID.randomUUID().toString());
+        sTracker.set("&uid", mStorage.getUniqueIdentifier());
         sTracker.enableExceptionReporting(true);
         sTracker.enableAdvertisingIdCollection(false);
         sTracker.enableAutoActivityTracking(true);
 
         if (mIsDebug) {
             Timber.plant(new Timber.DebugTree());
-            GoogleAnalytics.getInstance(this).getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
         } else {
-            Timber.plant(new GoogleAnalyticsTree(sTracker));
+            Timber.plant(new GoogleAnalyticsTree(sTracker, mStorage));
         }
     }
 
@@ -58,7 +61,7 @@ public class App extends Application {
             Timber.d("Sending event: " + action + " " + label);
         } else {
             sTracker.send(new HitBuilders.EventBuilder()
-                    .setCategory("RedditWear")
+                    .setCategory("RedditWear" + BuildConfig.VERSION_NAME)
                     .setAction(action)
                     .setLabel(label)
                     .build());
@@ -70,10 +73,12 @@ public class App extends Application {
     }
 
     private static class GoogleAnalyticsTree extends Timber.Tree {
-        private Tracker mTracker;
+        private final UniqueIdentifierStorage mStorage;
+        private final Tracker mTracker;
 
-        private GoogleAnalyticsTree(Tracker tracker) {
+        private GoogleAnalyticsTree(Tracker tracker, UniqueIdentifierStorage storage) {
             mTracker = tracker;
+            mStorage = storage;
         }
 
         @Override protected void log(int priority, String tag, String message, Throwable t) {
@@ -86,7 +91,7 @@ public class App extends Application {
                 mTracker.send(new HitBuilders.ExceptionBuilder().setDescription(description).build());
             } else {
                 mTracker.send(new HitBuilders.EventBuilder()
-                        .setCategory("DEBUG" + BuildConfig.VERSION_NAME)
+                        .setCategory("RedditWear" + BuildConfig.VERSION_NAME + "_" + mStorage.getUniqueIdentifier())
                         .setAction(message)
                         .build());
             }

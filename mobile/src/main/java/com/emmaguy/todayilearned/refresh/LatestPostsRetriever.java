@@ -3,7 +3,6 @@ package com.emmaguy.todayilearned.refresh;
 import android.support.annotation.NonNull;
 
 import com.emmaguy.todayilearned.sharedlib.Post;
-import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.android.gms.wearable.Asset;
 
@@ -15,40 +14,28 @@ import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import timber.log.Timber;
 
 /**
  * Retrieves the latest n posts from the user's preferred subreddit(s)
  */
 public class LatestPostsRetriever {
-    private final RedditService mUnauthenticatedRedditService;
-    private final RedditService mAuthenticatedRedditService;
+    private final RedditService mRedditService;
 
     private final ImageDownloader mImageDownloader;
-    private final TokenStorage mTokenStorage;
     private final UserStorage mUserStorage;
 
-    public LatestPostsRetriever(ImageDownloader imageDownloader, TokenStorage tokenStorage, UserStorage userStorage,
-            RedditService unauthenticatedRedditService, RedditService authenticatedRedditService) {
+    public LatestPostsRetriever(ImageDownloader imageDownloader, UserStorage userStorage, RedditService redditService) {
         mImageDownloader = imageDownloader;
-        mTokenStorage = tokenStorage;
         mUserStorage = userStorage;
-        mUnauthenticatedRedditService = unauthenticatedRedditService;
-        mAuthenticatedRedditService = authenticatedRedditService;
-    }
-
-    private RedditService getRedditServiceForLoggedInState() {
-        if (mTokenStorage.isLoggedIn()) {
-            return mAuthenticatedRedditService;
-        }
-
-        return mUnauthenticatedRedditService;
+        mRedditService = redditService;
     }
 
     @NonNull public Observable<List<PostAndImage>> retrieve() {
         final long currentSavedTimestamp = mUserStorage.getTimestamp();
         return Observable.defer(new Func0<Observable<List<PostAndImage>>>() {
             @Override public Observable<List<PostAndImage>> call() {
-                return getRedditServiceForLoggedInState()
+                return mRedditService
                         .latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
                         .lift(LatestPostsRetriever.<Post>flattenList())
                         .filter(new Func1<Post, Boolean>() {
@@ -89,6 +76,7 @@ public class LatestPostsRetriever {
             }
         }).onErrorResumeNext(new Func1<Throwable, Observable<List<PostAndImage>>>() {
             @Override public Observable<List<PostAndImage>> call(Throwable throwable) {
+                Timber.e(throwable, "Failed to get latest posts");
                 // If we fail somewhere whilst retrieving posts, just emit an empty list
                 return Observable.just(Collections.<PostAndImage>emptyList());
             }

@@ -1,31 +1,41 @@
 package com.emmaguy.todayilearned.storage;
 
 import android.content.SharedPreferences;
-import android.content.res.Resources;
+import android.support.annotation.NonNull;
 
-import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.common.StringUtils;
 
-import javax.inject.Inject;
+import java.util.UUID;
 
 /**
  * Stores a unique identifier in {@link SharedPreferences}
  */
-class SharedPreferencesUniqueIdentifierStorage implements UniqueIdentifierStorage {
+public class SharedPreferencesUniqueIdentifierStorage implements UniqueIdentifierStorage {
     private final SharedPreferences mSharedPreferences;
-    private final Resources mResources;
+    private final String mKey;
 
-    @Inject SharedPreferencesUniqueIdentifierStorage(SharedPreferences sharedPreferences, Resources resources) {
+    public SharedPreferencesUniqueIdentifierStorage(SharedPreferences sharedPreferences, String key) {
         mSharedPreferences = sharedPreferences;
-        mResources = resources;
+        mKey = key;
     }
 
-    @Override
-    public void storeUniqueIdentifier(String uniqueIdentifier) {
-        mSharedPreferences.edit().putString(mResources.getString(R.string.prefs_key_state), uniqueIdentifier).apply();
+    private String generateNewUniqueIdentifier() {
+        final String uniqueIdentifier = UUID.randomUUID().toString();
+        mSharedPreferences.edit().putString(mKey, uniqueIdentifier).apply();
+        return uniqueIdentifier;
     }
 
-    @Override
-    public String getUniqueIdentifier() {
-        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_state), "");
+    @Override @NonNull public String getUniqueIdentifier() {
+        String uniqueIdentifier = getStoredIdentifier();
+
+        if (!StringUtils.isEmpty(uniqueIdentifier)) {
+            return uniqueIdentifier;
+        }
+
+        return generateNewUniqueIdentifier();
+    }
+
+    @NonNull private String getStoredIdentifier() {
+        return mSharedPreferences.getString(mKey, "");
     }
 }

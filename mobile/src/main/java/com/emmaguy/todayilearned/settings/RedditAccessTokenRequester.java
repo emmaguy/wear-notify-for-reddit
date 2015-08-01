@@ -9,9 +9,8 @@ import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
 
-import java.util.UUID;
-
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Created by emma on 14/06/15.
@@ -19,26 +18,22 @@ import javax.inject.Inject;
 class RedditAccessTokenRequester {
     private final Context mContext;
     private final Resources mResources;
-    private final UniqueIdentifierStorage mUniqueIdentifierStorage;
+    private final UniqueIdentifierStorage mStateStorage;
 
-    @Inject
-    RedditAccessTokenRequester(Context context, Resources resources, UniqueIdentifierStorage uniqueIdentifierStorage) {
+    @Inject RedditAccessTokenRequester(Context context, Resources resources, @Named("state") UniqueIdentifierStorage stateStorage) {
         mContext = context;
         mResources = resources;
-        mUniqueIdentifierStorage = uniqueIdentifierStorage;
+        mStateStorage = stateStorage;
     }
 
     public void request() {
-        String randomIdentifier = UUID.randomUUID().toString();
-        mUniqueIdentifierStorage.storeUniqueIdentifier(randomIdentifier);
-
         final String redirectUrl = mResources.getString(R.string.redirect_url_scheme) + mResources.getString(R.string.redirect_url_callback);
 
-        String url = Constants.WEB_URL_REDDIT + "/api/v1/authorize?" +
+        String url = Constants.WEB_URL_REDDIT + "/api/v1/authorize.compact?" +
                 "client_id=" + mResources.getString(R.string.client_id) +
                 "&duration=" + mResources.getString(R.string.reddit_auth_duration) +
                 "&response_type=code" +
-                "&state=" + randomIdentifier +
+                "&state=" + mStateStorage.getUniqueIdentifier() +
                 "&redirect_uri=" + redirectUrl +
                 "&scope=" + mResources.getString(R.string.reddit_auth_scope);
 

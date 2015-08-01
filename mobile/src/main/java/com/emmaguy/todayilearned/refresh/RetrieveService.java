@@ -27,7 +27,6 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -83,7 +82,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
 
         final String message = "refresh: " + mUserStorage.getRefreshInterval() + ", subreddits: " +
-                mUserStorage.getSubreddits() + ", sort: " + mUserStorage.getSortType() + ", number: " + mUserStorage.getNumberToRequest();
+                mUserStorage.getSubreddits() + ", sort: " + mUserStorage.getSortType() + ", number: " + mUserStorage.getNumberToRequest() + ", timestamp: " + mUserStorage.getTimestamp();
 
         mLatestPostsRetriever.retrieve()
                 .subscribeOn(mIoScheduler)
@@ -150,7 +149,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
             DataMap dataMap = mapRequest.getDataMap();
 
             if (assets != null && !assets.isEmpty()) {
-                for(int i = 0; i < assets.size(); i++) {
+                for (int i = 0; i < assets.size(); i++) {
                     dataMap.putAsset(assets.keyAt(i), assets.valueAt(i));
                 }
             }
@@ -165,7 +164,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Timber.d(msg + " result: " + dataItemResult.getStatus());
+                            Timber.d(msg + ", final timestamp: " + mUserStorage.getTimestamp() + " result: " + dataItemResult.getStatus());
 
                             if (dataItemResult.getStatus().isSuccess()) {
                                 if (mGoogleApiClient.isConnected()) {

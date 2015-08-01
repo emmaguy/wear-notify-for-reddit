@@ -23,9 +23,11 @@ import retrofit.converter.Converter;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,9 +40,9 @@ public class TokenRefreshInterceptorTest {
     private static final String DEFAULT_URL = "http://ssl.reddit.com/";
     private static final String BEARER_ = "bearer ";
 
+    @Mock private RedditAuthenticationService mRedditService;
     @Mock private RequestInterceptor mRequestInterceptor;
     @Mock private Interceptor.Chain mChain;
-    @Mock private RedditService mRedditService;
     @Mock private TokenStorage mTokenStorage;
     @Mock private Converter mMockConverter;
     @Mock private Token mToken;
@@ -66,17 +68,21 @@ public class TokenRefreshInterceptorTest {
         initMocks(this);
 
         when(mRedditService.refreshToken(anyString(), anyString())).thenReturn(mToken);
+        when(mRedditService.appOnlyToken(anyString(), anyString())).thenReturn(mToken);
 
         mRefreshTokenInterceptor = new TokenRefreshInterceptor(mTokenStorage, mRedditService);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void tokenIsEmpty_throwsRuntimeException() throws Exception {
+    @Test public void tokenIsEmpty_requestsAppOnlyAuth() throws Exception {
         when(mTokenStorage.hasNoToken()).thenReturn(true);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(mOriginalRequest)).thenReturn(mSuccessfulResponse);
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(mSuccessfulResponse);
+        when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
+
+        verify(mRedditService).appOnlyToken(eq(Constants.GRANT_TYPE_INSTALLED_CLIENT), anyString());
+        verify(mTokenStorage).updateToken(mToken);
     }
 
     @Test public void tokenNotExpiredAndNotEmpty_addAuthorisationHeaderAndDoRequest() throws Exception {
@@ -84,8 +90,7 @@ public class TokenRefreshInterceptorTest {
         when(mTokenStorage.hasTokenExpired()).thenReturn(false);
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN)))))
-                .thenReturn(mSuccessfulResponse);
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(mSuccessfulResponse);
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
     }
@@ -96,8 +101,7 @@ public class TokenRefreshInterceptorTest {
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
         when(mTokenStorage.getRefreshToken()).thenReturn(DEFAULT_REFRESH_TOKEN);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN)))))
-                .thenReturn(mSuccessfulResponse);
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(mSuccessfulResponse);
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
         verify(mTokenStorage).updateToken(mToken);

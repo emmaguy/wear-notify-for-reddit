@@ -1,5 +1,7 @@
 package com.emmaguy.todayilearned.refresh;
 
+import android.support.annotation.NonNull;
+
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.squareup.okhttp.Interceptor;
@@ -8,6 +10,7 @@ import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.UUID;
 
 import retrofit.RetrofitError;
 
@@ -21,11 +24,11 @@ public class TokenRefreshInterceptor implements Interceptor {
     private static final String BEARER_FORMAT = "bearer %s";
 
     private final TokenStorage mTokenStorage;
-    private final RedditService mRefreshRedditService;
+    private final RedditAuthenticationService mAuthenticationService;
 
-    public TokenRefreshInterceptor(TokenStorage tokenStorage, RedditService refreshRedditService) {
+    public TokenRefreshInterceptor(TokenStorage tokenStorage, RedditAuthenticationService authenticationService) {
         mTokenStorage = tokenStorage;
-        mRefreshRedditService = refreshRedditService;
+        mAuthenticationService = authenticationService;
     }
 
     @Override
@@ -36,43 +39,63 @@ public class TokenRefreshInterceptor implements Interceptor {
             // if we're trying to get the access token, carry on
             response = chain.proceed(request);
         } else if (mTokenStorage.hasNoToken()) {
-            throw new RuntimeException("No token");
+            // User hasn't logged in, request an app only token
+            response = requestAppOnlyTokenAndProceed(chain, request);
         } else if (mTokenStorage.hasTokenExpired()) {
-            response = renewTokenAndDoRequest(chain, request);
+            // Token's expired, renew it first
+            response = renewTokenAndProceed(chain, request);
         } else {
-            response = addHeaderAndProceedWithChain(chain, request);
-            if (response.code() == HttpURLConnection.HTTP_FORBIDDEN || response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                mTokenStorage.forceExpireToken();
-                // throw an IOException, so that this request will be retried
-                throw new IOException("Token error, throwing to retry");
-            }
+            response = makeRequest(chain, request);
         }
 
         return response;
     }
 
-    private Response addHeaderAndProceedWithChain(Chain chain, Request originalRequest) throws IOException {
-        final String value = String.format(BEARER_FORMAT, mTokenStorage.getAccessToken());
-        final Request authenticatedRequest = originalRequest.newBuilder().header(Constants.AUTHORIZATION, value).build();
-        return chain.proceed(authenticatedRequest);
+    // synchronized so we only renew one request at a time
+    @NonNull private synchronized Response requestAppOnlyTokenAndProceed(Chain chain, Request originalRequest) throws IOException {
+        try {
+            Token token = mAuthenticationService.appOnlyToken(Constants.GRANT_TYPE_INSTALLED_CLIENT, UUID.randomUUID().toString());
+            mTokenStorage.updateToken(token);
+        } catch (RetrofitError error) {
+            if (error.getResponse() == null || isServerError(error.getResponse())) {
+                throw new RuntimeException("Failed to retrieve app only token, empty response/server error: " + error.getCause());
+            } else {
+                throw new RuntimeException("Failed to retrieve app only token, unknown cause: " + error.getCause());
+            }
+        }
+        return addHeaderAndProceedWithChain(chain, originalRequest);
     }
 
-    // synchronized so we only renew one request at a time
-    private synchronized Response renewTokenAndDoRequest(Chain chain, Request originalRequest) throws IOException {
+    @NonNull private synchronized Response renewTokenAndProceed(Chain chain, Request originalRequest) throws IOException {
         if (mTokenStorage.hasTokenExpired()) {
             try {
-                Token token = mRefreshRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, mTokenStorage.getRefreshToken());
+                Token token = mAuthenticationService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, mTokenStorage.getRefreshToken());
                 mTokenStorage.updateToken(token);
             } catch (RetrofitError error) {
                 if (error.getResponse() == null || isServerError(error.getResponse())) {
-                    throw new RuntimeException(error.getCause());
+                    throw new RuntimeException("Failed to renew token, empty response/server error: " + error.getCause());
                 } else {
-                    mTokenStorage.clearToken();
-                    throw new RuntimeException(error.getCause());
+                    throw new RuntimeException("Failed to renew token, unknown cause: " + error.getCause());
                 }
             }
         }
         return addHeaderAndProceedWithChain(chain, originalRequest);
+    }
+
+    @NonNull private Response makeRequest(Chain chain, Request request) throws IOException {
+        Response r = addHeaderAndProceedWithChain(chain, request);
+        if (r.code() == HttpURLConnection.HTTP_FORBIDDEN || r.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            mTokenStorage.forceExpireToken();
+            // throw an IOException, so that this request will be retried
+            throw new IOException("Token problem, throwing to retry");
+        }
+        return r;
+    }
+
+    @NonNull private Response addHeaderAndProceedWithChain(Chain chain, Request originalRequest) throws IOException {
+        final String value = String.format(BEARER_FORMAT, mTokenStorage.getAccessToken());
+        final Request authenticatedRequest = originalRequest.newBuilder().header(Constants.AUTHORIZATION, value).build();
+        return chain.proceed(authenticatedRequest);
     }
 
     private boolean isServerError(retrofit.client.Response response) {

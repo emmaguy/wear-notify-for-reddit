@@ -15,6 +15,7 @@ public class Constants {
 
     public static final String GRANT_TYPE_AUTHORISATION_CODE = "authorization_code";
     public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+    public static final String GRANT_TYPE_INSTALLED_CLIENT = "https://oauth.reddit.com/grants/installed_client";
 
     public static final String PATH_REDDIT_POSTS = "/redditwear";
     public static final String PATH_REFRESH = "/refresh";

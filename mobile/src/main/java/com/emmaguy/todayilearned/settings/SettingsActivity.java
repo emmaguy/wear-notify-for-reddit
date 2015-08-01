@@ -22,6 +22,7 @@ import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.common.Utils;
 import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
+import com.emmaguy.todayilearned.refresh.RedditAuthenticationService;
 import com.emmaguy.todayilearned.refresh.RedditService;
 import com.emmaguy.todayilearned.refresh.Token;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -29,7 +30,6 @@ import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import de.psdev.licensesdialog.LicensesDialog;
 import rx.Observer;
@@ -50,13 +50,12 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
-        @Inject @Named("unauthenticated") RedditService mUnauthenticatedRedditService;
-        @Inject @Named("authenticated") RedditService mAuthenticatedRedditService;
-
         @Inject RedditAccessTokenRequester mRedditAccessTokenRequester;
+        @Inject RedditAuthenticationService mRedditAuthenticationService;
         @Inject RedditRequestTokenUriParser mRequestTokenUriParser;
         @Inject BackgroundAlarmListener mAlarmListener;
         @Inject WearableActionStorage mWearableActionStorage;
+        @Inject RedditService mRedditService;
         @Inject TokenStorage mTokenStorage;
         @Inject UserStorage mUserStorage;
 
@@ -158,7 +157,7 @@ public class SettingsActivity extends AppCompatActivity {
             final String redirectUri = getString(R.string.redirect_url_scheme) + getString(R.string.redirect_url_callback);
 
             // TODO: unit test this chain, verify retrieving an empty token errors
-            mUnauthenticatedRedditService.loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE, redirectUri, code)
+            mRedditAuthenticationService.loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE, redirectUri, code)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<Token>() {
@@ -232,7 +231,7 @@ public class SettingsActivity extends AppCompatActivity {
         private void syncSubreddits() {
             final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.syncing_subreddits));
 
-            mAuthenticatedRedditService
+            mRedditService
                     .subredditSubscriptions()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())

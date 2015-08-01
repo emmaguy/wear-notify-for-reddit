@@ -30,6 +30,9 @@ android {
     lintOptions {
         disable 'Overdraw', 'InvalidPackage', 'UnusedResources'
     }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 repositories {
