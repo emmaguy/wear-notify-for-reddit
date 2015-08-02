@@ -72,5 +72,6 @@
     <string name="debug_information_explanation">Some debug information follows - if you are having an issue with the app, it\'d be appreciated if you leave it. Thanks!</string>
 
     <string name="accessibility_action_icon">Action icon</string>
+    <string name="auth_change_message">Due to a change in reddit\'s API, we have had to change how you log in to Wear Notify for Reddit.\n\nIf you want to sync subreddits or perform other actions that require login, you will need to login again.\n\nThanks for using the app, apologies for the inconvenience.</string>
 
 </resources>

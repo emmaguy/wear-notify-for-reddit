@@ -2,6 +2,7 @@ package com.emmaguy.todayilearned.settings;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,8 +19,10 @@ import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.emmaguy.todayilearned.App;
+import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.common.Logger;
+import com.emmaguy.todayilearned.common.StringUtils;
 import com.emmaguy.todayilearned.common.Utils;
 import com.emmaguy.todayilearned.refresh.BackgroundAlarmListener;
 import com.emmaguy.todayilearned.refresh.RedditAuthenticationService;
@@ -86,6 +89,26 @@ public class SettingsActivity extends AppCompatActivity {
             toggleOpenOnPhoneAction();
 
             setHasOptionsMenu(true);
+
+            showDialogIfStillUsingOldAuth();
+        }
+
+        private void showDialogIfStillUsingOldAuth() {
+            final String usernameKey = getString(R.string.prefs_key_username);
+            final String username = getPreferenceManager().getSharedPreferences().getString(usernameKey, "");
+            if (!StringUtils.isEmpty(username)) {
+                new AlertDialog.Builder(getActivity())
+                        .setCancelable(false)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override public void onClick(DialogInterface dialog, int which) {
+                                getPreferenceManager().getSharedPreferences().edit().remove(usernameKey).apply();
+                            }
+                        })
+                        .setTitle(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME)
+                        .setMessage(R.string.auth_change_message)
+                        .create()
+                        .show();
+            }
         }
 
         private void toggleRedditSettings() {
