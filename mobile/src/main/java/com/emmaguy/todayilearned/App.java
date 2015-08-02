@@ -48,7 +48,7 @@ public class App extends Application {
         if (mIsDebug) {
             Timber.plant(new Timber.DebugTree());
         } else {
-            Timber.plant(new GoogleAnalyticsTree(sTracker, mStorage));
+            Timber.plant(new GoogleAnalyticsTree(sTracker));
         }
     }
 
@@ -73,12 +73,10 @@ public class App extends Application {
     }
 
     private static class GoogleAnalyticsTree extends Timber.Tree {
-        private final UniqueIdentifierStorage mStorage;
         private final Tracker mTracker;
 
-        private GoogleAnalyticsTree(Tracker tracker, UniqueIdentifierStorage storage) {
+        private GoogleAnalyticsTree(Tracker tracker) {
             mTracker = tracker;
-            mStorage = storage;
         }
 
         @Override protected void log(int priority, String tag, String message, Throwable t) {
@@ -89,11 +87,6 @@ public class App extends Application {
                 final String description = "error kind: " + errorKind + " info: " + info;
 
                 mTracker.send(new HitBuilders.ExceptionBuilder().setDescription(description).build());
-            } else {
-                mTracker.send(new HitBuilders.EventBuilder()
-                        .setCategory("RedditWear" + BuildConfig.VERSION_NAME + "_" + mStorage.getUniqueIdentifier())
-                        .setAction(message)
-                        .build());
             }
         }
     }
