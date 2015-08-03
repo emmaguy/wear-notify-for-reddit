@@ -108,7 +108,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 }, new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
-                        Timber.e(throwable, "Failed to get latest posts");
+                        Timber.e(throwable, "Failed to get latest posts: " + message);
                     }
                 });
 
@@ -124,7 +124,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     }
                 }, new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
-                        Timber.e(throwable, "Failed to get latest posts");
+                        Timber.e(throwable, "Failed to get latest messages");
                     }
                 });
     }

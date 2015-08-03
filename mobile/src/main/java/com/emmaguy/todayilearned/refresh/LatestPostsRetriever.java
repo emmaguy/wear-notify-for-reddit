@@ -76,7 +76,7 @@ public class LatestPostsRetriever {
             }
         }).onErrorResumeNext(new Func1<Throwable, Observable<List<PostAndImage>>>() {
             @Override public Observable<List<PostAndImage>> call(Throwable throwable) {
-                Timber.e(throwable, "Failed to get latest posts");
+                Timber.e(throwable, "Failed to get latest posts: " + mUserStorage.getSubreddits() + ", " + mUserStorage.getSortType() + ", " + mUserStorage.getNumberToRequest());
                 // If we fail somewhere whilst retrieving posts, just emit an empty list
                 return Observable.just(Collections.<PostAndImage>emptyList());
             }

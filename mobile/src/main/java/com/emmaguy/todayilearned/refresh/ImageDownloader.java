@@ -43,7 +43,7 @@ public class ImageDownloader {
             bytes = byteStream.toByteArray();
             bitmap.recycle();
         } catch (Exception e) {
-            Timber.e(e, "Failed to download image");
+            Timber.d(e, "Failed to download image");
         }
 
         return bytes;
