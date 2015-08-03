@@ -147,7 +147,7 @@ public class SubredditPreference extends Preference {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         final EditText input = (EditText) view.findViewById(R.id.subreddit_edittext);
 
-                        String subreddit = input.getText().toString().trim();
+                        String subreddit = input.getText().toString().replaceAll("\\s+", "");
                         if (subreddit.length() > 0) {
                             addSubreddit(subreddit);
                         }
