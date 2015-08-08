@@ -81,21 +81,24 @@ public class App extends Application {
 
         @Override protected void log(int priority, String tag, String message, Throwable t) {
             if (priority == Log.ERROR) {
-                final String description;
                 final String throwableMessage = message + ", msg: " + t.getMessage();
+                final String stackTrace;
                 if (t instanceof RetrofitError) {
-                    final String info;
-                    if (((RetrofitError) t).getKind() == RetrofitError.Kind.NETWORK) {
-                        info = throwableMessage;
+                    final RetrofitError.Kind kind = ((RetrofitError) t).getKind();
+                    if (kind == RetrofitError.Kind.NETWORK) {
+                        stackTrace = "Network";
                     } else {
-                        info = throwableMessage + ", stack trace: " + Log.getStackTraceString(t);
+                        stackTrace = Log.getStackTraceString(t);
                     }
-                    description = "error kind: retrofit, " + ((RetrofitError) t).getKind() + " info: " + info;
                 } else {
-                    description = "error kind: non-retrofit, info: " + throwableMessage + ", stack trace: " + Log.getStackTraceString(t);
+                    stackTrace = Log.getStackTraceString(t);
                 }
 
-                mTracker.send(new HitBuilders.ExceptionBuilder().setDescription(description).build());
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("RedditWear" + BuildConfig.VERSION_NAME)
+                        .setAction(stackTrace)
+                        .setLabel(throwableMessage)
+                        .build());
             }
         }
     }
