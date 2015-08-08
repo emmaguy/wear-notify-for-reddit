@@ -12,6 +12,7 @@ import java.util.List;
 import rx.Observable;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import timber.log.Timber;
 
 /**
  * Retrieves all unread direct messages for the logged in user, marks as read on successful retrieval
@@ -51,6 +52,7 @@ public class UnreadDirectMessageRetriever {
             }
         }).onErrorResumeNext(new Func1<Throwable, Observable<List<Post>>>() {
             @Override public Observable<List<Post>> call(Throwable throwable) {
+                Timber.e(throwable, "UnreadDirectMessageRetriever: failed to get unread messages");
                 // If we fail somewhere whilst retrieving messages, just emit an empty list
                 return Observable.just(Collections.<Post>emptyList());
             }

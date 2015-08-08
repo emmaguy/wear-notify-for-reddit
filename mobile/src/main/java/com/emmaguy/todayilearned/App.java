@@ -99,6 +99,11 @@ public class App extends Application {
                         .setAction(stackTrace)
                         .setLabel(throwableMessage)
                         .build());
+            } else {
+                mTracker.send(new HitBuilders.EventBuilder()
+                        .setCategory("Debug_RedditWear" + BuildConfig.VERSION_NAME)
+                        .setAction(message)
+                        .build());
             }
         }
     }

@@ -72,6 +72,18 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         App.with(this).getAppComponent().inject(this);
     }
 
+    private void connectToWearable() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+    }
+
     @Override
     protected void doWakefulWork(Intent intent) {
         connectToWearable();
@@ -101,14 +113,14 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                 posts.add(p.getPost());
                             }
 
-                            sendNewPostsData(posts, msg, assets);
+                            sendPostsToWearable(posts, msg, assets);
                         } else if (mSendInformationToWearableIfNoPosts) {
                             WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
                         }
                     }
                 }, new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
-                        Timber.e(throwable, "Failed to get latest posts: " + message);
+                        Timber.e(throwable, "RetrieveService: Failed to get latest posts");
                     }
                 });
 
@@ -119,29 +131,17 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                     @Override public void call(List<Post> posts) {
                         if (posts.size() > 0) {
                             String msg = "Refresh messages, found " + posts.size();
-                            sendNewPostsData(posts, msg, null);
+                            sendPostsToWearable(posts, msg, null);
                         }
                     }
                 }, new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
-                        Timber.e(throwable, "Failed to get latest messages");
+                        Timber.e(throwable, "RetrieveService: Failed to get latest messages");
                     }
                 });
     }
 
-    private void connectToWearable() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
-        if (!mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.connect();
-        }
-    }
-
-    private void sendNewPostsData(@NonNull List<Post> posts, @NonNull final String msg, @Nullable SimpleArrayMap<String, Asset> assets) {
+    private void sendPostsToWearable(@NonNull List<Post> posts, @NonNull final String msg, @Nullable SimpleArrayMap<String, Asset> assets) {
         if (mGoogleApiClient.isConnected()) {
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
@@ -170,6 +170,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                                 if (mGoogleApiClient.isConnected()) {
                                     mGoogleApiClient.disconnect();
                                 }
+                            } else {
+                                Timber.d("Failed to send posts to wearable " + dataItemResult.getStatus().getStatusMessage());
                             }
                         }
                     });
