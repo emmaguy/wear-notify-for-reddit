@@ -2,12 +2,11 @@ package com.emmaguy.todayilearned.storage;
 
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.text.TextUtils;
 
 import com.emmaguy.todayilearned.R;
+import com.emmaguy.todayilearned.common.StringUtils;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -51,7 +50,7 @@ class SharedPreferencesUserStorage implements UserStorage {
         final String key = mResources.getString(R.string.prefs_key_selected_subreddits);
         Set<String> subreddits = mSharedPreferences.getStringSet(key, Constants.sDefaultSelectedSubreddits);
 
-        return TextUtils.join("+", new ArrayList(subreddits));
+        return StringUtils.join("+", subreddits);
     }
 
     @Override public String getRefreshInterval() {

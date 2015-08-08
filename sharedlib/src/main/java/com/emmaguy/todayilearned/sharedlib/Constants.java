@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Constants {
-    public static Set<String> sDefaultSelectedSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "AskReddit"));
+    public static Set<String> sDefaultSelectedSubreddits = new HashSet<>(Arrays.asList("todayilearned", "AskReddit"));
 
     public static final String WEB_URL_REDDIT = "https://www.reddit.com";
     public static final String ENDPOINT_URL_SSL_REDDIT = "https://ssl.reddit.com/";

@@ -238,4 +238,12 @@ public class LatestPostsRetrieverTest {
         assertThat(elementsFirstTime.size(), equalTo(5));
         assertThat(elementsSecondTime.size(), equalTo(0));
     }
+
+    @Test public void noSubredditsSelected_usesDefault() {
+        when(mUserStorage.getSubreddits()).thenReturn("");
+
+        mRetriever.retrieve().subscribe();
+
+        verify(mRedditService).latestPosts("AskReddit+todayilearned", DEFAULT_SORT, DEFAULT_NUMBER);
+    }
 }

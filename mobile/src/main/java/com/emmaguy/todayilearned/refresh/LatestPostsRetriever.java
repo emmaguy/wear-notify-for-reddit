@@ -1,11 +1,15 @@
 package com.emmaguy.todayilearned.refresh;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
+import com.emmaguy.todayilearned.common.StringUtils;
+import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.android.gms.wearable.Asset;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,8 +39,12 @@ public class LatestPostsRetriever {
         final long currentSavedTimestamp = mUserStorage.getTimestamp();
         return Observable.defer(new Func0<Observable<List<PostAndImage>>>() {
             @Override public Observable<List<PostAndImage>> call() {
+               String subreddits = mUserStorage.getSubreddits();
+                if (StringUtils.isEmpty(subreddits)) {
+                    subreddits = StringUtils.join("+", Constants.sDefaultSelectedSubreddits);
+                }
                 return mRedditService
-                        .latestPosts(mUserStorage.getSubreddits(), mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
+                        .latestPosts(subreddits, mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
                         .lift(LatestPostsRetriever.<Post>flattenList())
                         .filter(new Func1<Post, Boolean>() {
                             @Override
