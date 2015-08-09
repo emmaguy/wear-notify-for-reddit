@@ -415,6 +415,7 @@ public class NotificationListenerService extends WearableListenerService {
     }
 
     private PendingIntent getOpenOnPhonePendingIntent(String permalink, boolean openOnPhoneDismisses, int notificationId) {
+        logToPhone("Open on phone permalink: " + permalink);
         Intent openOnPhone = new Intent(this, ActionReceiver.class);
         openOnPhone.putExtra(Constants.KEY_PATH, Constants.PATH_OPEN_ON_PHONE);
         openOnPhone.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.open_on_phone));
