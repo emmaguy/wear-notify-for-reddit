@@ -2,6 +2,7 @@ package com.emmaguy.todayilearned.settings;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 
 import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
@@ -12,17 +13,21 @@ import org.mockito.Mock;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class RedditAccessTokenRequesterTest {
     private RedditAccessTokenRequester mTokenRequester;
 
     @Mock private UniqueIdentifierStorage mUniqueIdentifierStorage;
+    @Mock private PackageManager mPackageManager;
     @Mock private Resources mResources;
     @Mock private Context mContext;
 
     @Before public void before() {
         initMocks(this);
+
+        when(mContext.getPackageManager()).thenReturn(mPackageManager);
 
         mTokenRequester = new RedditAccessTokenRequester(mContext, mResources, mUniqueIdentifierStorage);
     }
