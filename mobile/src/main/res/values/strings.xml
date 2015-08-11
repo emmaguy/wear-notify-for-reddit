@@ -73,5 +73,7 @@
 
     <string name="accessibility_action_icon">Action icon</string>
     <string name="auth_change_message">Due to a change in reddit\'s API, we have had to change how you log in to Wear Notify for Reddit.\n\nIf you want to sync subreddits or perform other actions that require login, you will need to login again.\n\nThanks for using the app, apologies for the inconvenience.</string>
+    <string name="chooser_title">Choose which browser to login with</string>
+    <string name="no_browsers_installed">No browsers can be found to login. Please install a browser and try again</string>
 
 </resources>

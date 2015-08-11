@@ -21,6 +21,7 @@ import com.emmaguy.todayilearned.refresh.TokenConverter;
 import com.emmaguy.todayilearned.refresh.TokenRefreshInterceptor;
 import com.emmaguy.todayilearned.refresh.UnreadDirectMessageRetriever;
 import com.emmaguy.todayilearned.settings.Base64Encoder;
+import com.emmaguy.todayilearned.settings.BrowserIntentBuilder;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.SharedPreferencesUniqueIdentifierStorage;
 import com.emmaguy.todayilearned.storage.TokenStorage;
@@ -83,6 +84,12 @@ public class AppModule {
     @Singleton
     public UnreadDirectMessageRetriever provideUnreadDirectMessageRetriever(TokenStorage tokenStorage, UserStorage storage, RedditService redditService) {
         return new UnreadDirectMessageRetriever(tokenStorage, storage, redditService);
+    }
+
+    @Provides
+    @Singleton
+    public BrowserIntentBuilder provideBrowserIntentBuilder(Context context) {
+        return new BrowserIntentBuilder(context.getPackageManager());
     }
 
     @Provides
