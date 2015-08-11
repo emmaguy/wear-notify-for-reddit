@@ -97,6 +97,26 @@ public class Post {
         return mPostContents;
     }
 
+    @Override public String toString() {
+        return "Post{" +
+                "mIsDirectMessage=" + mIsDirectMessage +
+                ", mHasImageUrl=" + mHasImageUrl +
+                ", mShortTitle='" + mShortTitle + '\'' +
+                ", mPostContents='" + mPostContents + '\'' +
+                ", mSubreddit='" + mSubreddit + '\'' +
+                ", mPermalink='" + mPermalink + '\'' +
+                ", mFullname='" + mFullname + '\'' +
+                ", mImageUrl='" + mImageUrl + '\'' +
+                ", mAuthor='" + mAuthor + '\'' +
+                ", mTitle='" + mTitle + '\'' +
+                ", mUrl='" + mUrl + '\'' +
+                ", mId='" + mId + '\'' +
+                ", mCreatedUtc=" + mCreatedUtc +
+                ", mScore=" + mScore +
+                ", mGilded=" + mGilded +
+                '}';
+    }
+
     public static final class Builder {
         private boolean mIsDirectMessage;
         private boolean mHasImageUrl;

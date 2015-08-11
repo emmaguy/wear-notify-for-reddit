@@ -327,6 +327,10 @@ public class NotificationListenerService extends WearableListenerService {
         for (int i = 0; i < actionOrder.size(); i++) {
             int order = actionOrder.get(i);
 
+            if (TextUtils.isEmpty(post.getPermalink())) {
+                logToPhone("Open on phone permalink: " + post);
+            }
+
             switch (order) {
                 case Constants.ACTION_ORDER_VIEW_COMMENTS:
                     builder.addAction(new Notification.Action.Builder(R.drawable.view_comments,
