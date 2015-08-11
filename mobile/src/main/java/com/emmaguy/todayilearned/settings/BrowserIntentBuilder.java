@@ -19,6 +19,12 @@ import javax.inject.Inject;
  * Created by emma on 11/08/15.
  */
 public class BrowserIntentBuilder {
+    private static final String DEFAULT_URL = "https://www.google.com";
+
+    private static final String PACKAGE_NAME = "packageName";
+    private static final String SIMPLE_NAME = "simpleName";
+    private static final String CLASS_NAME = "className";
+
     private final PackageManager mPackageManager;
 
     @Inject public BrowserIntentBuilder(PackageManager packageManager) {
@@ -28,7 +34,7 @@ public class BrowserIntentBuilder {
     @Nullable public Intent build(String title, Intent target) {
         // find all the browsers installed - don't use the reddit url because that will include 3rd party reddit clients
         final Intent dummy = new Intent(Intent.ACTION_VIEW);
-        dummy.setData(Uri.parse("https://www.google.com"));
+        dummy.setData(Uri.parse(DEFAULT_URL));
 
         final List<ResolveInfo> resInfo = mPackageManager.queryIntentActivities(dummy, 0);
 
@@ -39,9 +45,9 @@ public class BrowserIntentBuilder {
             }
 
             HashMap<String, String> info = new HashMap<>();
-            info.put("packageName", ri.activityInfo.packageName);
-            info.put("className", ri.activityInfo.name);
-            info.put("simpleName", String.valueOf(ri.activityInfo.loadLabel(mPackageManager)));
+            info.put(PACKAGE_NAME, ri.activityInfo.packageName);
+            info.put(CLASS_NAME, ri.activityInfo.name);
+            info.put(SIMPLE_NAME, String.valueOf(ri.activityInfo.loadLabel(mPackageManager)));
             metaInfo.add(info);
         }
 
@@ -53,7 +59,7 @@ public class BrowserIntentBuilder {
         Collections.sort(metaInfo, new Comparator<HashMap<String, String>>() {
             @Override
             public int compare(HashMap<String, String> map, HashMap<String, String> map2) {
-                return map.get("simpleName").compareTo(map2.get("simpleName"));
+                return map.get(SIMPLE_NAME).compareTo(map2.get(SIMPLE_NAME));
             }
         });
 
@@ -61,8 +67,8 @@ public class BrowserIntentBuilder {
         final List<Intent> targetedIntents = new ArrayList<>();
         for (HashMap<String, String> mi : metaInfo) {
             Intent targetedShareIntent = (Intent) target.clone();
-            targetedShareIntent.setPackage(mi.get("packageName"));
-            targetedShareIntent.setClassName(mi.get("packageName"), mi.get("className"));
+            targetedShareIntent.setPackage(mi.get(PACKAGE_NAME));
+            targetedShareIntent.setClassName(mi.get(PACKAGE_NAME), mi.get(CLASS_NAME));
             targetedIntents.add(targetedShareIntent);
         }
 
