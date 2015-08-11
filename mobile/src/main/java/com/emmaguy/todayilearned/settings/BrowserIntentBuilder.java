@@ -44,7 +44,7 @@ public class BrowserIntentBuilder {
                 continue;
             }
 
-            HashMap<String, String> info = new HashMap<>();
+            final HashMap<String, String> info = new HashMap<>();
             info.put(PACKAGE_NAME, ri.activityInfo.packageName);
             info.put(CLASS_NAME, ri.activityInfo.name);
             info.put(SIMPLE_NAME, String.valueOf(ri.activityInfo.loadLabel(mPackageManager)));

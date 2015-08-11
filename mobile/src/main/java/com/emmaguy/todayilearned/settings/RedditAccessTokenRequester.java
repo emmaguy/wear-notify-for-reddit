@@ -33,7 +33,7 @@ class RedditAccessTokenRequester {
     public void request() {
         final String redirectUrl = mResources.getString(R.string.redirect_url_scheme) + mResources.getString(R.string.redirect_url_callback);
 
-        String url = Constants.WEB_URL_REDDIT + "/api/v1/authorize.compact?" +
+        final String url = Constants.WEB_URL_REDDIT + "/api/v1/authorize.compact?" +
                 "client_id=" + mResources.getString(R.string.client_id) +
                 "&duration=" + mResources.getString(R.string.reddit_auth_duration) +
                 "&response_type=code" +
@@ -41,7 +41,7 @@ class RedditAccessTokenRequester {
                 "&redirect_uri=" + redirectUrl +
                 "&scope=" + mResources.getString(R.string.reddit_auth_scope);
 
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW);
         browserIntent.setData(Uri.parse(url));
 
         final Intent i = mBrowserIntentBuilder.build(mResources.getString(R.string.chooser_title), browserIntent);
