@@ -2,22 +2,13 @@ package com.emmaguy.todayilearned.settings;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.net.Uri;
-import android.os.Parcelable;
-import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -31,7 +22,8 @@ class RedditAccessTokenRequester {
     private final UniqueIdentifierStorage mStateStorage;
     private final BrowserIntentBuilder mBrowserIntentBuilder;
 
-    @Inject RedditAccessTokenRequester(Context context, Resources resources, @Named("state") UniqueIdentifierStorage stateStorage, BrowserIntentBuilder browserIntentBuilder) {
+    @Inject RedditAccessTokenRequester(Context context, Resources resources,
+            @Named("state") UniqueIdentifierStorage stateStorage, BrowserIntentBuilder browserIntentBuilder) {
         mContext = context;
         mResources = resources;
         mStateStorage = stateStorage;
