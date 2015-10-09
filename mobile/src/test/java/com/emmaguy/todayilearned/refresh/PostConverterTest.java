@@ -22,8 +22,6 @@ import retrofit.mime.TypedInput;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -75,6 +73,12 @@ public class PostConverterTest {
         assertThat(post.getCreatedUtc(), equalTo(1432572755l));
         assertThat(post.getAuthor(), equalTo("an-author"));
         assertThat(post.getPostContents(), equalTo("subject-of-a-direct-message\na-direct-message"));
+    }
+
+    @Test public void parsesToPostSuccessfully_whenHasSelfText() throws Exception {
+        Post post = convertPostResponse("post-selftext.json");
+
+        assertThat(post.getPostContents(), equalTo("What's Gordon Ramsay's favorite movie?\n\nIT'S FUCKING FROZEN"));
     }
 
     @Test

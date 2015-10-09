@@ -25,7 +25,7 @@ class PostResponse {
         private String subreddit;
         private String permalink;
         private String thumbnail;
-        private String self_text;
+        private String selftext;
         private String subject = "";
         private String author;
         private String title;
@@ -98,7 +98,7 @@ class PostResponse {
         }
 
         public String getSelfText() {
-            return self_text;
+            return selftext;
         }
 
         public String getSubject() {
