@@ -244,6 +244,6 @@ public class LatestPostsRetrieverTest {
 
         mRetriever.retrieve().subscribe();
 
-        verify(mRedditService).latestPosts("AskReddit+todayilearned", DEFAULT_SORT, DEFAULT_NUMBER);
+        verify(mRedditService).latestPosts("todayilearned+AskReddit", DEFAULT_SORT, DEFAULT_NUMBER);
     }
 }
