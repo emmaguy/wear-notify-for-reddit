@@ -104,10 +104,8 @@ public class LatestPostsRetrieverTest {
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
-                emittedElements.addAll(postAndImages);
-            }
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
+            emittedElements.addAll(postAndImages);
         });
 
         assertThat(emittedElements.size(), equalTo(2));
@@ -131,10 +129,8 @@ public class LatestPostsRetrieverTest {
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
-                emittedElements.addAll(postAndImages);
-            }
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
+            emittedElements.addAll(postAndImages);
         });
 
         assertThat(emittedElements.size(), equalTo(2));
@@ -196,10 +192,8 @@ public class LatestPostsRetrieverTest {
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
-                emittedElements.addAll(postAndImages);
-            }
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
+            emittedElements.addAll(postAndImages);
         });
 
         assertThat(emittedElements.size(), equalTo(2));
@@ -214,10 +208,8 @@ public class LatestPostsRetrieverTest {
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> elementsFirstTime = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
-                elementsFirstTime.addAll(postAndImages);
-            }
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
+            elementsFirstTime.addAll(postAndImages);
         });
 
         verify(mUserStorage).setSeenTimestamp(1000);
@@ -227,10 +219,8 @@ public class LatestPostsRetrieverTest {
         verify(mUserStorage).setSeenTimestamp(1004);
 
         final List<LatestPostsRetriever.PostAndImage> elementsSecondTime = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-            @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
-                elementsSecondTime.addAll(postAndImages);
-            }
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
+            elementsSecondTime.addAll(postAndImages);
         });
 
         verify(mUserStorage, times(0)).setSeenTimestamp(anyInt());
