@@ -84,11 +84,9 @@ public class LatestPostsRetrieverTest {
     }
 
     private void updateTimestampWhenSet(final long timestamp) {
-        doAnswer(new Answer() {
-            public Object answer(InvocationOnMock invocation) {
-                when(mUserStorage.getTimestamp()).thenReturn(timestamp);
-                return null;
-            }
+        doAnswer(invocation -> {
+            when(mUserStorage.getTimestamp()).thenReturn(timestamp);
+            return null;
         }).when(mUserStorage).setSeenTimestamp(timestamp);
     }
 
@@ -99,14 +97,12 @@ public class LatestPostsRetrieverTest {
         return post;
     }
 
-    @Test public void latestPostsWith2ThatAreNew_savesOnlyTheNewestTimestamps() {
+    @Test public void latestPostsWith2ThatAreNew_savesOnlyTheNewestTimestamp() {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_OLD), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_NEWER));
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
-            emittedElements.addAll(postAndImages);
-        });
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(emittedElements::addAll);
 
         assertThat(emittedElements.size(), equalTo(2));
         verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
@@ -118,20 +114,18 @@ public class LatestPostsRetrieverTest {
         verify(mUserStorage).getNumberToRequest();
         verify(mUserStorage).getSortType();
 
-        verify(mUserStorage).setSeenTimestamp(DEFAULT_TIMESTAMP_NEW);
         verify(mUserStorage).setSeenTimestamp(DEFAULT_TIMESTAMP_NEWER);
+        verify(mUserStorage, times(0)).setSeenTimestamp(DEFAULT_TIMESTAMP_NEW);
         verify(mUserStorage, times(0)).setSeenTimestamp(DEFAULT_TIMESTAMP);
         verify(mUserStorage, times(0)).setSeenTimestamp(DEFAULT_TIMESTAMP_OLD);
     }
 
-    @Test public void latestPostsWith2ThatAreNewButNewestComeFirst_savesOnlyTheNewestTimestamps() {
+    @Test public void latestPostsWith2ThatAreNewButNewestComeFirst_savesOnlyTheNewestTimestamp() {
         final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_NEWER), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_OLD));
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
-            emittedElements.addAll(postAndImages);
-        });
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(emittedElements::addAll);
 
         assertThat(emittedElements.size(), equalTo(2));
         verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
@@ -143,8 +137,8 @@ public class LatestPostsRetrieverTest {
         verify(mUserStorage).getNumberToRequest();
         verify(mUserStorage).getSortType();
 
-        verify(mUserStorage).setSeenTimestamp(DEFAULT_TIMESTAMP_NEW);
         verify(mUserStorage).setSeenTimestamp(DEFAULT_TIMESTAMP_NEWER);
+        verify(mUserStorage, times(0)).setSeenTimestamp(DEFAULT_TIMESTAMP_NEW);
         verify(mUserStorage, times(0)).setSeenTimestamp(DEFAULT_TIMESTAMP);
         verify(mUserStorage, times(0)).setSeenTimestamp(DEFAULT_TIMESTAMP_OLD);
     }
@@ -192,9 +186,7 @@ public class LatestPostsRetrieverTest {
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
-            emittedElements.addAll(postAndImages);
-        });
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(emittedElements::addAll);
 
         assertThat(emittedElements.size(), equalTo(2));
         assertThat(emittedElements.get(0).getPost(), equalTo(post1));
@@ -208,20 +200,12 @@ public class LatestPostsRetrieverTest {
         when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> elementsFirstTime = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
-            elementsFirstTime.addAll(postAndImages);
-        });
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(elementsFirstTime::addAll);
 
-        verify(mUserStorage).setSeenTimestamp(1000);
-        verify(mUserStorage).setSeenTimestamp(1001);
-        verify(mUserStorage).setSeenTimestamp(1002);
-        verify(mUserStorage).setSeenTimestamp(1003);
         verify(mUserStorage).setSeenTimestamp(1004);
 
         final List<LatestPostsRetriever.PostAndImage> elementsSecondTime = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(postAndImages -> {
-            elementsSecondTime.addAll(postAndImages);
-        });
+        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(elementsSecondTime::addAll);
 
         verify(mUserStorage, times(0)).setSeenTimestamp(anyInt());
 

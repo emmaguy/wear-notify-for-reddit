@@ -38,9 +38,17 @@ public class LatestPostsRetriever {
             }
             return mRedditService
                     .latestPosts(subreddits, mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
+                    .doOnNext(posts -> {
+                        long maxTimestamp = 0;
+                        for (final Post p : posts) {
+                            if (p.getCreatedUtc() > maxTimestamp) {
+                                maxTimestamp = p.getCreatedUtc();
+                            }
+                        }
+                        mUserStorage.setSeenTimestamp(maxTimestamp);
+                    })
                     .flatMap(Observable::from)
                     .filter(post -> post.getCreatedUtc() > currentSavedTimestamp)
-                    .doOnNext(post -> mUserStorage.setSeenTimestamp(post.getCreatedUtc()))
                     .flatMap(post -> Observable.defer(() -> {
                         final PostAndImage postAndImage = new PostAndImage(post);
                         if (post.hasImageUrl()) {

@@ -8,8 +8,11 @@ import com.emmaguy.todayilearned.common.StringUtils;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 
 import java.util.Set;
+import java.util.Timer;
 
 import javax.inject.Inject;
+
+import timber.log.Timber;
 
 /**
  * Stores user's specific preferences in {@link SharedPreferences}
@@ -30,6 +33,7 @@ class SharedPreferencesUserStorage implements UserStorage {
     }
 
     public void setSeenTimestamp(long createdAtUtc) {
+        Timber.d("Setting timestamp: " + createdAtUtc);
         mSharedPreferences
                 .edit()
                 .putLong(mResources.getString(R.string.prefs_key_created_utc), createdAtUtc)

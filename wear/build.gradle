@@ -12,8 +12,8 @@ android {
         applicationId "com.emmaguy.todayilearned"
         minSdkVersion 20
         targetSdkVersion 22
-        versionCode 45
-        versionName "3.0.11"
+        versionCode 46
+        versionName "3.0.12"
     }
     buildTypes {
         release {
