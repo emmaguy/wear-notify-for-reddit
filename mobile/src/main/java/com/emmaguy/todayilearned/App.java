@@ -95,14 +95,9 @@ public class App extends Application {
                 }
 
                 mTracker.send(new HitBuilders.EventBuilder()
-                        .setCategory("RedditWear" + BuildConfig.VERSION_NAME)
+                        .setCategory("RedditWearExceptions" + BuildConfig.VERSION_NAME)
                         .setAction(stackTrace)
                         .setLabel(throwableMessage)
-                        .build());
-            } else {
-                mTracker.send(new HitBuilders.EventBuilder()
-                        .setCategory("Debug_RedditWear" + BuildConfig.VERSION_NAME)
-                        .setAction(message)
                         .build());
             }
         }
