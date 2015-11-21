@@ -2,26 +2,22 @@ package com.emmaguy.todayilearned;
 
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
-import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import retrofit.RetrofitError;
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class App extends Application {
     private final boolean mIsDebug = BuildConfig.DEBUG;
 
     private AppComponent mAppComponent;
-
-    private static GoogleAnalytics sGoogleAnalytics;
-    private static Tracker sTracker;
 
     @Inject @Named("analytics") UniqueIdentifierStorage mStorage;
 
@@ -36,19 +32,15 @@ public class App extends Application {
         mAppComponent = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
         mAppComponent.inject(this);
 
-        sGoogleAnalytics = GoogleAnalytics.getInstance(this);
-        sGoogleAnalytics.setLocalDispatchPeriod(1800);
-
-        sTracker = sGoogleAnalytics.newTracker(getString(R.string.google_analytics_id));
-        sTracker.set("&uid", mStorage.getUniqueIdentifier());
-        sTracker.enableExceptionReporting(true);
-        sTracker.enableAdvertisingIdCollection(false);
-        sTracker.enableAutoActivityTracking(true);
+        Fabric.with(this, new Crashlytics(), new Answers());
+        Crashlytics.setString("Build time", BuildConfig.BUILD_TIME);
+        Crashlytics.setString("Git SHA", BuildConfig.GIT_SHA);
+        Crashlytics.setUserIdentifier(mStorage.getUniqueIdentifier());
 
         if (mIsDebug) {
             Timber.plant(new Timber.DebugTree());
         } else {
-            Timber.plant(new GoogleAnalyticsTree(sTracker));
+            Timber.plant(new CrashlyticsTree());
         }
     }
 
@@ -56,50 +48,17 @@ public class App extends Application {
         return mAppComponent;
     }
 
-    public void sendEvent(String action, String label) {
+    public void sendEvent(final String eventName, final String label) {
         if (mIsDebug) {
-            Timber.d("Sending event: " + action + " " + label);
+            Timber.d("Sending event: " + eventName + " " + label);
         } else {
-            sTracker.send(new HitBuilders.EventBuilder()
-                    .setCategory("RedditWear" + BuildConfig.VERSION_NAME)
-                    .setAction(action)
-                    .setLabel(label)
-                    .build());
+            Answers.getInstance()
+                    .logCustom(new CustomEvent(eventName)
+                            .putCustomAttribute("event", label));
         }
     }
 
     public boolean isDebug() {
         return mIsDebug;
-    }
-
-    private static class GoogleAnalyticsTree extends Timber.Tree {
-        private final Tracker mTracker;
-
-        private GoogleAnalyticsTree(Tracker tracker) {
-            mTracker = tracker;
-        }
-
-        @Override protected void log(int priority, String tag, String message, Throwable t) {
-            if (priority == Log.ERROR) {
-                final String throwableMessage = message + ", msg: " + t.getMessage();
-                final String stackTrace;
-                if (t instanceof RetrofitError) {
-                    final RetrofitError.Kind kind = ((RetrofitError) t).getKind();
-                    if (kind == RetrofitError.Kind.NETWORK) {
-                        stackTrace = "Network";
-                    } else {
-                        stackTrace = Log.getStackTraceString(t);
-                    }
-                } else {
-                    stackTrace = Log.getStackTraceString(t);
-                }
-
-                mTracker.send(new HitBuilders.EventBuilder()
-                        .setCategory("RedditWearExceptions" + BuildConfig.VERSION_NAME)
-                        .setAction(stackTrace)
-                        .setLabel(throwableMessage)
-                        .build());
-            }
-        }
     }
 }

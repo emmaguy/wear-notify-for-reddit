@@ -57,6 +57,11 @@ class SharedPreferencesUserStorage implements UserStorage {
         return StringUtils.join("+", subreddits);
     }
 
+    @Override public int getSubredditCount() {
+        final String key = mResources.getString(R.string.prefs_key_selected_subreddits);
+        return mSharedPreferences.getStringSet(key, Constants.sDefaultSelectedSubreddits).size();
+    }
+
     @Override public String getRefreshInterval() {
         return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_sync_frequency), "15");
     }

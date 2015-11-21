@@ -1,7 +1,24 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
 apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
+def gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+def buildTime = new Date().format("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC"))
 
 android {
     compileSdkVersion 22
@@ -14,10 +31,13 @@ android {
         applicationId "com.emmaguy.todayilearned"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 47
-        versionName "3.0.13"
+        versionCode 48
+        versionName "3.0.14"
         resValue "string", "client_id", "placeholderId"
-        resValue "string", "google_analytics_id", "placeholderId"
+        resValue "string", "fabric_api_key", "placeholderId"
+        buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
+        buildConfigField "String", "BUILD_TIME", "\"${buildTime}\""
+        manifestPlaceholders = [ fabricApiKey:"default"]
     }
     buildTypes {
         release {
@@ -71,8 +91,14 @@ dependencies {
         exclude module: 'support-v4'
     }
 
-    // Google Analytics
-    compile 'com.google.android.gms:play-services-analytics:7.5.0'
+    // Fabric
+    compile('com.crashlytics.sdk.android:crashlytics:2.5.3@aar') {
+        transitive = true;
+    }
+    compile('com.crashlytics.sdk.android:answers:1.3.4@aar') {
+        transitive = true;
+    }
+
     compile 'com.google.android.gms:play-services-wearable:7.5.0'
     wearApp project(':wear')
 
@@ -99,10 +125,10 @@ if (project.hasProperty("signing.properties") && file(project.property("signing.
     } else {
         println 'Did not find client id'
     }
-    if (props != null && props.containsKey('googleanalytics')) {
-        android.defaultConfig.resValue "string", "google_analytics_id", props['googleanalytics']
+    if (props != null && props.containsKey('fabricapi')) {
+        android.defaultConfig.manifestPlaceholders fabricApiKey:props['fabricapi']
     } else {
-        println 'Did not find GA tracker'
+        println 'Did not find Fabric API key'
     }
 } else {
     println 'signing.properties not found'

@@ -7,8 +7,10 @@ public interface UserStorage {
     void clearTimestamp();
 
     long getTimestamp();
+
     String getSortType();
     String getSubreddits();
+    int getSubredditCount();
     String getRefreshInterval();
 
     boolean messagesEnabled();

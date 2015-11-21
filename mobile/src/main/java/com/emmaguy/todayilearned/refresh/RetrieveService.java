@@ -8,6 +8,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.util.SimpleArrayMap;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.crashlytics.android.answers.CustomEvent;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.settings.ActionStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -88,56 +91,58 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     protected void doWakefulWork(Intent intent) {
         connectToWearable();
 
+        Answers.getInstance()
+                .logCustom(new CustomEvent("RetrieveService")
+                        .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
+                        .putCustomAttribute("Sort type", mUserStorage.getSortType())
+                        .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
+                        .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
+                        .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
+                        .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
+
         mSendInformationToWearableIfNoPosts = false;
         if (intent.hasExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS)) {
             mSendInformationToWearableIfNoPosts = intent.getBooleanExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS, false);
         }
 
         final String message = "refresh: " + mUserStorage.getRefreshInterval() + ", subreddits: " +
-                mUserStorage.getSubreddits() + ", sort: " + mUserStorage.getSortType() + ", number: " + mUserStorage.getNumberToRequest() + ", timestamp: " + mUserStorage.getTimestamp();
+                mUserStorage.getSubreddits() + ", sort: " + mUserStorage.getSortType() + ", number: " +
+                mUserStorage.getNumberToRequest() + ", timestamp: " + mUserStorage.getTimestamp();
 
         mLatestPostsRetriever.retrieve()
                 .subscribeOn(mIoScheduler)
                 .observeOn(mIoScheduler)
-                .subscribe(new Action1<List<LatestPostsRetriever.PostAndImage>>() {
-                    @Override public void call(List<LatestPostsRetriever.PostAndImage> postAndImages) {
-                        if (postAndImages.size() > 0) {
-                            String msg = message + ", posts " + postAndImages.size();
+                .subscribe(postAndImages -> {
+                    if (postAndImages.size() > 0) {
+                        String msg = message + ", posts " + postAndImages.size();
 
-                            final List<Post> posts = new ArrayList<>(postAndImages.size());
-                            final SimpleArrayMap<String, Asset> assets = new SimpleArrayMap<>();
-                            for (LatestPostsRetriever.PostAndImage p : postAndImages) {
-                                if (p.getImage() != null) {
-                                    assets.put(p.getPost().getId(), p.getImage());
-                                }
-                                posts.add(p.getPost());
+                        final List<Post> posts = new ArrayList<>(postAndImages.size());
+                        final SimpleArrayMap<String, Asset> assets = new SimpleArrayMap<>();
+                        for (LatestPostsRetriever.PostAndImage p : postAndImages) {
+                            if (p.getImage() != null) {
+                                assets.put(p.getPost().getId(), p.getImage());
                             }
-
-                            sendPostsToWearable(posts, msg, assets);
-                        } else if (mSendInformationToWearableIfNoPosts) {
-                            WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
+                            posts.add(p.getPost());
                         }
+
+                        sendPostsToWearable(posts, msg, assets);
+                    } else if (mSendInformationToWearableIfNoPosts) {
+                        WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
                     }
-                }, new Action1<Throwable>() {
-                    @Override public void call(Throwable throwable) {
-                        Timber.e(throwable, "RetrieveService: Failed to get latest posts");
-                    }
+                }, throwable -> {
+                    Timber.e(throwable, "RetrieveService: Failed to get latest posts");
                 });
 
         mUnreadDirectMessageRetriever.retrieve()
                 .subscribeOn(mIoScheduler)
                 .observeOn(mIoScheduler)
-                .subscribe(new Action1<List<Post>>() {
-                    @Override public void call(List<Post> posts) {
-                        if (posts.size() > 0) {
-                            String msg = "Refresh messages, found " + posts.size();
-                            sendPostsToWearable(posts, msg, null);
-                        }
+                .subscribe(posts -> {
+                    if (posts.size() > 0) {
+                        String msg = "Refresh messages, found " + posts.size();
+                        sendPostsToWearable(posts, msg, null);
                     }
-                }, new Action1<Throwable>() {
-                    @Override public void call(Throwable throwable) {
-                        Timber.e(throwable, "RetrieveService: Failed to get latest messages");
-                    }
+                }, throwable -> {
+                    Timber.e(throwable, "RetrieveService: Failed to get latest messages");
                 });
     }
 
@@ -161,18 +166,15 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
             PutDataRequest request = mapRequest.asPutDataRequest();
             Wearable.DataApi.putDataItem(mGoogleApiClient, request)
-                    .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                        @Override
-                        public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Timber.d(msg + ", final timestamp: " + mUserStorage.getTimestamp() + " result: " + dataItemResult.getStatus());
+                    .setResultCallback(dataItemResult -> {
+                        Timber.d(msg + ", final timestamp: " + mUserStorage.getTimestamp() + " result: " + dataItemResult.getStatus());
 
-                            if (dataItemResult.getStatus().isSuccess()) {
-                                if (mGoogleApiClient.isConnected()) {
-                                    mGoogleApiClient.disconnect();
-                                }
-                            } else {
-                                Timber.d("Failed to send posts to wearable " + dataItemResult.getStatus().getStatusMessage());
+                        if (dataItemResult.getStatus().isSuccess()) {
+                            if (mGoogleApiClient.isConnected()) {
+                                mGoogleApiClient.disconnect();
                             }
+                        } else {
+                            Timber.d("Failed to send posts to wearable " + dataItemResult.getStatus().getStatusMessage());
                         }
                     });
         }

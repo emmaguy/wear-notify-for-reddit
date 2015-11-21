@@ -2,7 +2,6 @@ package com.emmaguy.todayilearned.settings;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +17,9 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.crashlytics.android.answers.LoginEvent;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.R;
@@ -91,6 +93,16 @@ public class SettingsActivity extends AppCompatActivity {
             setHasOptionsMenu(true);
 
             showDialogIfStillUsingOldAuth();
+
+            Answers.getInstance()
+                    .logContentView(new ContentViewEvent()
+                            .putContentName("Settings")
+                            .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
+                            .putCustomAttribute("Sort type", mUserStorage.getSortType())
+                            .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
+                            .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
+                            .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
+                            .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
         }
 
         private void showDialogIfStillUsingOldAuth() {
@@ -99,10 +111,8 @@ public class SettingsActivity extends AppCompatActivity {
             if (!StringUtils.isEmpty(username)) {
                 new AlertDialog.Builder(getActivity())
                         .setCancelable(false)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override public void onClick(DialogInterface dialog, int which) {
-                                getPreferenceManager().getSharedPreferences().edit().remove(usernameKey).apply();
-                            }
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                            getPreferenceManager().getSharedPreferences().edit().remove(usernameKey).apply();
                         })
                         .setTitle(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME)
                         .setMessage(R.string.auth_change_message)
@@ -195,6 +205,8 @@ public class SettingsActivity extends AppCompatActivity {
                             Timber.e(e, "Failed to get access token");
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
+                            Answers.getInstance()
+                                    .logLogin(new LoginEvent().putSuccess(false));
                         }
 
                         @Override
@@ -205,6 +217,9 @@ public class SettingsActivity extends AppCompatActivity {
                                 initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
                                 App.with(getActivity()).sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
                                 Toast.makeText(getActivity(), R.string.successfully_logged_in, Toast.LENGTH_SHORT).show();
+                                Answers.getInstance()
+                                        .logLogin(new LoginEvent().putSuccess(true));
+
                             } else {
                                 throw new RuntimeException("Failed to login " + tokenResponse);
                             }
