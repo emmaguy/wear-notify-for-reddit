@@ -13,7 +13,7 @@ import timber.log.Timber;
  * Created by emma on 19/07/15.
  */
 public class ImageDownloader {
-    private static final int WATCH_SCREEN_SIZE = 320;
+    private static final int WATCH_SCREEN_SIZE = 400;
     private static final int MARKER = 65536;
 
     public byte[] downloadImage(String imageUrl) {
