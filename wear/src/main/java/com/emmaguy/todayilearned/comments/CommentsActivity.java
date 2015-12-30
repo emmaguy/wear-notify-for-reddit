@@ -7,11 +7,11 @@ import android.support.wearable.view.DotsPageIndicator;
 import android.support.wearable.view.GridViewPager;
 import android.view.View;
 import android.view.WindowInsets;
+import android.widget.Toast;
 
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Comment;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -30,7 +30,8 @@ public class CommentsActivity extends Activity implements ActionFragment.OnActio
 
         String stringComments = getIntent().getStringExtra(Constants.KEY_REDDIT_POSTS);
         final ArrayList<Comment> comments = mGson.fromJson(stringComments, new TypeToken<List<Comment>>() {}.getType());
-        if (comments == null) {
+        if (comments == null || comments.isEmpty()) {
+            Toast.makeText(this, R.string.thread_has_no_comments_yet, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }

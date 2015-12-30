@@ -222,16 +222,11 @@ public class NotificationListenerService extends WearableListenerService {
 
                     msg += ", comments: " + (TextUtils.isEmpty(comments) ? "empty" : comments.length());
                     if (!TextUtils.isEmpty(comments)) {
-                        if (comments.equals("[]")) {
-                            logToPhone("No comments received, showing toast");
-                            Toast.makeText(NotificationListenerService.this, R.string.thread_has_no_comments_yet, Toast.LENGTH_LONG).show();
-                        } else {
-                            logToPhone("Comments received, starting activity");
-                            Intent intent = new Intent(this, CommentsActivity.class);
-                            intent.putExtra(Constants.KEY_REDDIT_POSTS, comments);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
-                        }
+                        logToPhone("Comments received, starting activity");
+                        Intent intent = new Intent(this, CommentsActivity.class);
+                        intent.putExtra(Constants.KEY_REDDIT_POSTS, comments);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
                     }
                 }
             } else if (event.getType() == DataEvent.TYPE_DELETED) {
