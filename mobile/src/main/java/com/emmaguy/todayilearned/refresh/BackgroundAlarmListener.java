@@ -37,7 +37,7 @@ public class BackgroundAlarmListener implements WakefulIntentService.AlarmListen
         WakefulIntentService.sendWakefulWork(context, RetrieveService.getFromBackgroundSyncIntent(context));
     }
 
-    public long getMaxAge() {
+    @Override public long getMaxAge(Context context) {
         return (AlarmManager.INTERVAL_FIFTEEN_MINUTES * 2);
     }
 }

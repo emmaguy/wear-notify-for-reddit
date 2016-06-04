@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.emmaguy.todayilearned">
+          package="com.emmaguy.todayilearned">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -48,7 +48,33 @@
 
         <service android:name=".refresh.WearListenerService">
             <intent-filter>
-                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+
+                <data
+                    android:host="*"
+                    android:pathPrefix="/replytopost"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/openonphone"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/send_to_pocket"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/vote"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/comments"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/logging"
+                    android:scheme="wear" />
             </intent-filter>
         </service>
         <service

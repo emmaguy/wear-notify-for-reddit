@@ -7,3 +7,4 @@
 
 build/*
 libraries/*/*/build/*
+**/google-services.json

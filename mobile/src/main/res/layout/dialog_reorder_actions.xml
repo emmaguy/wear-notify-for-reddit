@@ -15,10 +15,9 @@
         android:text="@string/action_order_description"
         android:textColor="@android:color/black" />
 
-    <!-- wrap_content does not work, so set a specific height (https://code.google.com/p/android/issues/detail?id=74772) -->
     <com.emmaguy.todayilearned.settings.ReorderRecyclerView
         android:id="@+id/actions_reorder_recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="450dp" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

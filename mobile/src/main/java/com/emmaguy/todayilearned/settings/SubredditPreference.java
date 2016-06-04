@@ -99,37 +99,28 @@ public class SubredditPreference extends Preference {
             i++;
         }
 
-        new AlertDialog.Builder(getContext(), R.style.AppCompatAlertDialogStyle)
+        new AlertDialog.Builder(getContext())
                 .setTitle(getContext().getResources().getString(R.string.select_subreddits))
-                .setMultiChoiceItems(savedSubreddits.toArray(new String[savedSubreddits.size()]), selected, new DialogInterface.OnMultiChoiceClickListener() {
+                .setMultiChoiceItems(savedSubreddits.toArray(new String[savedSubreddits.size()]), selected,
+                        (dialogInterface, i1, b) -> {
+                            selected[i1] = b;
+                            ((AlertDialog) dialogInterface).getListView().setItemChecked(i1, b);
+                        })
+                .setPositiveButton(R.string.save, (dialogInterface, i1) -> {
+                    List<String> selectedSrs = new ArrayList<String>();
 
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i, boolean b) {
-                        selected[i] = b;
-                        ((AlertDialog) dialogInterface).getListView().setItemChecked(i, b);
-                    }
-                })
-                .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        List<String> selectedSrs = new ArrayList<String>();
-
-                        int index = 0;
-                        for (boolean b : selected) {
-                            if (b) {
-                                selectedSrs.add(savedSubreddits.get(index));
-                            }
-                            index++;
+                    int index = 0;
+                    for (boolean b : selected) {
+                        if (b) {
+                            selectedSrs.add(savedSubreddits.get(index));
                         }
-                        saveSubreddits(savedSubreddits);
-                        saveSelectedSubreddits(selectedSrs);
+                        index++;
                     }
+                    saveSubreddits(savedSubreddits);
+                    saveSelectedSubreddits(selectedSrs);
                 })
-                .setNeutralButton(R.string.add_subreddit, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        showAddSubredditDialog();
-                    }
+                .setNeutralButton(R.string.add_subreddit, (dialogInterface, i1) -> {
+                    showAddSubredditDialog();
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .create()
@@ -142,17 +133,14 @@ public class SubredditPreference extends Preference {
 
         new AlertDialog.Builder(getContext())
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        final EditText input = (EditText) view.findViewById(R.id.subreddit_edittext);
+                .setPositiveButton(R.string.save, (dialogInterface, i) -> {
+                    final EditText input = (EditText) view.findViewById(R.id.subreddit_edittext);
 
-                        String subreddit = input.getText().toString().replaceAll("\\s+", "");
-                        if (subreddit.length() > 0) {
-                            addSubreddit(subreddit);
-                        }
-                        showSelectSubredditsDialog();
+                    String subreddit = input.getText().toString().replaceAll("\\s+", "");
+                    if (subreddit.length() > 0) {
+                        addSubreddit(subreddit);
                     }
+                    showSelectSubredditsDialog();
                 })
                 .setTitle(R.string.add_subreddit)
                 .setMessage(R.string.enter_subreddit_name)

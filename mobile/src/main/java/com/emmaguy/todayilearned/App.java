@@ -15,7 +15,7 @@ import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class App extends Application {
-    private final boolean mIsDebug = BuildConfig.DEBUG;
+    private final boolean mIsDebug = true;//BuildConfig.DEBUG;
 
     private AppComponent mAppComponent;
 

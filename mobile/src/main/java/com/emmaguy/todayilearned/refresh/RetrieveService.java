@@ -89,6 +89,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     @Override
     protected void doWakefulWork(Intent intent) {
+        Timber.d("doWakefulWork");
         connectToWearable();
 
         Answers.getInstance()
