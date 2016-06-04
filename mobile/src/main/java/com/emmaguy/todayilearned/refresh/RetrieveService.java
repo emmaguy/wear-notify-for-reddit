@@ -9,7 +9,6 @@ import android.support.v4.util.SimpleArrayMap;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.settings.ActionStorage;
@@ -19,9 +18,7 @@ import com.emmaguy.todayilearned.storage.TokenStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
@@ -35,7 +32,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import rx.Scheduler;
-import rx.functions.Action1;
 import timber.log.Timber;
 
 public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -89,6 +85,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
     @Override
     protected void doWakefulWork(Intent intent) {
+        Timber.d("doWakefulWork");
         connectToWearable();
 
         Answers.getInstance()
@@ -127,7 +124,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
                         sendPostsToWearable(posts, msg, assets);
                     } else if (mSendInformationToWearableIfNoPosts) {
-                        WearListenerService.sendReplyResult(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
+                        WearListenerService.sendToPath(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
                     }
                 }, throwable -> {
                     Timber.e(throwable, "RetrieveService: Failed to get latest posts");

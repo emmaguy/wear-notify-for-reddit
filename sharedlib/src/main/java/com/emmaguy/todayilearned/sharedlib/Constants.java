@@ -30,8 +30,8 @@ public class Constants {
     public static final String KEY_REDDIT_POSTS = "posts";
     public static final String KEY_POST_PERMALINK = "post_permalink";
 
-    public static final String PATH_POST_REPLY_RESULT_SUCCESS = "post_reply_success";
-    public static final String PATH_POST_REPLY_RESULT_FAILURE = "post_reply_failure";
+    public static final String PATH_POST_REPLY_RESULT_SUCCESS = "/post_reply_success";
+    public static final String PATH_POST_REPLY_RESULT_FAILURE = "/post_reply_failure";
 
     public static final String PATH_KEY_MESSAGE = "post_message";
     public static final String PATH_KEY_POST_FULLNAME = "post_fullname";
@@ -39,12 +39,12 @@ public class Constants {
     public static final String PATH_KEY_MESSAGE_SUBJECT = "msg_subject";
     public static final String PATH_KEY_MESSAGE_TO_USER = "msg_to_user";
 
-    public static final String PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS = "save_pocket_success";
-    public static final String PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED = "save_pocket_failed";
+    public static final String PATH_SAVE_TO_POCKET_RESULT_SUCCESS = "/save_pocket_success";
+    public static final String PATH_SAVE_TO_POCKET_RESULT_FAILED = "/save_pocket_failed";
 
-    public static final String PATH_KEY_VOTE_RESULT_SUCCESS = "vote_success";
-    public static final String PATH_KEY_VOTE_RESULT_FAILED = "vote_failed";
-    public static final String PATH_KEY_GETTING_COMMENTS_RESULT_FAILED = "getting comments";
+    public static final String PATH_VOTE_RESULT_SUCCESS = "/vote_success";
+    public static final String PATH_VOTE_RESULT_FAILED = "/vote_failed";
+    public static final String PATH_GET_COMMENTS_RESULT_FAILED = "/getting_comments";
 
     public static final String KEY_CONFIRMATION_MESSAGE = "confirm_message";
     public static final String KEY_PATH = "receiver_path";

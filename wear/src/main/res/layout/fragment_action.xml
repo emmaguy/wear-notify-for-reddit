@@ -8,4 +8,4 @@
     android:text="@string/view_comments"
     android:maxLines="1"
     android:color="@color/primary"
-    app:rippleColor="@color/accent" />
+    app:buttonRippleColor="@color/accent" />

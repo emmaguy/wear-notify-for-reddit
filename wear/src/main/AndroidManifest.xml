@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.emmaguy.todayilearned">
+          package="com.emmaguy.todayilearned">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -15,8 +15,59 @@
 
         <service android:name=".NotificationListenerService">
             <intent-filter>
-                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
                 <action android:name="com.emmaguy.todayilearned.Reply" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+
+                <data
+                    android:host="*"
+                    android:pathPrefix="/logging"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/redditwear"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/comments"
+                    android:scheme="wear" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+
+                <data
+                    android:host="*"
+                    android:pathPrefix="/post_reply_success"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/post_reply_failure"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/save_pocket_success"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/save_pocket_failed"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/vote_success"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/vote_failed"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/getting_comments"
+                    android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/no_new_posts"
+                    android:scheme="wear" />
             </intent-filter>
         </service>
 
@@ -37,6 +88,7 @@
             <intent-filter>
                 <action android:name="FinishMainActivity" />
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
