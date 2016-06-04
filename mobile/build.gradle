@@ -1,17 +1,7 @@
-buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-    }
-
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.+'
-    }
-}
 apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'me.tatarka.retrolambda'
-apply plugin: 'io.fabric'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -37,10 +27,8 @@ android {
         versionCode 50
         versionName '3.0.15'
         resValue "string", "client_id", "placeholderId"
-        resValue "string", "fabric_api_key", "placeholderId"
         buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
         buildConfigField "String", "BUILD_TIME", "\"${buildTime}\""
-        manifestPlaceholders = [ fabricApiKey:"0000000000000000000000000000000000000000"]
     }
     buildTypes {
         release {
@@ -64,11 +52,14 @@ android {
 }
 
 dependencies {
-    compile project(':sharedlib')
-
+    // RxJava
     compile 'io.reactivex:rxjava:1.0.14'
     compile 'io.reactivex:rxandroid:1.0.1'
+
+    // DateTime
     compile 'net.danlew:android.joda:2.7.2'
+
+    // Wakeful work
     compile 'com.commonsware.cwac:wakeful:1.1.0'
 
     // Dagger
@@ -89,16 +80,14 @@ dependencies {
         exclude module: 'support-v4'
     }
 
-    // Fabric
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.3@aar') {
-        transitive = true;
-    }
-    compile('com.crashlytics.sdk.android:answers:1.3.4@aar') {
-        transitive = true;
-    }
+    // Firebase
+    compile 'com.google.firebase:firebase-core:9.0.2'
+    compile 'com.google.firebase:firebase-crash:9.0.2'
 
-    compile 'com.google.android.gms:play-services-wearable:8.1.0'
+    // Wear
+    compile 'com.google.android.gms:play-services-wearable:9.0.2'
     wearApp project(':wear')
+    compile project(':sharedlib')
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.0.7-beta'
@@ -121,14 +110,11 @@ if (project.hasProperty("signing.properties") && file(project.property("signing.
     if (props != null && props.containsKey('clientid')) {
         android.defaultConfig.resValue "string", "client_id", props['clientid']
     } else {
-        println 'Did not find client id'
-    }
-    if (props != null && props.containsKey('fabricapi')) {
-        android.defaultConfig.manifestPlaceholders fabricApiKey:props['fabricapi']
-    } else {
-        println 'Did not find Fabric API key'
+        println 'Did not find reddit client id'
     }
 } else {
     println 'signing.properties not found'
     android.buildTypes.release.signingConfig = null
 }
+
+apply plugin: 'com.google.gms.google-services'

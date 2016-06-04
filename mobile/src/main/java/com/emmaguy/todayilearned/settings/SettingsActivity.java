@@ -17,9 +17,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-import com.crashlytics.android.answers.LoginEvent;
+import com.emmaguy.todayilearned.Analytics;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.R;
@@ -63,6 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
         @Inject RedditService mRedditService;
         @Inject TokenStorage mTokenStorage;
         @Inject UserStorage mUserStorage;
+        @Inject Analytics mAnalytics;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -94,15 +93,14 @@ public class SettingsActivity extends AppCompatActivity {
 
             showDialogIfStillUsingOldAuth();
 
-            Answers.getInstance()
-                    .logContentView(new ContentViewEvent()
-                            .putContentName("Settings")
-                            .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
-                            .putCustomAttribute("Sort type", mUserStorage.getSortType())
-                            .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
-                            .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
-                            .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
-                            .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
+//            mAnalytics.log
+//                            .putContentName("Settings")
+//                            .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
+//                            .putCustomAttribute("Sort type", mUserStorage.getSortType())
+//                            .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
+//                            .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
+//                            .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
+//                            .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
         }
 
         private void showDialogIfStillUsingOldAuth() {
@@ -201,12 +199,11 @@ public class SettingsActivity extends AppCompatActivity {
 
                         @Override
                         public void onError(Throwable e) {
-                            App.with(getActivity()).sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
+                            mAnalytics.sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
                             Timber.e(e, "Failed to get access token");
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
-                            Answers.getInstance()
-                                    .logLogin(new LoginEvent().putSuccess(false));
+                            mAnalytics.logLogin(false);
                         }
 
                         @Override
@@ -215,11 +212,9 @@ public class SettingsActivity extends AppCompatActivity {
                             if (mTokenStorage.isLoggedIn()) {
                                 toggleRedditSettings();
                                 initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
-                                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
+                                mAnalytics.sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
                                 Toast.makeText(getActivity(), R.string.successfully_logged_in, Toast.LENGTH_SHORT).show();
-                                Answers.getInstance()
-                                        .logLogin(new LoginEvent().putSuccess(true));
-
+                                mAnalytics.logLogin(true);
                             } else {
                                 throw new RuntimeException("Failed to login " + tokenResponse);
                             }
@@ -261,7 +256,7 @@ public class SettingsActivity extends AppCompatActivity {
                 mUserStorage.clearTimestamp();
                 mAlarmListener.sendWakefulWork(getActivity());
             } else if (preferenceKey.equals(getString(R.string.prefs_key_actions_order))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_CUSTOMISE_ACTIONS, "");
+                mAnalytics.sendEvent(Logger.LOG_EVENT_CUSTOMISE_ACTIONS, "");
             }
             return false;
         }
@@ -287,13 +282,13 @@ public class SettingsActivity extends AppCompatActivity {
                         @Override
                         public void onCompleted() {
                             spinner.dismiss();
-                            App.with(getActivity()).sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_SUCCESS);
+                            mAnalytics.sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_SUCCESS);
                             Toast.makeText(getActivity(), R.string.successfully_synced_subreddits, Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            App.with(getActivity()).sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_FAILURE);
+                            mAnalytics.sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_FAILURE);
                             Timber.e(e, "Failed to sync subreddits");
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
@@ -308,7 +303,7 @@ public class SettingsActivity extends AppCompatActivity {
             SubredditPreference subredditPreference = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
 
             if (key.equals(getString(R.string.prefs_key_sync_frequency))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_UPDATE_INTERVAL, sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency), ""));
+                mAnalytics.sendEvent(Logger.LOG_EVENT_UPDATE_INTERVAL, sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency), ""));
                 WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
             } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();
@@ -332,11 +327,11 @@ public class SettingsActivity extends AppCompatActivity {
 
         private void sendEvents(SharedPreferences sharedPreferences, String key) {
             if (key.equals(getString(R.string.prefs_key_sort_order))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_SORT_ORDER, sharedPreferences.getString(key, ""));
+                mAnalytics.sendEvent(Logger.LOG_EVENT_SORT_ORDER, sharedPreferences.getString(key, ""));
             } else if (key.equals(getString(R.string.prefs_key_open_on_phone_dismisses))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_OPEN_ON_PHONE_DISMISSES, sharedPreferences.getBoolean(key, false) + "");
+                mAnalytics.sendEvent(Logger.LOG_EVENT_OPEN_ON_PHONE_DISMISSES, sharedPreferences.getBoolean(key, false) + "");
             } else if (key.equals(getString(R.string.prefs_key_full_image))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_HIGH_RES_IMAGE, sharedPreferences.getBoolean(key, false) + "");
+                mAnalytics.sendEvent(Logger.LOG_EVENT_HIGH_RES_IMAGE, sharedPreferences.getBoolean(key, false) + "");
             }
         }
 

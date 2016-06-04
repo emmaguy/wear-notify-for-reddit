@@ -23,10 +23,9 @@ import com.emmaguy.todayilearned.refresh.UnreadDirectMessageRetriever;
 import com.emmaguy.todayilearned.settings.Base64Encoder;
 import com.emmaguy.todayilearned.settings.BrowserIntentBuilder;
 import com.emmaguy.todayilearned.sharedlib.Constants;
-import com.emmaguy.todayilearned.storage.SharedPreferencesUniqueIdentifierStorage;
 import com.emmaguy.todayilearned.storage.TokenStorage;
-import com.emmaguy.todayilearned.storage.UniqueIdentifierStorage;
 import com.emmaguy.todayilearned.storage.UserStorage;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.squareup.okhttp.OkHttpClient;
 
@@ -42,78 +41,66 @@ import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-@Module
-public class AppModule {
+@Module public class AppModule {
     private final Context mContext;
 
     public AppModule(Context context) {
         mContext = context;
     }
 
-    @Provides
-    @Singleton
-    public Context provideApplicationContext() {
+    @Provides @Singleton public Context provideApplicationContext() {
         return mContext;
     }
 
-    @Provides
-    @Singleton
-    public Resources provideResources() {
+    @Provides @Singleton public Resources provideResources() {
         return mContext.getResources();
     }
 
-    @Provides
-    @Singleton
-    public SharedPreferences provideSharedPreferences() {
+    @Provides @Singleton public SharedPreferences provideSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
-    @Provides
-    @Singleton
-    public ImageDownloader provideImageDownloader() {
+    @Provides @Singleton public ImageDownloader provideImageDownloader() {
         return new ImageDownloader();
     }
 
-    @Provides
-    @Singleton
-    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader, UserStorage storage, RedditService redditService) {
+    @Provides @Singleton
+    public LatestPostsRetriever provideLatestPostsFromRedditRetriever(ImageDownloader downloader,
+                                                                      UserStorage storage,
+                                                                      RedditService redditService) {
         return new LatestPostsRetriever(downloader, storage, redditService);
     }
 
-    @Provides
-    @Singleton
-    public UnreadDirectMessageRetriever provideUnreadDirectMessageRetriever(TokenStorage tokenStorage, UserStorage storage, RedditService redditService) {
+    @Provides @Singleton public UnreadDirectMessageRetriever provideUnreadDirectMessageRetriever(
+            TokenStorage tokenStorage, UserStorage storage, RedditService redditService) {
         return new UnreadDirectMessageRetriever(tokenStorage, storage, redditService);
     }
 
-    @Provides
-    @Singleton
-    public BrowserIntentBuilder provideBrowserIntentBuilder(Context context) {
+    @Provides @Singleton public BrowserIntentBuilder provideBrowserIntentBuilder(Context context) {
         return new BrowserIntentBuilder(context.getPackageManager());
     }
 
-    @Provides
-    @Singleton
-    public Gson provideGson() {
+    @Provides @Singleton public Gson provideGson() {
         return new Gson();
     }
 
-    @Provides
-    @Singleton
-    public RedditAuthenticationService provideRedditAuthenticationService(Gson gson, Resources resources) {
+    @Provides @Singleton
+    public RedditAuthenticationService provideRedditAuthenticationService(Gson gson,
+                                                                          Resources resources) {
         final GsonConverter gsonConverter = new GsonConverter(gson);
         final String credentials = resources.getString(R.string.client_id) + ":";
-        return new RestAdapter.Builder()
-                .setEndpoint(Constants.ENDPOINT_URL_SSL_REDDIT)
+        return new RestAdapter.Builder().setEndpoint(Constants.ENDPOINT_URL_SSL_REDDIT)
                 .setConverter(new TokenConverter(gsonConverter))
-                .setRequestInterceptor(new BasicAuthorisationRequestInterceptorBuilder(new Base64Encoder()).build(credentials))
+                .setRequestInterceptor(new BasicAuthorisationRequestInterceptorBuilder(new Base64Encoder())
+                        .build(credentials))
                 .build()
                 .create(RedditAuthenticationService.class);
     }
 
-    @Provides
-    @Singleton
-    public RedditService provideRedditService(Gson gson, Resources resources, UserStorage userStorage, TokenStorage tokenStorage, RedditAuthenticationService authService) {
+    @Provides @Singleton public RedditService provideRedditService(Gson gson, Resources resources,
+                                                                   UserStorage userStorage,
+                                                                   TokenStorage tokenStorage,
+                                                                   RedditAuthenticationService authService) {
         final GsonConverter gsonConverter = new GsonConverter(gson);
 
         final OkHttpClient okHttpClient = new OkHttpClient();
@@ -129,35 +116,25 @@ public class AppModule {
                 .build()
                 .create(RedditService.class);
 
-        okHttpClient.networkInterceptors().add(new TokenRefreshInterceptor(tokenStorage, authService));
+        okHttpClient.networkInterceptors()
+                .add(new TokenRefreshInterceptor(tokenStorage, authService));
         okHttpClient.setRetryOnConnectionFailure(true);
         return authenticatedRedditService;
     }
 
-    @Provides
-    @Singleton
-    @Named("io")
-    public Scheduler provideIo() {
+    @Provides @Singleton @Named("io") public Scheduler provideIo() {
         return Schedulers.io();
     }
 
-    @Provides
-    @Singleton
-    @Named("ui")
-    public Scheduler provideUi() {
+    @Provides @Singleton @Named("ui") public Scheduler provideUi() {
         return AndroidSchedulers.mainThread();
     }
 
-    @Provides
-    @Singleton
-    @Named("analytics")
-    public UniqueIdentifierStorage provideAnalyticsUniqueIdentifierStorage(SharedPreferences preferences, Resources resources) {
-        return new SharedPreferencesUniqueIdentifierStorage(preferences, resources.getString(R.string.prefs_key_analytics_id));
+    @Provides @Singleton public Analytics provideAnalytics() {
+        return new Analytics(FirebaseAnalytics.getInstance(mContext));
     }
 
-    @Provides
-    @Singleton
-    public BackgroundAlarmListener provideAlarmListener() {
+    @Provides @Singleton public BackgroundAlarmListener provideAlarmListener() {
         return new BackgroundAlarmListener();
     }
 }

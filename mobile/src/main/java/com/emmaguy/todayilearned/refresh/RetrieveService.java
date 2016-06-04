@@ -8,8 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.util.SimpleArrayMap;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
+import com.emmaguy.todayilearned.Analytics;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.settings.ActionStorage;
 import com.emmaguy.todayilearned.sharedlib.Constants;
@@ -43,6 +42,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
     @Inject ActionStorage mWearableActionStorage;
     @Inject TokenStorage mTokenStorage;
     @Inject UserStorage mUserStorage;
+    @Inject Analytics mAnalytics;
     @Inject Gson mGson;
 
     @Inject @Named("io") Scheduler mIoScheduler;
@@ -88,14 +88,14 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         Timber.d("doWakefulWork");
         connectToWearable();
 
-        Answers.getInstance()
-                .logCustom(new CustomEvent("RetrieveService")
-                        .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
-                        .putCustomAttribute("Sort type", mUserStorage.getSortType())
-                        .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
-                        .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
-                        .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
-                        .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
+//        Answers.getInstance()
+//                .logCustom(new CustomEvent("RetrieveService")
+//                        .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
+//                        .putCustomAttribute("Sort type", mUserStorage.getSortType())
+//                        .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
+//                        .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
+//                        .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
+//                        .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
 
         mSendInformationToWearableIfNoPosts = false;
         if (intent.hasExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS)) {
