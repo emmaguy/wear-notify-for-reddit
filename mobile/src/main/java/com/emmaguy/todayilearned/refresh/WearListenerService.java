@@ -45,9 +45,9 @@ public class WearListenerService extends WearableListenerService {
         return voteDirection > 0 ? Logger.LOG_EVENT_VOTE_UP : Logger.LOG_EVENT_VOTE_DOWN;
     }
 
-    public static void sendReplyResult(final GoogleApiClient client, final String result) {
-        Wearable.MessageApi.sendMessage(client, "", result, null)
-                .setResultCallback(sendMessageResult -> Timber.d("sendReplyResult: " + result + " status " + sendMessageResult.getStatus()));
+    public static void sendToPath(final GoogleApiClient client, final String path) {
+        Wearable.MessageApi.sendMessage(client, "", path, null)
+                .setResultCallback(sendMessageResult -> Timber.d("sendToPath: " + path + " status " + sendMessageResult.getStatus()));
     }
 
     @Override
@@ -65,6 +65,7 @@ public class WearListenerService extends WearableListenerService {
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
+        Timber.d("onMessageReceived, path: " + messageEvent.getPath());
         if (messageEvent.getPath().equals(Constants.PATH_REFRESH)) {
             WakefulIntentService.sendWakefulWork(this, RetrieveService.getFromWearableIntent(this));
         }
@@ -81,6 +82,7 @@ public class WearListenerService extends WearableListenerService {
 
                 String path = event.getDataItem().getUri().getPath();
 
+                Timber.d("onDataChanged, path: " + path);
                 if (Constants.PATH_REPLY.equals(path)) {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
                     String message = dataMap.getString(Constants.PATH_KEY_MESSAGE);
@@ -106,12 +108,12 @@ public class WearListenerService extends WearableListenerService {
                     Intent intent = PocketUtils.newAddToPocketIntent(url, "", this);
                     if (intent == null) {
                         App.with(this).sendEvent(Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_FAILURE);
-                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_FAILED);
+                        sendToPath(mGoogleApiClient, Constants.PATH_SAVE_TO_POCKET_RESULT_FAILED);
                     } else {
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                         App.with(this).sendEvent(Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_SUCCESS);
-                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_SAVE_TO_POCKET_RESULT_SUCCESS);
+                        sendToPath(mGoogleApiClient, Constants.PATH_SAVE_TO_POCKET_RESULT_SUCCESS);
                     }
                 } else if (Constants.PATH_VOTE.equals(path)) {
                     String fullname = dataMap.getString(Constants.PATH_KEY_POST_FULLNAME);
@@ -137,7 +139,7 @@ public class WearListenerService extends WearableListenerService {
                 .subscribe(comments -> {
                     if (comments == null) {
                         App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
-                        sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                        sendToPath(mGoogleApiClient, Constants.PATH_GET_COMMENTS_RESULT_FAILED);
                     } else {
                         sendComments(comments);
                         App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
@@ -145,7 +147,7 @@ public class WearListenerService extends WearableListenerService {
                 }, throwable -> {
                     Timber.e(throwable, "Failed to get comments");
                     App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
-                    sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_GETTING_COMMENTS_RESULT_FAILED);
+                    sendToPath(mGoogleApiClient, Constants.PATH_GET_COMMENTS_RESULT_FAILED);
                 });
     }
 
@@ -168,10 +170,10 @@ public class WearListenerService extends WearableListenerService {
                 }, e -> {
                     Timber.e(e, "Failed to vote");
                     App.with(WearListenerService.this).sendEvent(getVoteType(voteDirection), Logger.LOG_EVENT_FAILURE);
-                    sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_VOTE_RESULT_FAILED);
+                    sendToPath(mGoogleApiClient, Constants.PATH_VOTE_RESULT_FAILED);
                 }, () -> {
                     App.with(WearListenerService.this).sendEvent(getVoteType(voteDirection), Logger.LOG_EVENT_SUCCESS);
-                    sendReplyResult(mGoogleApiClient, Constants.PATH_KEY_VOTE_RESULT_SUCCESS);
+                    sendToPath(mGoogleApiClient, Constants.PATH_VOTE_RESULT_SUCCESS);
                 });
     }
 
@@ -190,14 +192,14 @@ public class WearListenerService extends WearableListenerService {
                     @Override
                     public void onCompleted() {
                         App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_SUCCESS);
-                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
+                        sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_FAILURE);
                         Timber.e(e, "Failed to reply to direct message");
-                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                        sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
     }
@@ -216,7 +218,7 @@ public class WearListenerService extends WearableListenerService {
 
                     @Override
                     public void onCompleted() {
-                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
+                        sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
                         App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_SUCCESS);
                     }
 
@@ -224,7 +226,7 @@ public class WearListenerService extends WearableListenerService {
                     public void onError(Throwable e) {
                         App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_FAILURE);
                         Timber.e(e, "Failed to reply to reddit post");
-                        sendReplyResult(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
+                        sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
                 });
     }

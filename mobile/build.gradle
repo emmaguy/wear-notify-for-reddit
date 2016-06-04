@@ -97,7 +97,7 @@ dependencies {
         transitive = true;
     }
 
-    compile 'com.google.android.gms:play-services-wearable:9.0.2'
+    compile 'com.google.android.gms:play-services-wearable:8.1.0'
     wearApp project(':wear')
 
     testCompile 'junit:junit:4.12'

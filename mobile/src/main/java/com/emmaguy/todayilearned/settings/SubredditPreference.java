@@ -99,7 +99,7 @@ public class SubredditPreference extends Preference {
             i++;
         }
 
-        new AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(getContext(), R.style.AppCompatAlertDialogStyle)
                 .setTitle(getContext().getResources().getString(R.string.select_subreddits))
                 .setMultiChoiceItems(savedSubreddits.toArray(new String[savedSubreddits.size()]), selected,
                         (dialogInterface, i1, b) -> {
