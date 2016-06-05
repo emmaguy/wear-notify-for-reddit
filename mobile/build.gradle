@@ -24,8 +24,8 @@ android {
         applicationId "com.emmaguy.todayilearned"
         minSdkVersion 18
         targetSdkVersion 23
-        versionCode 50
-        versionName '3.0.15'
+        versionCode 51
+        versionName '3.1.0'
         resValue "string", "client_id", "placeholderId"
         buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
         buildConfigField "String", "BUILD_TIME", "\"${buildTime}\""
