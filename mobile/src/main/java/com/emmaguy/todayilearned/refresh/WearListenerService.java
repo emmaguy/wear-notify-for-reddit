@@ -128,7 +128,7 @@ public class WearListenerService extends WearableListenerService {
                     }
                 } else if (Constants.PATH_LOGGING.equals(path)) {
                     String message = dataMap.getString(Constants.PATH_KEY_MESSAGE);
-                    Timber.d(message);
+                    Timber.e(message);
                 }
             }
         }

@@ -92,15 +92,6 @@ public class SettingsActivity extends AppCompatActivity {
             setHasOptionsMenu(true);
 
             showDialogIfStillUsingOldAuth();
-
-//            mAnalytics.log
-//                            .putContentName("Settings")
-//                            .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
-//                            .putCustomAttribute("Sort type", mUserStorage.getSortType())
-//                            .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
-//                            .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
-//                            .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
-//                            .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
         }
 
         private void showDialogIfStillUsingOldAuth() {
@@ -199,11 +190,10 @@ public class SettingsActivity extends AppCompatActivity {
 
                         @Override
                         public void onError(Throwable e) {
-                            mAnalytics.sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
                             Timber.e(e, "Failed to get access token");
                             spinner.dismiss();
                             Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
-                            mAnalytics.logLogin(false);
+                            mAnalytics.sendLogin(false);
                         }
 
                         @Override
@@ -212,9 +202,8 @@ public class SettingsActivity extends AppCompatActivity {
                             if (mTokenStorage.isLoggedIn()) {
                                 toggleRedditSettings();
                                 initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
-                                mAnalytics.sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
                                 Toast.makeText(getActivity(), R.string.successfully_logged_in, Toast.LENGTH_SHORT).show();
-                                mAnalytics.logLogin(true);
+                                mAnalytics.sendLogin(true);
                             } else {
                                 throw new RuntimeException("Failed to login " + tokenResponse);
                             }

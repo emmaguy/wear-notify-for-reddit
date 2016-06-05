@@ -8,7 +8,6 @@ import com.emmaguy.todayilearned.common.StringUtils;
 import com.emmaguy.todayilearned.sharedlib.Constants;
 
 import java.util.Set;
-import java.util.Timer;
 
 import javax.inject.Inject;
 
@@ -26,62 +25,59 @@ class SharedPreferencesUserStorage implements UserStorage {
         mResources = resources;
     }
 
-    @Override
-    public int getNumberToRequest() {
+    @Override public int getNumberToRequest() {
         final String key = mResources.getString(R.string.prefs_key_number_to_retrieve);
         return Integer.parseInt(mSharedPreferences.getString(key, "5"));
     }
 
     public void setSeenTimestamp(long createdAtUtc) {
         Timber.d("Setting timestamp: " + createdAtUtc);
-        mSharedPreferences
-                .edit()
+        mSharedPreferences.edit()
                 .putLong(mResources.getString(R.string.prefs_key_created_utc), createdAtUtc)
                 .apply();
     }
 
     @Override public void clearTimestamp() {
-        mSharedPreferences.edit().remove(mResources.getString(R.string.prefs_key_created_utc)).apply();
+        mSharedPreferences.edit()
+                .remove(mResources.getString(R.string.prefs_key_created_utc))
+                .apply();
     }
 
-    @Override
-    public String getSortType() {
-        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_sort_order), "new");
+    @Override public String getSortType() {
+        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_sort_order),
+                "new");
     }
 
-    @Override
-    public String getSubreddits() {
+    @Override public String getSubreddits() {
+        return StringUtils.join("+", getSubredditCollection());
+    }
+
+    @Override public Set<String> getSubredditCollection() {
         final String key = mResources.getString(R.string.prefs_key_selected_subreddits);
-        Set<String> subreddits = mSharedPreferences.getStringSet(key, Constants.sDefaultSelectedSubreddits);
-
-        return StringUtils.join("+", subreddits);
-    }
-
-    @Override public int getSubredditCount() {
-        final String key = mResources.getString(R.string.prefs_key_selected_subreddits);
-        return mSharedPreferences.getStringSet(key, Constants.sDefaultSelectedSubreddits).size();
+        return mSharedPreferences.getStringSet(key, Constants.sDefaultSelectedSubreddits);
     }
 
     @Override public String getRefreshInterval() {
-        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_sync_frequency), "15");
+        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_sync_frequency),
+                "15");
     }
 
     @Override public long getTimestamp() {
         return mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_created_utc), 0);
     }
 
-    @Override
-    public boolean messagesEnabled() {
-        return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_messages_enabled), true);
+    @Override public boolean messagesEnabled() {
+        return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_messages_enabled),
+                true);
     }
 
-    @Override
-    public boolean downloadFullSizedImages() {
-        return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_full_image), false);
+    @Override public boolean downloadFullSizedImages() {
+        return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_full_image),
+                false);
     }
 
-    @Override
-    public boolean openOnPhoneDismissesAfterAction() {
-        return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_open_on_phone_dismisses), false);
+    @Override public boolean openOnPhoneDismissesAfterAction() {
+        return mSharedPreferences.getBoolean(mResources.getString(R.string.prefs_key_open_on_phone_dismisses),
+                false);
     }
 }

@@ -5,7 +5,7 @@ import com.google.firebase.crash.FirebaseCrash;
 import timber.log.Timber;
 
 /**
- * A logging implementation which reports Exception to Firebase
+ * A logging implementation which reports exceptions to Firebase
  */
 public class FirebaseTree extends Timber.DebugTree {
     @Override public void i(String message, Object... args) {
@@ -13,12 +13,14 @@ public class FirebaseTree extends Timber.DebugTree {
     }
 
     @Override public void i(Throwable t, String message, Object... args) {
+        FirebaseCrash.report(t);
     }
 
     @Override public void w(String message, Object... args) {
     }
 
     @Override public void w(Throwable t, String message, Object... args) {
+        FirebaseCrash.report(t);
     }
 
     @Override public void e(String message, Object... args) {

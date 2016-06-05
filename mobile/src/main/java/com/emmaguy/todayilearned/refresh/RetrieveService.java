@@ -88,14 +88,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         Timber.d("doWakefulWork");
         connectToWearable();
 
-//        Answers.getInstance()
-//                .logCustom(new CustomEvent("RetrieveService")
-//                        .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
-//                        .putCustomAttribute("Sort type", mUserStorage.getSortType())
-//                        .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
-//                        .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
-//                        .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
-//                        .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
+        mAnalytics.sendRefreshEvent(mUserStorage, mTokenStorage);
 
         mSendInformationToWearableIfNoPosts = false;
         if (intent.hasExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS)) {
