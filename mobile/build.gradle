@@ -53,11 +53,11 @@ android {
 
 dependencies {
     // RxJava
-    compile 'io.reactivex:rxjava:1.0.14'
-    compile 'io.reactivex:rxandroid:1.0.1'
+    compile 'io.reactivex:rxjava:1.1.5'
+    compile 'io.reactivex:rxandroid:1.2.0'
 
     // DateTime
-    compile 'net.danlew:android.joda:2.7.2'
+    compile 'net.danlew:android.joda:2.9.3.1'
 
     // Wakeful work
     compile 'com.commonsware.cwac:wakeful:1.1.0'
@@ -68,7 +68,7 @@ dependencies {
     provided 'org.glassfish:javax.annotation:10.0-b28'
 
     // Logging
-    compile 'com.jakewharton.timber:timber:3.1.0'
+    compile 'com.jakewharton.timber:timber:4.1.2'
 
     // Network
     compile 'com.squareup.retrofit:retrofit:1.9.0'
