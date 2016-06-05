@@ -99,29 +99,29 @@ public class ReorderRecyclerView extends RecyclerView {
         smoothScrollAmountAtEdge = (int) (SMOOTH_SCROLL_AMOUNT_AT_EDGE / metrics.density);
 
         // detector for the long press in order to start the dragging
-        final GestureDetector longPressGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-            public void onLongPress(MotionEvent event) {
-                Log.d(TAG, "Longpress detected");
-                downX = (int) event.getX();
-                downY = (int) event.getY();
-                activePointerId = event.getPointerId(0);
+        final GestureDetector longPressGestureDetector = new GestureDetector(context,
+                new GestureDetector.SimpleOnGestureListener() {
+                    public void onLongPress(MotionEvent event) {
+                        Log.d(TAG, "Longpress detected");
+                        downX = (int) event.getX();
+                        downY = (int) event.getY();
+                        activePointerId = event.getPointerId(0);
 
-                totalOffsetY = 0;
-                totalOffsetX = 0;
-                View selectedView = findChildViewUnder(downX, downY);
-                if (selectedView == null) {
-                    return;
-                }
-                mobileItemId = getChildItemId(selectedView);
-                hoverCell = getAndAddHoverView(selectedView);
-                selectedView.setVisibility(INVISIBLE);
-                cellIsMobile = true;
-            }
-        });
+                        totalOffsetY = 0;
+                        totalOffsetX = 0;
+                        View selectedView = findChildViewUnder(downX, downY);
+                        if (selectedView == null) {
+                            return;
+                        }
+                        mobileItemId = getChildItemId(selectedView);
+                        hoverCell = getAndAddHoverView(selectedView);
+                        selectedView.setVisibility(INVISIBLE);
+                        cellIsMobile = true;
+                    }
+                });
 
         final OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
+            @Override public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
                 if (longPressGestureDetector.onTouchEvent(event)) {
                     return true;
                 }
@@ -135,13 +135,11 @@ public class ReorderRecyclerView extends RecyclerView {
             }
 
 
-            @Override
-            public void onTouchEvent(RecyclerView rv, MotionEvent event) {
+            @Override public void onTouchEvent(RecyclerView rv, MotionEvent event) {
                 handleMotionEvent(event);
             }
 
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
 
             }
         };
@@ -187,8 +185,7 @@ public class ReorderRecyclerView extends RecyclerView {
                  * the movement of the hover cell has ended, then the dragging event
                  * ends and the hover cell is animated to its corresponding position
                  * in the listview. */
-                pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
-                        MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 final int pointerId = event.getPointerId(pointerIndex);
                 if (pointerId == activePointerId) {
                     touchEventsEnded();
@@ -257,18 +254,17 @@ public class ReorderRecyclerView extends RecyclerView {
      * By overriding this method, the hover cell (BitmapDrawable) can be drawn
      * over the recyclerviews's items whenever the recyclerviews is redrawn.
      */
-    @Override
-    protected void dispatchDraw(@NonNull Canvas canvas) {
+    @Override protected void dispatchDraw(@NonNull Canvas canvas) {
         super.dispatchDraw(canvas);
         if (hoverCell != null) {
             hoverCell.draw(canvas);
         }
     }
 
-    @Override
-    public void setAdapter(Adapter adapter) {
+    @Override public void setAdapter(Adapter adapter) {
         if (!(adapter instanceof ReorderAdapter) && !adapter.hasStableIds()) {
-            throw new IllegalStateException("ReorderRecyclerView only works with ReorderAdapter and must have stable ids!");
+            throw new IllegalStateException(
+                    "ReorderRecyclerView only works with ReorderAdapter and must have stable ids!");
         }
         super.setAdapter(adapter);
     }
@@ -296,7 +292,7 @@ public class ReorderRecyclerView extends RecyclerView {
      * Swaps the the elements with the given indices.
      *
      * @param fromIndex the from-element index
-     * @param toIndex the to-element index
+     * @param toIndex   the to-element index
      */
     private void swapElements(int fromIndex, int toIndex) {
         Log.i(TAG, String.format("Swapping %d with %d", fromIndex, toIndex));
@@ -331,22 +327,21 @@ public class ReorderRecyclerView extends RecyclerView {
 
             hoverCellCurrentBounds.offsetTo(mobileView.getLeft(), mobileView.getTop());
 
-            ObjectAnimator hoverViewAnimator = ObjectAnimator.ofObject(hoverCell, "bounds",
-                    sBoundEvaluator, hoverCellCurrentBounds);
+            ObjectAnimator hoverViewAnimator = ObjectAnimator.ofObject(hoverCell,
+                    "bounds",
+                    sBoundEvaluator,
+                    hoverCellCurrentBounds);
             hoverViewAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                @Override public void onAnimationUpdate(ValueAnimator valueAnimator) {
                     invalidate();
                 }
             });
             hoverViewAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
+                @Override public void onAnimationStart(Animator animation) {
                     setEnabled(false);
                 }
 
-                @Override
-                public void onAnimationEnd(Animator animation) {
+                @Override public void onAnimationEnd(Animator animation) {
                     mobileItemId = INVALID_ID;
                     mobileView.setVisibility(VISIBLE);
                     hoverCell = null;
@@ -424,7 +419,8 @@ public class ReorderRecyclerView extends RecyclerView {
             int hoverWidth = r.width();
 
             if (hoverViewLeft <= 0 && offset > 0) {
-                Log.d(TAG, String.format("scrolling horizontally by %d", -smoothScrollAmountAtEdge));
+                Log.d(TAG,
+                        String.format("scrolling horizontally by %d", -smoothScrollAmountAtEdge));
                 scrollBy(-smoothScrollAmountAtEdge, 0);
                 return true;
             }
@@ -443,7 +439,8 @@ public class ReorderRecyclerView extends RecyclerView {
      * Special adapter that provides reorder functionality.
      * Implementations have to provide stable ids {@link #hasStableIds()}
      */
-    public static abstract class ReorderAdapter<VH extends android.support.v7.widget.RecyclerView.ViewHolder> extends Adapter<VH> {
+    public static abstract class ReorderAdapter<VH extends android.support.v7.widget.RecyclerView.ViewHolder>
+            extends Adapter<VH> {
         /**
          * Swap the positions of the elements with the given indices.
          * You don't have to notify the change.
@@ -458,7 +455,7 @@ public class ReorderRecyclerView extends RecyclerView {
          * </pre>
          *
          * @param fromIndex the index
-         * @param toIndex the index
+         * @param toIndex   the index
          */
         public abstract void swapElements(int fromIndex, int toIndex);
     }

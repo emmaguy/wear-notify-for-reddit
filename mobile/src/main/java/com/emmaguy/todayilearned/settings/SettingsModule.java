@@ -11,17 +11,17 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 
-@Module
-public class SettingsModule {
-    @Provides
-    @Singleton
-    public WearableActions provideWearableActions(Context context, Resources resources, TokenStorage tokenStorage) {
+@Module public class SettingsModule {
+    @Provides @Singleton
+    public WearableActions provideWearableActions(Context context, Resources resources,
+                                                  TokenStorage tokenStorage) {
         return new WearableActions(context, resources, tokenStorage);
     }
 
-    @Provides
-    @Singleton
-    public ActionStorage provideActionStorage(WearableActions wearableActions, SharedPreferences sharedPreferences, Resources resources, Context context) {
+    @Provides @Singleton public ActionStorage provideActionStorage(WearableActions wearableActions,
+                                                                   SharedPreferences sharedPreferences,
+                                                                   Resources resources,
+                                                                   Context context) {
         return new WearableActionStorage(wearableActions, sharedPreferences, resources, context);
     }
 }

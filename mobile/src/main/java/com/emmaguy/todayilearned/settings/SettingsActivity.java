@@ -17,9 +17,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-import com.crashlytics.android.answers.LoginEvent;
+import com.emmaguy.todayilearned.Analytics;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.BuildConfig;
 import com.emmaguy.todayilearned.R;
@@ -46,15 +44,18 @@ import static com.emmaguy.todayilearned.sharedlib.Constants.ACTION_ORDER_OPEN_ON
 
 public class SettingsActivity extends AppCompatActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         getSupportActionBar().setTitle(R.string.app_name);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
+        getFragmentManager().beginTransaction()
+                .replace(android.R.id.content, new SettingsFragment())
+                .commit();
     }
 
-    public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
+    public static class SettingsFragment extends PreferenceFragment
+            implements SharedPreferences.OnSharedPreferenceChangeListener,
+            Preference.OnPreferenceClickListener {
         @Inject RedditAccessTokenRequester mRedditAccessTokenRequester;
         @Inject RedditAuthenticationService mRedditAuthenticationService;
         @Inject RedditRequestTokenUriParser mRequestTokenUriParser;
@@ -63,14 +64,15 @@ public class SettingsActivity extends AppCompatActivity {
         @Inject RedditService mRedditService;
         @Inject TokenStorage mTokenStorage;
         @Inject UserStorage mUserStorage;
+        @Inject Analytics mAnalytics;
 
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
+        @Override public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
             App.with(getActivity()).getAppComponent().inject(this);
 
-            WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
+            WakefulIntentService.scheduleAlarms(mAlarmListener,
+                    getActivity().getApplicationContext());
 
             addPreferencesFromResource(R.xml.preferences);
             initSummary();
@@ -93,26 +95,19 @@ public class SettingsActivity extends AppCompatActivity {
             setHasOptionsMenu(true);
 
             showDialogIfStillUsingOldAuth();
-
-            Answers.getInstance()
-                    .logContentView(new ContentViewEvent()
-                            .putContentName("Settings")
-                            .putCustomAttribute("Number of posts", mUserStorage.getNumberToRequest())
-                            .putCustomAttribute("Sort type", mUserStorage.getSortType())
-                            .putCustomAttribute("Refresh interval", mUserStorage.getRefreshInterval())
-                            .putCustomAttribute("Number of posts", mUserStorage.getSubredditCount())
-                            .putCustomAttribute("Is logged in", String.valueOf(mTokenStorage.isLoggedIn()))
-                            .putCustomAttribute("Has token expired", String.valueOf(mTokenStorage.hasTokenExpired())));
         }
 
         private void showDialogIfStillUsingOldAuth() {
             final String usernameKey = getString(R.string.prefs_key_username);
-            final String username = getPreferenceManager().getSharedPreferences().getString(usernameKey, "");
+            final String username = getPreferenceManager().getSharedPreferences()
+                    .getString(usernameKey, "");
             if (!StringUtils.isEmpty(username)) {
-                new AlertDialog.Builder(getActivity())
-                        .setCancelable(false)
+                new AlertDialog.Builder(getActivity()).setCancelable(false)
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            getPreferenceManager().getSharedPreferences().edit().remove(usernameKey).apply();
+                            getPreferenceManager().getSharedPreferences()
+                                    .edit()
+                                    .remove(usernameKey)
+                                    .apply();
                         })
                         .setTitle(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME)
                         .setMessage(R.string.auth_change_message)
@@ -133,13 +128,11 @@ public class SettingsActivity extends AppCompatActivity {
             }
         }
 
-        @Override
-        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             inflater.inflate(R.menu.menu_feedback, menu);
         }
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
+        @Override public boolean onOptionsItemSelected(MenuItem item) {
             if (item.getItemId() == R.id.action_feedback) {
                 startActivity(Utils.getFeedbackEmailIntent(getActivity(), buildExtraInformation()));
                 return true;
@@ -164,11 +157,11 @@ public class SettingsActivity extends AppCompatActivity {
             return sb.toString();
         }
 
-        @Override
-        public void onResume() {
+        @Override public void onResume() {
             super.onResume();
 
-            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+            getPreferenceScreen().getSharedPreferences()
+                    .registerOnSharedPreferenceChangeListener(this);
 
             Uri uri = getActivity().getIntent().getData();
             mRequestTokenUriParser.setUri(uri);
@@ -176,8 +169,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (mRequestTokenUriParser.hasValidCode()) {
                 getAccessToken(mRequestTokenUriParser.getCode());
             } else if (mRequestTokenUriParser.showError()) {
-                new AlertDialog.Builder(getActivity())
-                        .setPositiveButton(android.R.string.ok, null)
+                new AlertDialog.Builder(getActivity()).setPositiveButton(android.R.string.ok, null)
                         .setTitle(R.string.login_to_reddit)
                         .setMessage(R.string.error_whilst_trying_to_login)
                         .create()
@@ -186,40 +178,40 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void getAccessToken(String code) {
-            final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.logging_in));
+            final ProgressDialog spinner = ProgressDialog.show(getActivity(),
+                    "",
+                    getString(R.string.logging_in));
             final String redirectUri = getString(R.string.redirect_url_scheme) + getString(R.string.redirect_url_callback);
 
             // TODO: unit test this chain, verify retrieving an empty token errors
-            mRedditAuthenticationService.loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE, redirectUri, code)
+            mRedditAuthenticationService.loginToken(Constants.GRANT_TYPE_AUTHORISATION_CODE,
+                    redirectUri,
+                    code)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<Token>() {
-                        @Override
-                        public void onCompleted() {
+                        @Override public void onCompleted() {
                             spinner.dismiss();
                         }
 
-                        @Override
-                        public void onError(Throwable e) {
-                            App.with(getActivity()).sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_FAILURE);
+                        @Override public void onError(Throwable e) {
                             Timber.e(e, "Failed to get access token");
                             spinner.dismiss();
-                            Toast.makeText(getActivity(), R.string.failed_to_login, Toast.LENGTH_SHORT).show();
-                            Answers.getInstance()
-                                    .logLogin(new LoginEvent().putSuccess(false));
+                            Toast.makeText(getActivity(),
+                                    R.string.failed_to_login,
+                                    Toast.LENGTH_SHORT).show();
+                            mAnalytics.sendLogin(false);
                         }
 
-                        @Override
-                        public void onNext(Token tokenResponse) {
+                        @Override public void onNext(Token tokenResponse) {
                             mTokenStorage.saveToken(tokenResponse);
                             if (mTokenStorage.isLoggedIn()) {
                                 toggleRedditSettings();
                                 initPrefsSummary(findPreference(getString(R.string.prefs_key_account_info)));
-                                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_LOGIN, Logger.LOG_EVENT_SUCCESS);
-                                Toast.makeText(getActivity(), R.string.successfully_logged_in, Toast.LENGTH_SHORT).show();
-                                Answers.getInstance()
-                                        .logLogin(new LoginEvent().putSuccess(true));
-
+                                Toast.makeText(getActivity(),
+                                        R.string.successfully_logged_in,
+                                        Toast.LENGTH_SHORT).show();
+                                mAnalytics.sendLogin(true);
                             } else {
                                 throw new RuntimeException("Failed to login " + tokenResponse);
                             }
@@ -227,15 +219,14 @@ public class SettingsActivity extends AppCompatActivity {
                     });
         }
 
-        @Override
-        public void onPause() {
-            getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        @Override public void onPause() {
+            getPreferenceScreen().getSharedPreferences()
+                    .unregisterOnSharedPreferenceChangeListener(this);
 
             super.onPause();
         }
 
-        @Override
-        public boolean onPreferenceClick(Preference preference) {
+        @Override public boolean onPreferenceClick(Preference preference) {
             final String preferenceKey = preference.getKey();
             if (preferenceKey.equals(getString(R.string.prefs_key_open_source))) {
                 new LicensesDialog(getActivity(), R.raw.open_source_notices, false, true).show();
@@ -253,7 +244,9 @@ public class SettingsActivity extends AppCompatActivity {
                 if (mTokenStorage.isLoggedIn()) {
                     syncSubreddits();
                 } else {
-                    Toast.makeText(getActivity(), R.string.you_need_to_sign_in_to_sync_subreddits, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(),
+                            R.string.you_need_to_sign_in_to_sync_subreddits,
+                            Toast.LENGTH_SHORT).show();
                 }
             } else if (preferenceKey.equals(getString(R.string.prefs_force_expire_token))) {
                 mTokenStorage.forceExpireToken();
@@ -261,42 +254,47 @@ public class SettingsActivity extends AppCompatActivity {
                 mUserStorage.clearTimestamp();
                 mAlarmListener.sendWakefulWork(getActivity());
             } else if (preferenceKey.equals(getString(R.string.prefs_key_actions_order))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_CUSTOMISE_ACTIONS, "");
+                mAnalytics.sendEvent(Logger.LOG_EVENT_CUSTOMISE_ACTIONS, "");
             }
             return false;
         }
 
         private void syncSubreddits() {
-            final ProgressDialog spinner = ProgressDialog.show(getActivity(), "", getString(R.string.syncing_subreddits));
+            final ProgressDialog spinner = ProgressDialog.show(getActivity(),
+                    "",
+                    getString(R.string.syncing_subreddits));
 
-            mRedditService
-                    .subredditSubscriptions()
+            mRedditService.subredditSubscriptions()
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<SubscriptionResponse>() {
-                        @Override
-                        public void onNext(SubscriptionResponse response) {
+                        @Override public void onNext(SubscriptionResponse response) {
                             if (response.hasErrors()) {
                                 throw new RuntimeException("Failed to sync subreddits: " + response);
                             }
 
-                            SubredditPreference pref = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
+                            SubredditPreference pref = (SubredditPreference) findPreference(
+                                    getString(R.string.prefs_key_subreddits));
                             pref.saveSubreddits(response.getSubreddits());
                         }
 
-                        @Override
-                        public void onCompleted() {
+                        @Override public void onCompleted() {
                             spinner.dismiss();
-                            App.with(getActivity()).sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_SUCCESS);
-                            Toast.makeText(getActivity(), R.string.successfully_synced_subreddits, Toast.LENGTH_SHORT).show();
+                            mAnalytics.sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS,
+                                    Logger.LOG_EVENT_SUCCESS);
+                            Toast.makeText(getActivity(),
+                                    R.string.successfully_synced_subreddits,
+                                    Toast.LENGTH_SHORT).show();
                         }
 
-                        @Override
-                        public void onError(Throwable e) {
-                            App.with(getActivity()).sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS, Logger.LOG_EVENT_FAILURE);
+                        @Override public void onError(Throwable e) {
+                            mAnalytics.sendEvent(Logger.LOG_EVENT_SYNC_SUBREDDITS,
+                                    Logger.LOG_EVENT_FAILURE);
                             Timber.e(e, "Failed to sync subreddits");
                             spinner.dismiss();
-                            Toast.makeText(getActivity(), R.string.failed_to_sync_subreddits, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(),
+                                    R.string.failed_to_sync_subreddits,
+                                    Toast.LENGTH_SHORT).show();
                         }
                     });
         }
@@ -305,14 +303,20 @@ public class SettingsActivity extends AppCompatActivity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             updatePrefsSummary(findPreference(key));
 
-            SubredditPreference subredditPreference = (SubredditPreference) findPreference(getString(R.string.prefs_key_subreddits));
+            SubredditPreference subredditPreference = (SubredditPreference) findPreference(getString(
+                    R.string.prefs_key_subreddits));
 
             if (key.equals(getString(R.string.prefs_key_sync_frequency))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_UPDATE_INTERVAL, sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency), ""));
-                WakefulIntentService.scheduleAlarms(mAlarmListener, getActivity().getApplicationContext());
-            } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
+                mAnalytics.sendEvent(Logger.LOG_EVENT_UPDATE_INTERVAL,
+                        sharedPreferences.getString(getString(R.string.prefs_key_sync_frequency),
+                                ""));
+                WakefulIntentService.scheduleAlarms(mAlarmListener,
+                        getActivity().getApplicationContext());
+            } else if (key.equals(getString(R.string.prefs_key_sort_order)) || key.equals(
+                    subredditPreference.getKey()) || key.equals(subredditPreference.getSelectedSubredditsKey())) {
                 clearSavedUtcTime();
-            } else if (key.equals(getString(R.string.prefs_key_actions_order)) || key.equals(getString(R.string.prefs_key_actions_order_ordered))) {
+            } else if (key.equals(getString(R.string.prefs_key_actions_order)) || key.equals(
+                    getString(R.string.prefs_key_actions_order_ordered))) {
                 toggleOpenOnPhoneAction();
             }
 
@@ -327,16 +331,20 @@ public class SettingsActivity extends AppCompatActivity {
                     break;
                 }
             }
-            findPreference(getString(R.string.prefs_key_open_on_phone_dismisses)).setEnabled(enableOpenOnPhoneOption);
+            findPreference(getString(R.string.prefs_key_open_on_phone_dismisses)).setEnabled(
+                    enableOpenOnPhoneOption);
         }
 
         private void sendEvents(SharedPreferences sharedPreferences, String key) {
             if (key.equals(getString(R.string.prefs_key_sort_order))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_SORT_ORDER, sharedPreferences.getString(key, ""));
+                mAnalytics.sendEvent(Logger.LOG_EVENT_SORT_ORDER,
+                        sharedPreferences.getString(key, ""));
             } else if (key.equals(getString(R.string.prefs_key_open_on_phone_dismisses))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_OPEN_ON_PHONE_DISMISSES, sharedPreferences.getBoolean(key, false) + "");
+                mAnalytics.sendEvent(Logger.LOG_EVENT_OPEN_ON_PHONE_DISMISSES,
+                        sharedPreferences.getBoolean(key, false) + "");
             } else if (key.equals(getString(R.string.prefs_key_full_image))) {
-                App.with(getActivity()).sendEvent(Logger.LOG_EVENT_HIGH_RES_IMAGE, sharedPreferences.getBoolean(key, false) + "");
+                mAnalytics.sendEvent(Logger.LOG_EVENT_HIGH_RES_IMAGE,
+                        sharedPreferences.getBoolean(key, false) + "");
             }
         }
 

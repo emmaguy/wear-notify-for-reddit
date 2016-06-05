@@ -68,21 +68,17 @@ public class NotificationListenerService extends WearableListenerService {
     private GoogleApiClient mGoogleApiClient;
     private Handler mHandler;
 
-    @Override
-    public void onCreate() {
+    @Override public void onCreate() {
         super.onCreate();
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
 
         mGoogleApiClient.connect();
 
         mHandler = new Handler();
     }
 
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
+    @Override public void onMessageReceived(MessageEvent messageEvent) {
         final String path = messageEvent.getPath();
         boolean finishActivity = false;
         String message = "";
@@ -118,14 +114,14 @@ public class NotificationListenerService extends WearableListenerService {
 
     private void logErrorToPhone(@NonNull String message, @Nullable Exception e) {
         PutDataMapRequest mapRequest = PutDataMapRequest.create(Constants.PATH_LOGGING);
-        mapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE, message + " " + getExceptionAsString(e));
+        mapRequest.getDataMap()
+                .putString(Constants.PATH_KEY_MESSAGE, message + " " + getExceptionAsString(e));
         mapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
         PutDataRequest request = mapRequest.asPutDataRequest();
         Wearable.DataApi.putDataItem(mGoogleApiClient, request)
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                    @Override
-                    public void onResult(DataApi.DataItemResult dataItemResult) {
+                    @Override public void onResult(DataApi.DataItemResult dataItemResult) {
                         Logger.log("Result from sending log to phone: " + dataItemResult.getStatus());
                     }
                 });
@@ -142,8 +138,7 @@ public class NotificationListenerService extends WearableListenerService {
         if (!TextUtils.isEmpty(message)) {
             final String msg = message;
             mHandler.post(new Runnable() {
-                @Override
-                public void run() {
+                @Override public void run() {
                     if (finishActivity) {
                         sendBroadcast(new Intent(getString(R.string.force_finish_main_activity)));
                     }
@@ -155,12 +150,15 @@ public class NotificationListenerService extends WearableListenerService {
 
     private Bitmap loadBitmapFromAsset(Asset asset) {
         Logger.log("loadBitmapFromAsset");
-        ConnectionResult result = mGoogleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        ConnectionResult result = mGoogleApiClient.blockingConnect(TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
         if (!result.isSuccess()) {
             return null;
         }
         // convert asset into a file descriptor and block until it's ready
-        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(mGoogleApiClient, asset).await().getInputStream();
+        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(mGoogleApiClient, asset)
+                .await()
+                .getInputStream();
         mGoogleApiClient.disconnect();
 
         if (assetInputStream == null) {
@@ -171,13 +169,13 @@ public class NotificationListenerService extends WearableListenerService {
         return BitmapFactory.decodeStream(assetInputStream);
     }
 
-    @Override
-    public void onDataChanged(DataEventBuffer dataEvents) {
+    @Override public void onDataChanged(DataEventBuffer dataEvents) {
         final List<DataEvent> events = FreezableUtils.freezeIterable(dataEvents);
         dataEvents.close();
 
         if (!mGoogleApiClient.isConnected()) {
-            ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
+            ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30,
+                    TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
                 logToPhone("onDataChanged, service failed to connect: " + connectionResult);
                 return;
@@ -206,13 +204,20 @@ public class NotificationListenerService extends WearableListenerService {
                         List<Post> posts = mGson.fromJson(latestPosts, new TypeToken<List<Post>>() {
                         }.getType());
 
-                        Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
-                        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                        Bitmap themeBlueBitmap = Bitmap.createBitmap(new int[]{getResources().getColor(
+                                R.color.primary)}, 1, 1, Bitmap.Config.ARGB_8888);
+                        NotificationManager notificationManager = (NotificationManager) getSystemService(
+                                NOTIFICATION_SERVICE);
 
                         msg += ", posts: " + posts.size();
                         for (int i = 0; i < posts.size(); i++) {
                             Post post = posts.get(i);
-                            createNotificationForPost(dataMap, openOnPhoneDismisses, actionOrder, themeBlueBitmap, notificationManager, post);
+                            createNotificationForPost(dataMap,
+                                    openOnPhoneDismisses,
+                                    actionOrder,
+                                    themeBlueBitmap,
+                                    notificationManager,
+                                    post);
                         }
                     } catch (Exception e) {
                         logErrorToPhone("Failed to get reddit posts from data event", e);
@@ -241,15 +246,16 @@ public class NotificationListenerService extends WearableListenerService {
         logToPhone(msg);
     }
 
-    private void createNotificationForPost(DataMap dataMap, boolean openOnPhoneDismisses, ArrayList<Integer> actionOrder, Bitmap themeBlueBitmap, NotificationManager notificationManager, Post post) {
+    private void createNotificationForPost(DataMap dataMap, boolean openOnPhoneDismisses,
+                                           ArrayList<Integer> actionOrder, Bitmap themeBlueBitmap,
+                                           NotificationManager notificationManager, Post post) {
         try {
             Bitmap backgroundBitmap = null;
             if (dataMap.containsKey(post.getId()) && dataMap.getAsset(post.getId()) != null) {
                 backgroundBitmap = loadBitmapFromAsset(dataMap.getAsset(post.getId()));
             }
 
-            Notification.Builder builder = new Notification.Builder(this)
-                    .setContentTitle(post.getTitle())
+            Notification.Builder builder = new Notification.Builder(this).setContentTitle(post.getTitle())
                     .setContentText(post.getPostContents())
                     .setSmallIcon(R.drawable.ic_launcher);
 
@@ -265,7 +271,12 @@ public class NotificationListenerService extends WearableListenerService {
                 enableNotificationGrouping(builder);
             }
 
-            addActions(actionOrder, openOnPhoneDismisses, hasCachedImage, post, sNotificationId, builder);
+            addActions(actionOrder,
+                    openOnPhoneDismisses,
+                    hasCachedImage,
+                    post,
+                    sNotificationId,
+                    builder);
 
             if (hasCachedImage) {
                 // When the notification is dismissed, we will remove this image from the file cache
@@ -321,7 +332,9 @@ public class NotificationListenerService extends WearableListenerService {
     }
 
     // Add the actions to the builder, based on the given actionOrder list
-    private void addActions(ArrayList<Integer> actionOrder, boolean openOnPhoneDismisses, boolean hasCachedImage, Post post, int notificationId, Notification.Builder builder) {
+    private void addActions(ArrayList<Integer> actionOrder, boolean openOnPhoneDismisses,
+                            boolean hasCachedImage, Post post, int notificationId,
+                            Notification.Builder builder) {
         for (int i = 0; i < actionOrder.size(); i++) {
             int order = actionOrder.get(i);
 
@@ -336,25 +349,37 @@ public class NotificationListenerService extends WearableListenerService {
                             getViewCommentsPendingIntent(post, notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_REPLY:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.reply, getString(R.string.reply_to_x, post.getShortTitle()), getReplyPendingIntent(post, notificationId))
-                            .addRemoteInput(new RemoteInput.Builder(EXTRA_VOICE_REPLY).build())
-                            .build());
+                    builder.addAction(new Notification.Action.Builder(R.drawable.reply,
+                            getString(R.string.reply_to_x, post.getShortTitle()),
+                            getReplyPendingIntent(post,
+                                    notificationId)).addRemoteInput(new RemoteInput.Builder(
+                            EXTRA_VOICE_REPLY).build()).build());
                     break;
                 case Constants.ACTION_ORDER_UPVOTE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.upvote, getString(R.string.upvote_x, post.getShortTitle()), getVotePendingIntent(post, 1, REQUEST_CODE_VOTE_UP + notificationId)).build());
+                    builder.addAction(new Notification.Action.Builder(R.drawable.upvote,
+                            getString(R.string.upvote_x, post.getShortTitle()),
+                            getVotePendingIntent(post,
+                                    1,
+                                    REQUEST_CODE_VOTE_UP + notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_DOWNVOTE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.downvote, getString(R.string.downvote_x, post.getShortTitle()), getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId)).build());
+                    builder.addAction(new Notification.Action.Builder(R.drawable.downvote,
+                            getString(R.string.downvote_x, post.getShortTitle()),
+                            getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId))
+                            .build());
                     break;
                 case Constants.ACTION_ORDER_SAVE_TO_POCKET:
                     builder.addAction(new Notification.Action.Builder(R.drawable.pocket,
                             getString(R.string.save_to_pocket),
-                            getSaveToPocketPendingIntent(post.getPermalink(), notificationId)).build());
+                            getSaveToPocketPendingIntent(post.getPermalink(),
+                                    notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_OPEN_ON_PHONE:
                     builder.addAction(new Notification.Action.Builder(R.drawable.open_on_phone,
                             getString(R.string.open_on_phone),
-                            getOpenOnPhonePendingIntent(post.getPermalink(), openOnPhoneDismisses, notificationId)).build());
+                            getOpenOnPhonePendingIntent(post.getPermalink(),
+                                    openOnPhoneDismisses,
+                                    notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_VIEW_IMAGE:
                     if (hasCachedImage) {
@@ -367,8 +392,7 @@ public class NotificationListenerService extends WearableListenerService {
         }
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    @Override public int onStartCommand(Intent intent, int flags, int startId) {
         if (null == intent || null == intent.getAction()) {
             return Service.START_STICKY;
         }
@@ -382,26 +406,29 @@ public class NotificationListenerService extends WearableListenerService {
             String subject = intent.getStringExtra(Constants.PATH_KEY_MESSAGE_SUBJECT);
             String toUser = intent.getStringExtra(Constants.PATH_KEY_MESSAGE_TO_USER);
             String fullname = intent.getStringExtra(Constants.PATH_KEY_POST_FULLNAME);
-            boolean isDirectMessage = intent.getBooleanExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE, false);
+            boolean isDirectMessage = intent.getBooleanExtra(Constants.PATH_KEY_IS_DIRECT_MESSAGE,
+                    false);
             sendReplyToPhone(replyMessage.toString(), fullname, toUser, subject, isDirectMessage);
         }
         return Service.START_STICKY;
     }
 
-    private void sendReplyToPhone(String text, String fullname, String toUser, String subject, boolean isDirectMessage) {
+    private void sendReplyToPhone(String text, String fullname, String toUser, String subject,
+                                  boolean isDirectMessage) {
         PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(Constants.PATH_REPLY);
         putDataMapRequest.getDataMap().putLong("timestamp", System.currentTimeMillis());
         putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE_SUBJECT, subject);
         putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE, text);
         putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_POST_FULLNAME, fullname);
         putDataMapRequest.getDataMap().putString(Constants.PATH_KEY_MESSAGE_TO_USER, toUser);
-        putDataMapRequest.getDataMap().putBoolean(Constants.PATH_KEY_IS_DIRECT_MESSAGE, isDirectMessage);
+        putDataMapRequest.getDataMap()
+                .putBoolean(Constants.PATH_KEY_IS_DIRECT_MESSAGE, isDirectMessage);
 
         Wearable.DataApi.putDataItem(mGoogleApiClient, putDataMapRequest.asPutDataRequest())
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                    @Override
-                    public void onResult(DataApi.DataItemResult dataItemResult) {
-                        logToPhone("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus().toString());
+                    @Override public void onResult(DataApi.DataItemResult dataItemResult) {
+                        logToPhone("sendReplyToPhone, putDataItem status: " + dataItemResult.getStatus()
+                                .toString());
                     }
                 });
     }
@@ -413,27 +440,41 @@ public class NotificationListenerService extends WearableListenerService {
         vote.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
         vote.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
         vote.putExtra(Constants.KEY_POST_VOTE_DIRECTION, voteDirection);
-        return PendingIntent.getBroadcast(this, requestCode, vote, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this,
+                requestCode,
+                vote,
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private PendingIntent getOpenOnPhonePendingIntent(String permalink, boolean openOnPhoneDismisses, int notificationId) {
+    private PendingIntent getOpenOnPhonePendingIntent(String permalink,
+                                                      boolean openOnPhoneDismisses,
+                                                      int notificationId) {
         Intent openOnPhone = new Intent(this, ActionReceiver.class);
         openOnPhone.putExtra(Constants.KEY_PATH, Constants.PATH_OPEN_ON_PHONE);
         openOnPhone.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.open_on_phone));
-        openOnPhone.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
+        openOnPhone.putExtra(Constants.KEY_CONFIRMATION_ANIMATION,
+                ConfirmationActivity.SUCCESS_ANIMATION);
         openOnPhone.putExtra(Constants.KEY_POST_PERMALINK, permalink);
         openOnPhone.putExtra(Constants.KEY_DISMISS_AFTER_ACTION, openOnPhoneDismisses);
         openOnPhone.putExtra(Constants.KEY_NOTIFICATION_ID, notificationId);
-        return PendingIntent.getBroadcast(this, REQUEST_CODE_OPEN_ON_PHONE + notificationId, openOnPhone, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this,
+                REQUEST_CODE_OPEN_ON_PHONE + notificationId,
+                openOnPhone,
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private PendingIntent getSaveToPocketPendingIntent(String permalink, int notificationId) {
         Intent saveToPocket = new Intent(this, ActionReceiver.class);
         saveToPocket.putExtra(Constants.KEY_PATH, Constants.PATH_SAVE_TO_POCKET);
-        saveToPocket.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.save_to_pocket));
-        saveToPocket.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
+        saveToPocket.putExtra(Constants.KEY_CONFIRMATION_MESSAGE,
+                getString(R.string.save_to_pocket));
+        saveToPocket.putExtra(Constants.KEY_CONFIRMATION_ANIMATION,
+                ConfirmationActivity.SUCCESS_ANIMATION);
         saveToPocket.putExtra(Constants.KEY_POST_PERMALINK, permalink);
-        return PendingIntent.getBroadcast(this, REQUEST_CODE_SAVE_TO_POCKET + notificationId, saveToPocket, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this,
+                REQUEST_CODE_SAVE_TO_POCKET + notificationId,
+                saveToPocket,
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private PendingIntent getReplyPendingIntent(Post post, int notificationId) {
@@ -442,28 +483,41 @@ public class NotificationListenerService extends WearableListenerService {
         intent.putExtra(Constants.PATH_KEY_MESSAGE_TO_USER, post.getAuthor());
         intent.putExtra(Constants.PATH_KEY_MESSAGE_SUBJECT, post.getPostContents());
         intent.putExtra(Constants.PATH_KEY_POST_FULLNAME, post.getFullname());
-        return PendingIntent.getService(this, REQUEST_CODE_REPLY + notificationId, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getService(this,
+                REQUEST_CODE_REPLY + notificationId,
+                intent,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private PendingIntent getViewCommentsPendingIntent(Post post, int notificationId) {
         Intent intent = new Intent(this, ActionReceiver.class);
         intent.putExtra(Constants.KEY_PATH, Constants.PATH_COMMENTS);
         intent.putExtra(Constants.KEY_CONFIRMATION_MESSAGE, getString(R.string.getting_comments));
-        intent.putExtra(Constants.KEY_CONFIRMATION_ANIMATION, ConfirmationActivity.SUCCESS_ANIMATION);
+        intent.putExtra(Constants.KEY_CONFIRMATION_ANIMATION,
+                ConfirmationActivity.SUCCESS_ANIMATION);
         intent.putExtra(Constants.KEY_POST_PERMALINK, post.getPermalink());
-        return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this,
+                REQUEST_VIEW_COMMENTS + notificationId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private PendingIntent getViewImagePendingIntent(int notificationId) {
         Intent intent = new Intent(this, ViewImageActivity.class);
         intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, getCachedImageName(notificationId));
-        return PendingIntent.getActivity(this, REQUEST_VIEW_FULLSCREEN_IMAGE + notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        return PendingIntent.getActivity(this,
+                REQUEST_VIEW_FULLSCREEN_IMAGE + notificationId,
+                intent,
+                PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private PendingIntent getDeletePendingIntent(int notificationId) {
         Intent intent = new Intent(this, DeleteCachedImageReceiver.class);
         intent.putExtra(Constants.KEY_HIGHRES_IMAGE_NAME, getCachedImageName(notificationId));
-        return PendingIntent.getBroadcast(this, REQUEST_VIEW_COMMENTS + notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this,
+                REQUEST_VIEW_COMMENTS + notificationId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private String getCachedImageName(int notificationId) {

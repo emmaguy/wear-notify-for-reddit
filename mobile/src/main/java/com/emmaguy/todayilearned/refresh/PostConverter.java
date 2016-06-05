@@ -3,7 +3,6 @@ package com.emmaguy.todayilearned.refresh;
 import android.content.res.Resources;
 
 import com.emmaguy.todayilearned.storage.UserStorage;
-import com.google.gson.Gson;
 
 import java.lang.reflect.Type;
 
@@ -19,21 +18,22 @@ public class PostConverter implements Converter {
     private final HtmlDecoder mHtmlDecoder;
     private final Resources mResources;
 
-    public PostConverter(GsonConverter gsonConverter, Resources resources, UserStorage userStorage, HtmlDecoder htmlDecoder) {
+    public PostConverter(GsonConverter gsonConverter, Resources resources, UserStorage userStorage,
+                         HtmlDecoder htmlDecoder) {
         mOriginalConverter = gsonConverter;
         mResources = resources;
         mUserStorage = userStorage;
         mHtmlDecoder = htmlDecoder;
     }
 
-    @Override
-    public Object fromBody(TypedInput body, Type type) throws ConversionException {
-        ListingResponse listingResponse = (ListingResponse) mOriginalConverter.fromBody(body, ListingResponse.class);
-        return new ListingResponseConverter(mUserStorage, mResources, mHtmlDecoder).convert(listingResponse);
+    @Override public Object fromBody(TypedInput body, Type type) throws ConversionException {
+        ListingResponse listingResponse = (ListingResponse) mOriginalConverter.fromBody(body,
+                ListingResponse.class);
+        return new ListingResponseConverter(mUserStorage, mResources, mHtmlDecoder).convert(
+                listingResponse);
     }
 
-    @Override
-    public TypedOutput toBody(Object object) {
+    @Override public TypedOutput toBody(Object object) {
         return mOriginalConverter.toBody(object);
     }
 }

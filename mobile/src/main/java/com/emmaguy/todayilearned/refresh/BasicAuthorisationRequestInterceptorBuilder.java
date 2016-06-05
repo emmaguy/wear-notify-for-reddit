@@ -17,9 +17,9 @@ public class BasicAuthorisationRequestInterceptorBuilder {
 
     public RequestInterceptor build(final String credentials) {
         return new RequestInterceptor() {
-            @Override
-            public void intercept(RequestInterceptor.RequestFacade request) {
-                request.addHeader(Constants.AUTHORIZATION, String.format("Basic %s", mEncoder.encode(credentials.getBytes())));
+            @Override public void intercept(RequestInterceptor.RequestFacade request) {
+                request.addHeader(Constants.AUTHORIZATION,
+                        String.format("Basic %s", mEncoder.encode(credentials.getBytes())));
             }
         };
     }

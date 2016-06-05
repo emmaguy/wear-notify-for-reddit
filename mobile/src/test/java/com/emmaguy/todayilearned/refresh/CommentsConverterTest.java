@@ -4,7 +4,6 @@ import android.content.res.Resources;
 
 import com.emmaguy.todayilearned.TestUtils;
 import com.emmaguy.todayilearned.sharedlib.Comment;
-import com.emmaguy.todayilearned.sharedlib.Post;
 import com.emmaguy.todayilearned.storage.UserStorage;
 import com.google.gson.Gson;
 
@@ -47,7 +46,8 @@ public class CommentsConverterTest {
         assertThat(comments.get(0).getReplyLevel(), equalTo(1));
         assertThat(comments.get(0).getScore(), equalTo(1));
         assertThat(comments.get(0).getReplies().size(), equalTo(1));
-        assertThat(comments.get(0).getReplies().get(0).getPostContents(), equalTo("reply to first reply"));
+        assertThat(comments.get(0).getReplies().get(0).getPostContents(),
+                equalTo("reply to first reply"));
         assertThat(comments.get(0).getReplies().get(0).getReplyLevel(), equalTo(2));
 
         assertThat(comments.get(1).getPostContents(), equalTo("second reply"));
@@ -70,20 +70,24 @@ public class CommentsConverterTest {
         final TypedInput body = mock(TypedInput.class);
         when(body.in()).thenReturn(TestUtils.loadFileFromStream(filename));
 
-        final CommentsConverter commentsConverter = new CommentsConverter(mGson, mGsonConverter, mResources, mUserStorage);
-        final List<Comment> comments = (List<Comment>) commentsConverter.fromBody(body, new ParameterizedType() {
-            @Override public Type[] getActualTypeArguments() {
-                return new Type[]{Comment.class};
-            }
+        final CommentsConverter commentsConverter = new CommentsConverter(mGson,
+                mGsonConverter,
+                mResources,
+                mUserStorage);
+        final List<Comment> comments = (List<Comment>) commentsConverter.fromBody(body,
+                new ParameterizedType() {
+                    @Override public Type[] getActualTypeArguments() {
+                        return new Type[]{Comment.class};
+                    }
 
-            @Override public Type getOwnerType() {
-                return null;
-            }
+                    @Override public Type getOwnerType() {
+                        return null;
+                    }
 
-            @Override public Type getRawType() {
-                return List.class;
-            }
-        });
+                    @Override public Type getRawType() {
+                        return List.class;
+                    }
+                });
 
         return comments;
     }

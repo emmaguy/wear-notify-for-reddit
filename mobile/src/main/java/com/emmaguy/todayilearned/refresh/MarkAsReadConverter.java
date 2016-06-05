@@ -13,8 +13,7 @@ import retrofit.mime.TypedOutput;
  * Created by emma on 14/06/15.
  */
 public class MarkAsReadConverter implements Converter {
-    @Override
-    public Object fromBody(TypedInput body, Type type) throws ConversionException {
+    @Override public Object fromBody(TypedInput body, Type type) throws ConversionException {
         try {
             Scanner s = new Scanner(body.in()).useDelimiter("\\A");
             String bodyText = s.hasNext() ? s.next() : "";
@@ -32,8 +31,7 @@ public class MarkAsReadConverter implements Converter {
         }
     }
 
-    @Override
-    public TypedOutput toBody(Object object) {
+    @Override public TypedOutput toBody(Object object) {
         throw new UnsupportedOperationException();
     }
 }

@@ -28,12 +28,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 public class PocketUtils {
     private static final int UTIL_VERSION = 1;
 
-    private static final String[] POCKET_PACKAGE_NAMES = new String[]{
-            "com.ideashower.readitlater.pro",
-            "com.pocket.cn",
-            "com.pocket.ru",
-            "com.pocket.corgi"
-    };
+    private static final String[] POCKET_PACKAGE_NAMES = new String[]{"com.ideashower.readitlater.pro", "com.pocket.cn", "com.pocket.ru", "com.pocket.corgi"};
 
     private static final String EXTRA_SOURCE_PACKAGE = "source";
     private static final String EXTRA_TWEET_STATUS_ID = "tweetStatusId";
@@ -42,7 +37,7 @@ public class PocketUtils {
     /**
      * Creates a new Intent that will save a url to the user's Pocket account.
      *
-     * @param url A url starting with http:// or https://
+     * @param url           A url starting with http:// or https://
      * @param tweetStatusId Optional. If the url is saved from a tweet, pass its status id to attribute the save to that tweet. Otherwise pass null.
      * @param context
      * @return The Activity Intent that can be started to save the url, or null if Pocket is not installed.

@@ -25,18 +25,15 @@ public class ActionReceiver extends BroadcastReceiver {
     public ActionReceiver() {
     }
 
-    @Override
-    public void onReceive(final Context context, Intent intent) {
-        mGoogleApiClient = new GoogleApiClient.Builder(context)
-                .addApi(Wearable.API)
-                .build();
+    @Override public void onReceive(final Context context, Intent intent) {
+        mGoogleApiClient = new GoogleApiClient.Builder(context).addApi(Wearable.API).build();
         Logger.log("onReceive in ActionReceiver");
         new ConnectTask(context, intent.getExtras()).execute();
     }
 
     private void showConfirmation(Context context, String message, int animation) {
-        Intent confirmationActivity = new Intent(context, ConfirmationActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        Intent confirmationActivity = new Intent(context, ConfirmationActivity.class).setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION)
                 .putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE, animation)
                 .putExtra(ConfirmationActivity.EXTRA_MESSAGE, message);
         context.startActivity(confirmationActivity);
@@ -51,9 +48,9 @@ public class ActionReceiver extends BroadcastReceiver {
             mBundle = bundle;
         }
 
-        @Override
-        protected Void doInBackground(Void... params) {
-            ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30, TimeUnit.SECONDS);
+        @Override protected Void doInBackground(Void... params) {
+            ConnectionResult connectionResult = mGoogleApiClient.blockingConnect(30,
+                    TimeUnit.SECONDS);
             if (!connectionResult.isSuccess()) {
                 Logger.log("Action receiver, service failed to connect: " + connectionResult);
                 return null;
@@ -85,15 +82,17 @@ public class ActionReceiver extends BroadcastReceiver {
 
             Wearable.DataApi.putDataItem(mGoogleApiClient, putDataMapRequest.asPutDataRequest())
                     .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                        @Override
-                        public void onResult(DataApi.DataItemResult dataItemResult) {
-                            Logger.log("Action receiver '" + message + "' putDataItem status: " + dataItemResult.getStatus().toString());
+                        @Override public void onResult(DataApi.DataItemResult dataItemResult) {
+                            Logger.log("Action receiver '" + message + "' putDataItem status: " + dataItemResult
+                                    .getStatus()
+                                    .toString());
                             if (dataItemResult.getStatus().isSuccess()) {
                                 showConfirmation(mContext, message, animation);
 
                                 Logger.log("DismissAfterAction: " + dismissAfterAction + " notificationId " + notificationId);
                                 if (dismissAfterAction) {
-                                    NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+                                    NotificationManager manager = (NotificationManager) mContext.getSystemService(
+                                            Context.NOTIFICATION_SERVICE);
                                     manager.cancel(notificationId);
                                 }
                             }

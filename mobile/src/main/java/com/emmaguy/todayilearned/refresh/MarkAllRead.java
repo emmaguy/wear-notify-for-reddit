@@ -4,8 +4,7 @@ class MarkAllRead {
     private boolean mHasErrors;
     private String mErrors;
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "MarkAllReadResponse has errors: " + mHasErrors + " " + mErrors;
     }
 

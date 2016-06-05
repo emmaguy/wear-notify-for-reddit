@@ -21,7 +21,9 @@ public class UnreadDirectMessageRetriever {
     private final TokenStorage mTokenStorage;
     private final UserStorage mUserStorage;
 
-    public UnreadDirectMessageRetriever(@NonNull final TokenStorage tokenStorage, @NonNull final UserStorage userStorage, @NonNull final RedditService redditService) {
+    public UnreadDirectMessageRetriever(@NonNull final TokenStorage tokenStorage,
+                                        @NonNull final UserStorage userStorage,
+                                        @NonNull final RedditService redditService) {
         mTokenStorage = tokenStorage;
         mUserStorage = userStorage;
         mRedditService = redditService;
@@ -30,17 +32,16 @@ public class UnreadDirectMessageRetriever {
     @NonNull public Observable<List<Post>> retrieve() {
         return Observable.defer(() -> {
             if (mTokenStorage.isLoggedIn() && mUserStorage.messagesEnabled()) {
-                return mRedditService.unreadMessages()
-                        .flatMap(posts -> {
-                            if (!posts.isEmpty()) {
-                                MarkAllRead markAllRead = mRedditService.markAllMessagesRead();
-                                if (markAllRead.hasErrors()) {
-                                    throw new RuntimeException("Failed to mark all messages as read: " + markAllRead);
-                                }
-                            }
+                return mRedditService.unreadMessages().flatMap(posts -> {
+                    if (!posts.isEmpty()) {
+                        MarkAllRead markAllRead = mRedditService.markAllMessagesRead();
+                        if (markAllRead.hasErrors()) {
+                            throw new RuntimeException("Failed to mark all messages as read: " + markAllRead);
+                        }
+                    }
 
-                            return Observable.just(posts);
-                        });
+                    return Observable.just(posts);
+                });
             } else {
                 return Observable.just(Collections.<Post>emptyList());
             }

@@ -46,15 +46,13 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         App.with(context).getAppComponent().inject(this);
     }
 
-    @Override
-    protected void onClick() {
+    @Override protected void onClick() {
         super.onClick();
 
         showDragReorderDialog();
     }
 
-    @Override
-    public CharSequence getSummary() {
+    @Override public CharSequence getSummary() {
         initActions();
 
         ArrayList<String> actions = new ArrayList<>();
@@ -88,8 +86,7 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         }
     }
 
-    @Override
-    public void onCheckedChanged(Integer id, boolean isChecked) {
+    @Override public void onCheckedChanged(Integer id, boolean isChecked) {
         if (isChecked) {
             Action action = getActionFromAllActions(id);
             mSelectedActions.put(id, action);
@@ -104,7 +101,8 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
     @Override protected View onCreateView(ViewGroup parent) {
         super.onCreateView(parent);
 
-        return LayoutInflater.from(mContext).inflate(R.layout.wearable_actions_summary, parent, false);
+        return LayoutInflater.from(mContext)
+                .inflate(R.layout.wearable_actions_summary, parent, false);
     }
 
     @Override protected void onBindView(View view) {
@@ -125,19 +123,19 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
     }
 
     private void showDragReorderDialog() {
-        @SuppressLint("InflateParams")
-        View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_reorder_actions, null);
+        @SuppressLint("InflateParams") View view = LayoutInflater.from(mContext)
+                .inflate(R.layout.dialog_reorder_actions, null);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.actions_reorder_recyclerview);
         ReorderRecyclerView.ReorderAdapter adapter = new ReorderRecyclerView.ReorderAdapter() {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View inflate = LayoutInflater.from(mContext).inflate(R.layout.row_actions_reorder, parent, false);
+                View inflate = LayoutInflater.from(mContext)
+                        .inflate(R.layout.row_actions_reorder, parent, false);
                 return new ActionViewHolder(inflate, DragReorderActionsPreference.this);
             }
 
-            @Override
-            public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
+            @Override public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
                 Action action = mActions.get(position);
                 ActionViewHolder holder = (ActionViewHolder) h;
 
@@ -153,18 +151,15 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
                 holder.mNumberTextView.setText((position + 1) + ".");
             }
 
-            @Override
-            public int getItemCount() {
+            @Override public int getItemCount() {
                 return mActions.size();
             }
 
-            @Override
-            public long getItemId(int position) {
+            @Override public long getItemId(int position) {
                 return mActions.get(position).getId();
             }
 
-            @Override
-            public void swapElements(int fromIndex, int toIndex) {
+            @Override public void swapElements(int fromIndex, int toIndex) {
                 Action temp = mActions.get(fromIndex);
                 mActions.set(fromIndex, mActions.get(toIndex));
                 mActions.set(toIndex, temp);
@@ -181,7 +176,10 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
         recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        new AlertDialog.Builder(mContext).setView(view).setTitle(R.string.action_arrangement).create().show();
+        new AlertDialog.Builder(mContext).setView(view)
+                .setTitle(R.string.action_arrangement)
+                .create()
+                .show();
     }
 
     private static final class InsetDecoration extends RecyclerView.ItemDecoration {
@@ -191,13 +189,14 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
             mInsets = context.getResources().getDimensionPixelSize(R.dimen.reorder_action_inset);
         }
 
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+        @Override public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
+                                             RecyclerView.State state) {
             outRect.set(mInsets, mInsets, mInsets, mInsets);
         }
     }
 
-    private final class ActionViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
+    private final class ActionViewHolder extends RecyclerView.ViewHolder
+            implements CompoundButton.OnCheckedChangeListener {
         private CheckChangedListener mListener;
 
         private TextView mNumberTextView;
@@ -217,8 +216,7 @@ public class DragReorderActionsPreference extends Preference implements CheckCha
             mCheckBox.setOnCheckedChangeListener(this);
         }
 
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        @Override public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             Integer tag = (Integer) buttonView.getTag();
             if (tag != null) {
                 mListener.onCheckedChanged(tag, isChecked);

@@ -26,7 +26,10 @@ public class BackgroundAlarmListener implements WakefulIntentService.AlarmListen
             if (refreshIntervalMinutes > 0) {
                 final long triggerAtMillis = SystemClock.elapsedRealtime() + 1000;
                 final long interval = TimeUnit.MINUTES.toMillis(refreshIntervalMinutes);
-                mgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtMillis, interval, pi);
+                mgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        triggerAtMillis,
+                        interval,
+                        pi);
             } else if (refreshIntervalMinutes == -1) {
                 WakefulIntentService.cancelAlarms(context);
             }
@@ -34,7 +37,8 @@ public class BackgroundAlarmListener implements WakefulIntentService.AlarmListen
     }
 
     public void sendWakefulWork(Context context) {
-        WakefulIntentService.sendWakefulWork(context, RetrieveService.getFromBackgroundSyncIntent(context));
+        WakefulIntentService.sendWakefulWork(context,
+                RetrieveService.getFromBackgroundSyncIntent(context));
     }
 
     @Override public long getMaxAge(Context context) {

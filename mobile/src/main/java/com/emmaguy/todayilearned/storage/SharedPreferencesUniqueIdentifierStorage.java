@@ -14,7 +14,8 @@ public class SharedPreferencesUniqueIdentifierStorage implements UniqueIdentifie
     private final SharedPreferences mSharedPreferences;
     private final String mKey;
 
-    public SharedPreferencesUniqueIdentifierStorage(SharedPreferences sharedPreferences, String key) {
+    public SharedPreferencesUniqueIdentifierStorage(SharedPreferences sharedPreferences,
+                                                    String key) {
         mSharedPreferences = sharedPreferences;
         mKey = key;
     }

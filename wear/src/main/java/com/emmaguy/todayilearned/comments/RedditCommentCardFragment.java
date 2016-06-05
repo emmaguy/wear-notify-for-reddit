@@ -40,8 +40,7 @@ public class RedditCommentCardFragment extends CardFragment {
         return fragment;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
+    @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mTitle = getArguments().getString(ARGS_KEY_TITLE);
@@ -52,8 +51,8 @@ public class RedditCommentCardFragment extends CardFragment {
         mReplyLevel = getArguments().getInt(ARGS_KEY_REPLY_LEVEL);
     }
 
-    @Override
-    public View onCreateContentView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    @Override public View onCreateContentView(LayoutInflater inflater, ViewGroup container,
+                                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.comment_content, container, false);
 
         TextView title = (TextView) v.findViewById(R.id.title);

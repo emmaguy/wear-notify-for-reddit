@@ -27,8 +27,7 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
 
     private String mImageName;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_view_image);
@@ -41,15 +40,13 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
         mDismissOverlay.showIntroIfNecessary();
 
         mPanView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            @Override public boolean onTouch(View v, MotionEvent event) {
                 return mDetector.onTouchEvent(event);
             }
         });
 
         mDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public void onLongPress(MotionEvent ev) {
+            @Override public void onLongPress(MotionEvent ev) {
                 mDismissOverlay.show();
             }
         });
@@ -59,8 +56,7 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
         getLoaderManager().initLoader(0, null, this);
     }
 
-    @Override
-    protected void onPause() {
+    @Override protected void onPause() {
         super.onPause();
 
         // If the activity goes off screen for any reason (e.g. screen time out), end it
@@ -68,17 +64,14 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
         finish();
     }
 
-    @Override
-    public Loader<Bitmap> onCreateLoader(int id, Bundle args) {
+    @Override public Loader<Bitmap> onCreateLoader(int id, Bundle args) {
         return new AsyncTaskLoader<Bitmap>(this) {
 
-            @Override
-            protected void onStartLoading() {
+            @Override protected void onStartLoading() {
                 forceLoad();
             }
 
-            @Override
-            public Bitmap loadInBackground() {
+            @Override public Bitmap loadInBackground() {
                 return readBitmapFromDisk(mImageName);
             }
         };
@@ -94,15 +87,13 @@ public class ViewImageActivity extends Activity implements LoaderManager.LoaderC
         return null;
     }
 
-    @Override
-    public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
+    @Override public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
         mProgressBar.setVisibility(View.GONE);
         mPanView.setVisibility(View.VISIBLE);
         mPanView.setImage(data);
     }
 
-    @Override
-    public void onLoaderReset(Loader<Bitmap> loader) {
+    @Override public void onLoaderReset(Loader<Bitmap> loader) {
         mPanView.setImage(null);
         mPanView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);

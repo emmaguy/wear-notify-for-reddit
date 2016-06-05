@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import com.emmaguy.todayilearned.Analytics;
 import com.emmaguy.todayilearned.App;
 import com.emmaguy.todayilearned.common.Logger;
 import com.emmaguy.todayilearned.common.PocketUtils;
@@ -37,6 +38,7 @@ public class WearListenerService extends WearableListenerService {
     @Inject RedditService mRedditService;
 
     @Inject TokenStorage mTokenStorage;
+    @Inject Analytics mAnalytics;
     @Inject Gson mGson;
 
     private GoogleApiClient mGoogleApiClient;
@@ -47,32 +49,28 @@ public class WearListenerService extends WearableListenerService {
 
     public static void sendToPath(final GoogleApiClient client, final String path) {
         Wearable.MessageApi.sendMessage(client, "", path, null)
-                .setResultCallback(sendMessageResult -> Timber.d("sendToPath: " + path + " status " + sendMessageResult.getStatus()));
+                .setResultCallback(sendMessageResult -> Timber.d("sendToPath: " + path + " status " + sendMessageResult
+                        .getStatus()));
     }
 
-    @Override
-    public void onCreate() {
+    @Override public void onCreate() {
         super.onCreate();
 
         App.with(this).getAppComponent().inject(this);
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
 
         mGoogleApiClient.connect();
     }
 
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
+    @Override public void onMessageReceived(MessageEvent messageEvent) {
         Timber.d("onMessageReceived, path: " + messageEvent.getPath());
         if (messageEvent.getPath().equals(Constants.PATH_REFRESH)) {
             WakefulIntentService.sendWakefulWork(this, RetrieveService.getFromWearableIntent(this));
         }
     }
 
-    @Override
-    public void onDataChanged(DataEventBuffer dataEvents) {
+    @Override public void onDataChanged(DataEventBuffer dataEvents) {
         final List<DataEvent> events = FreezableUtils.freezeIterable(dataEvents);
         dataEvents.close();
 
@@ -98,7 +96,8 @@ public class WearListenerService extends WearableListenerService {
                     }
                 } else if (Constants.PATH_OPEN_ON_PHONE.equals(path)) {
                     String permalink = dataMap.getString(Constants.KEY_POST_PERMALINK);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.WEB_URL_REDDIT + permalink));
+                    Intent intent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse(Constants.WEB_URL_REDDIT + permalink));
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 } else if (Constants.PATH_SAVE_TO_POCKET.equals(path)) {
@@ -107,12 +106,14 @@ public class WearListenerService extends WearableListenerService {
 
                     Intent intent = PocketUtils.newAddToPocketIntent(url, "", this);
                     if (intent == null) {
-                        App.with(this).sendEvent(Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_FAILURE);
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_SAVE_TO_POCKET,
+                                Logger.LOG_EVENT_FAILURE);
                         sendToPath(mGoogleApiClient, Constants.PATH_SAVE_TO_POCKET_RESULT_FAILED);
                     } else {
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
-                        App.with(this).sendEvent(Logger.LOG_EVENT_SAVE_TO_POCKET, Logger.LOG_EVENT_SUCCESS);
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_SAVE_TO_POCKET,
+                                Logger.LOG_EVENT_SUCCESS);
                         sendToPath(mGoogleApiClient, Constants.PATH_SAVE_TO_POCKET_RESULT_SUCCESS);
                     }
                 } else if (Constants.PATH_VOTE.equals(path)) {
@@ -126,7 +127,7 @@ public class WearListenerService extends WearableListenerService {
                     }
                 } else if (Constants.PATH_LOGGING.equals(path)) {
                     String message = dataMap.getString(Constants.PATH_KEY_MESSAGE);
-                    Timber.d(message);
+                    Timber.e(message);
                 }
             }
         }
@@ -138,15 +139,17 @@ public class WearListenerService extends WearableListenerService {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(comments -> {
                     if (comments == null) {
-                        App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_GET_COMMENTS,
+                                Logger.LOG_EVENT_FAILURE);
                         sendToPath(mGoogleApiClient, Constants.PATH_GET_COMMENTS_RESULT_FAILED);
                     } else {
                         sendComments(comments);
-                        App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_SUCCESS);
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_GET_COMMENTS,
+                                Logger.LOG_EVENT_SUCCESS);
                     }
                 }, throwable -> {
                     Timber.e(throwable, "Failed to get comments");
-                    App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
+                    mAnalytics.sendEvent(Logger.LOG_EVENT_GET_COMMENTS, Logger.LOG_EVENT_FAILURE);
                     sendToPath(mGoogleApiClient, Constants.PATH_GET_COMMENTS_RESULT_FAILED);
                 });
     }
@@ -158,7 +161,8 @@ public class WearListenerService extends WearableListenerService {
 
         PutDataRequest request = mapRequest.asPutDataRequest();
         Wearable.DataApi.putDataItem(mGoogleApiClient, request)
-                .setResultCallback(dataItemResult -> Timber.d("Sent " + comments.size() + " comments onResult: " + dataItemResult.getStatus()));
+                .setResultCallback(dataItemResult -> Timber.d("Sent " + comments.size() + " comments onResult: " + dataItemResult
+                        .getStatus()));
     }
 
     private void vote(String fullname, final int voteDirection) {
@@ -169,10 +173,10 @@ public class WearListenerService extends WearableListenerService {
 
                 }, e -> {
                     Timber.e(e, "Failed to vote");
-                    App.with(WearListenerService.this).sendEvent(getVoteType(voteDirection), Logger.LOG_EVENT_FAILURE);
+                    mAnalytics.sendEvent(getVoteType(voteDirection), Logger.LOG_EVENT_FAILURE);
                     sendToPath(mGoogleApiClient, Constants.PATH_VOTE_RESULT_FAILED);
                 }, () -> {
-                    App.with(WearListenerService.this).sendEvent(getVoteType(voteDirection), Logger.LOG_EVENT_SUCCESS);
+                    mAnalytics.sendEvent(getVoteType(voteDirection), Logger.LOG_EVENT_SUCCESS);
                     sendToPath(mGoogleApiClient, Constants.PATH_VOTE_RESULT_SUCCESS);
                 });
     }
@@ -182,22 +186,19 @@ public class WearListenerService extends WearableListenerService {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<RedditResponse>() {
-                    @Override
-                    public void onNext(RedditResponse response) {
+                    @Override public void onNext(RedditResponse response) {
                         if (response.hasErrors()) {
                             throw new RuntimeException("Failed to reply to DM: " + response);
                         }
                     }
 
-                    @Override
-                    public void onCompleted() {
-                        App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_SUCCESS);
+                    @Override public void onCompleted() {
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_SUCCESS);
                         sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
                     }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_FAILURE);
+                    @Override public void onError(Throwable e) {
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_SEND_DM, Logger.LOG_EVENT_FAILURE);
                         Timber.e(e, "Failed to reply to direct message");
                         sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }
@@ -209,22 +210,21 @@ public class WearListenerService extends WearableListenerService {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<RedditResponse>() {
-                    @Override
-                    public void onNext(RedditResponse response) {
+                    @Override public void onNext(RedditResponse response) {
                         if (response.hasErrors()) {
                             throw new RuntimeException("Failed to comment on post: " + response);
                         }
                     }
 
-                    @Override
-                    public void onCompleted() {
+                    @Override public void onCompleted() {
                         sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_SUCCESS);
-                        App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_SUCCESS);
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_REPLY_TO_POST,
+                                Logger.LOG_EVENT_SUCCESS);
                     }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        App.with(WearListenerService.this).sendEvent(Logger.LOG_EVENT_REPLY_TO_POST, Logger.LOG_EVENT_FAILURE);
+                    @Override public void onError(Throwable e) {
+                        mAnalytics.sendEvent(Logger.LOG_EVENT_REPLY_TO_POST,
+                                Logger.LOG_EVENT_FAILURE);
                         Timber.e(e, "Failed to reply to reddit post");
                         sendToPath(mGoogleApiClient, Constants.PATH_POST_REPLY_RESULT_FAILURE);
                     }

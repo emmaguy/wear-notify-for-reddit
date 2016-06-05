@@ -15,8 +15,7 @@ import dagger.Component;
 /**
  * Created by emma on 04/07/15.
  */
-@Singleton
-@Component(modules = {AppModule.class, StorageModule.class, SettingsModule.class})
+@Singleton @Component(modules = {AppModule.class, StorageModule.class, SettingsModule.class})
 public interface AppComponent {
     void inject(DragReorderActionsPreference dragReorderActionsPreference);
     void inject(BackgroundAlarmListener backgroundAlarmListener);

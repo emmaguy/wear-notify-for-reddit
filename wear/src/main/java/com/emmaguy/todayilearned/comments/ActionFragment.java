@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 
 import com.emmaguy.todayilearned.R;
 import com.emmaguy.todayilearned.sharedlib.Comment;
-import com.emmaguy.todayilearned.sharedlib.Post;
 import com.google.gson.Gson;
 
 import java.util.List;
@@ -28,15 +27,13 @@ public class ActionFragment extends Fragment implements View.OnClickListener {
         return f;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
+    @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mReplies = getArguments().getString(ARGS_KEY_REPLIES);
     }
 
-    @Override
-    public void onAttach(Activity activity) {
+    @Override public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
             mListener = (OnActionListener) activity;
@@ -45,15 +42,14 @@ public class ActionFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                       Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_action, container, false);
         v.setOnClickListener(this);
         return v;
     }
 
-    @Override
-    public void onClick(View v) {
+    @Override public void onClick(View v) {
         mListener.onActionPerformed(mReplies);
     }
 

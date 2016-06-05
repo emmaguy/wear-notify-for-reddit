@@ -19,73 +19,70 @@ class SharedPreferencesTokenStorage implements TokenStorage {
     private final SharedPreferences mSharedPreferences;
     private final Resources mResources;
 
-    @Inject SharedPreferencesTokenStorage(SharedPreferences sharedPreferences, Resources resources) {
+    @Inject SharedPreferencesTokenStorage(SharedPreferences sharedPreferences,
+                                          Resources resources) {
         mSharedPreferences = sharedPreferences;
         mResources = resources;
     }
 
-    @Override
-    public boolean isLoggedIn() {
+    @Override public boolean isLoggedIn() {
         return !hasNoToken();
     }
 
-    @Override
-    public boolean hasNoToken() {
+    @Override public boolean hasNoToken() {
         return TextUtils.isEmpty(getRefreshToken()) || TextUtils.isEmpty(getAccessToken());
     }
 
-    @Override
-    public boolean hasTokenExpired() {
-        long expiryTime = mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_token_expiry_millis), -1);
+    @Override public boolean hasTokenExpired() {
+        long expiryTime = mSharedPreferences.getLong(mResources.getString(R.string.prefs_key_token_expiry_millis),
+                -1);
         return expiryTime < DateTime.now(DateTimeZone.UTC).getMillis();
     }
 
-    @Override
-    public void saveToken(Token token) {
-        mSharedPreferences
-                .edit()
-                .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis), token.getExpiryTimeMillis())
-                .putString(mResources.getString(R.string.prefs_key_token_access_token), token.getAccessToken())
-                .putString(mResources.getString(R.string.prefs_key_token_refresh_token), token.getRefreshToken())
+    @Override public void saveToken(Token token) {
+        mSharedPreferences.edit()
+                .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis),
+                        token.getExpiryTimeMillis())
+                .putString(mResources.getString(R.string.prefs_key_token_access_token),
+                        token.getAccessToken())
+                .putString(mResources.getString(R.string.prefs_key_token_refresh_token),
+                        token.getRefreshToken())
                 .apply();
     }
 
-    @Override
-    public void updateToken(Token token) {
+    @Override public void updateToken(Token token) {
         // Update the expiry and access token, but the refresh token remains the same
-        mSharedPreferences
-                .edit()
-                .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis), token.getExpiryTimeMillis())
-                .putString(mResources.getString(R.string.prefs_key_token_access_token), token.getAccessToken())
+        mSharedPreferences.edit()
+                .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis),
+                        token.getExpiryTimeMillis())
+                .putString(mResources.getString(R.string.prefs_key_token_access_token),
+                        token.getAccessToken())
                 .apply();
     }
 
-    @Override
-    public void clearToken() {
-        mSharedPreferences
-                .edit()
+    @Override public void clearToken() {
+        mSharedPreferences.edit()
                 .remove(mResources.getString(R.string.prefs_key_token_expiry_millis))
                 .remove(mResources.getString(R.string.prefs_key_token_access_token))
                 .remove(mResources.getString(R.string.prefs_key_token_refresh_token))
                 .apply();
     }
 
-    @Override
-    public void forceExpireToken() {
+    @Override public void forceExpireToken() {
         final long timeInThePast = DateTime.now(DateTimeZone.UTC).getMillis() - 1;
-        mSharedPreferences
-                .edit()
-                .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis), timeInThePast)
+        mSharedPreferences.edit()
+                .putLong(mResources.getString(R.string.prefs_key_token_expiry_millis),
+                        timeInThePast)
                 .apply();
     }
 
-    @Override
-    public String getRefreshToken() {
-        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_token_refresh_token), "");
+    @Override public String getRefreshToken() {
+        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_token_refresh_token),
+                "");
     }
 
-    @Override
-    public String getAccessToken() {
-        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_token_access_token), "");
+    @Override public String getAccessToken() {
+        return mSharedPreferences.getString(mResources.getString(R.string.prefs_key_token_access_token),
+                "");
     }
 }

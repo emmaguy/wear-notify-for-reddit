@@ -1,5 +1,7 @@
 package com.emmaguy.todayilearned.storage;
 
+import java.util.Set;
+
 public interface UserStorage {
     int getNumberToRequest();
 
@@ -10,7 +12,7 @@ public interface UserStorage {
 
     String getSortType();
     String getSubreddits();
-    int getSubredditCount();
+    Set<String> getSubredditCollection();
     String getRefreshInterval();
 
     boolean messagesEnabled();

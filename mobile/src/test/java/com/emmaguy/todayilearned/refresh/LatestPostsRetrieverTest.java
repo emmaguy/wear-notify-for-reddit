@@ -9,15 +9,12 @@ import com.emmaguy.todayilearned.storage.UserStorage;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import rx.Observable;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -78,7 +75,9 @@ public class LatestPostsRetrieverTest {
         when(mUserStorage.downloadFullSizedImages()).thenReturn(false);
 
         mPost = mockPost(DEFAULT_TIMESTAMP_NEWER);
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT,
+                DEFAULT_SORT,
+                DEFAULT_NUMBER)).thenReturn(Observable.just(Arrays.asList(mPost)));
 
         mRetriever = new LatestPostsRetriever(mImageDownloader, mUserStorage, mRedditService);
     }
@@ -98,11 +97,18 @@ public class LatestPostsRetrieverTest {
     }
 
     @Test public void latestPostsWith2ThatAreNew_savesOnlyTheNewestTimestamp() {
-        final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_OLD), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_NEWER));
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_OLD),
+                mockPost(DEFAULT_TIMESTAMP_NEW),
+                mockPost(DEFAULT_TIMESTAMP_NEWER));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT,
+                DEFAULT_SORT,
+                DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(emittedElements::addAll);
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(emittedElements::addAll);
 
         assertThat(emittedElements.size(), equalTo(2));
         verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
@@ -121,11 +127,18 @@ public class LatestPostsRetrieverTest {
     }
 
     @Test public void latestPostsWith2ThatAreNewButNewestComeFirst_savesOnlyTheNewestTimestamp() {
-        final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_NEWER), mockPost(DEFAULT_TIMESTAMP_NEW), mockPost(DEFAULT_TIMESTAMP_OLD));
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        final List<Post> posts = Arrays.asList(mockPost(DEFAULT_TIMESTAMP_NEWER),
+                mockPost(DEFAULT_TIMESTAMP_NEW),
+                mockPost(DEFAULT_TIMESTAMP_OLD));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT,
+                DEFAULT_SORT,
+                DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(emittedElements::addAll);
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(emittedElements::addAll);
 
         assertThat(emittedElements.size(), equalTo(2));
         verify(mRedditService).latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER);
@@ -147,7 +160,10 @@ public class LatestPostsRetrieverTest {
         when(mPost.getImageUrl()).thenReturn(DEFAULT_THUMBNAIL_URL);
         when(mPost.hasImageUrl()).thenReturn(true);
 
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe();
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe();
 
         verify(mImageDownloader).downloadImage(DEFAULT_THUMBNAIL_URL);
     }
@@ -157,16 +173,23 @@ public class LatestPostsRetrieverTest {
         when(mPost.getImageUrl()).thenReturn(DEFAULT_IMAGE_URL);
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe();
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe();
 
         verify(mImageDownloader).downloadImage(DEFAULT_IMAGE_URL);
     }
 
-    @Test public void latestPostsWithHighResDownloadingOn_withoutImageFileExtension_doesNotDownloadImage() {
+    @Test
+    public void latestPostsWithHighResDownloadingOn_withoutImageFileExtension_doesNotDownloadImage() {
         when(mPost.getUrl()).thenReturn(DEFAULT_IMAGE_URL_NO_FILE_EXTENSION);
         when(mUserStorage.downloadFullSizedImages()).thenReturn(true);
 
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe();
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe();
 
         verifyZeroInteractions(mImageDownloader);
     }
@@ -183,10 +206,15 @@ public class LatestPostsRetrieverTest {
         final Post post2 = mockPost(DEFAULT_TIMESTAMP_NEWER);
 
         final List<Post> posts = Arrays.asList(post0, post1, post2);
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT,
+                DEFAULT_SORT,
+                DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(emittedElements::addAll);
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(emittedElements::addAll);
 
         assertThat(emittedElements.size(), equalTo(2));
         assertThat(emittedElements.get(0).getPost(), equalTo(post1));
@@ -196,16 +224,28 @@ public class LatestPostsRetrieverTest {
     @Test public void retrievingSame5PostsTwice_onlyEmitsThemThemFirstTime() {
         updateTimestampWhenSet(1004);
 
-        final List<Post> posts = Arrays.asList(mockPost(1000), mockPost(1001), mockPost(1002), mockPost(1003), mockPost(1004));
-        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT, DEFAULT_SORT, DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
+        final List<Post> posts = Arrays.asList(mockPost(1000),
+                mockPost(1001),
+                mockPost(1002),
+                mockPost(1003),
+                mockPost(1004));
+        when(mRedditService.latestPosts(DEFAULT_SUBREDDIT,
+                DEFAULT_SORT,
+                DEFAULT_NUMBER)).thenReturn(Observable.just(posts));
 
         final List<LatestPostsRetriever.PostAndImage> elementsFirstTime = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(elementsFirstTime::addAll);
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(elementsFirstTime::addAll);
 
         verify(mUserStorage).setSeenTimestamp(1004);
 
         final List<LatestPostsRetriever.PostAndImage> elementsSecondTime = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(elementsSecondTime::addAll);
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(elementsSecondTime::addAll);
 
         verify(mUserStorage, times(0)).setSeenTimestamp(anyInt());
 

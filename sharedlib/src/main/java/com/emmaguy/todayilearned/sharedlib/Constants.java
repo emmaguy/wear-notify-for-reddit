@@ -5,7 +5,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Constants {
-    public final static Set<String> sDefaultSelectedSubreddits = new LinkedHashSet<>(Arrays.asList("todayilearned", "AskReddit"));
+    public final static Set<String> sDefaultSelectedSubreddits = new LinkedHashSet<>(Arrays.asList(
+            "todayilearned",
+            "AskReddit"));
 
     public static final String WEB_URL_REDDIT = "https://www.reddit.com";
     public static final String ENDPOINT_URL_SSL_REDDIT = "https://ssl.reddit.com/";

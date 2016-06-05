@@ -17,8 +17,7 @@ class RedditResponse {
         return mHasErrors;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "Response has errors: " + mHasErrors + " " + mErrors;
     }
 
@@ -31,8 +30,9 @@ class RedditResponse {
     }
 
     static class CommentResponseJsonDeserializer implements JsonDeserializer<RedditResponse> {
-        @Override
-        public RedditResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        @Override public RedditResponse deserialize(JsonElement json, Type typeOfT,
+                                                    JsonDeserializationContext context) throws
+                JsonParseException {
             JsonObject jsonContents = json.getAsJsonObject().get("json").getAsJsonObject();
             JsonArray errors = jsonContents.get("errors").getAsJsonArray();
 

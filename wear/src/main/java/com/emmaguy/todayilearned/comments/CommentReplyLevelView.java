@@ -20,13 +20,18 @@ public class CommentReplyLevelView extends View {
     public CommentReplyLevelView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        TypedArray style = getContext().obtainStyledAttributes(attrs, R.styleable.CommentReplyLevelView, 0, 0);
+        TypedArray style = getContext().obtainStyledAttributes(attrs,
+                R.styleable.CommentReplyLevelView,
+                0,
+                0);
 
-        mHorizontalSpacing = style.getDimensionPixelSize(R.styleable.CommentReplyLevelView_horizontalSpacing, 0);
+        mHorizontalSpacing = style.getDimensionPixelSize(R.styleable.CommentReplyLevelView_horizontalSpacing,
+                0);
 
         int onResourceId = style.getResourceId(R.styleable.CommentReplyLevelView_drawable, 0);
         if (onResourceId <= 0 || mHorizontalSpacing <= 0) {
-            throw new RuntimeException("Mandatory custom attribute not set, CommentReplyLevelView requires horizontalSpacing and drawable");
+            throw new RuntimeException(
+                    "Mandatory custom attribute not set, CommentReplyLevelView requires horizontalSpacing and drawable");
         }
 
         mOnBitmap = BitmapFactory.decodeResource(getResources(), onResourceId);
@@ -42,8 +47,7 @@ public class CommentReplyLevelView extends View {
 
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         setMeasuredDimension(widthMeasureSpec, mBitmapHeight);
     }
 
@@ -53,8 +57,7 @@ public class CommentReplyLevelView extends View {
         invalidate();
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
+    @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         int x = 0;

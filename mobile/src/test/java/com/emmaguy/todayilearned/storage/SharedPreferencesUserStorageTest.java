@@ -32,7 +32,8 @@ public class SharedPreferencesUserStorageTest {
         initMocks(this);
 
         when(mResources.getString(R.string.prefs_key_created_utc)).thenReturn(PREFS_KEY_CREATED_UTC);
-        when(mResources.getString(R.string.prefs_key_number_to_retrieve)).thenReturn(PREFS_KEY_NUMBER_TO_RETRIEVE);
+        when(mResources.getString(R.string.prefs_key_number_to_retrieve)).thenReturn(
+                PREFS_KEY_NUMBER_TO_RETRIEVE);
 
         when(mSharedPrefs.getString(PREFS_KEY_NUMBER_TO_RETRIEVE, "5")).thenReturn("1");
         when(mSharedPrefs.getLong(PREFS_KEY_CREATED_UTC, 0)).thenReturn(100l);

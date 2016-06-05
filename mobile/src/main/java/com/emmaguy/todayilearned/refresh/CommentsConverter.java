@@ -25,17 +25,18 @@ public class CommentsConverter implements Converter {
     private final Resources mResources;
     private final Gson mGson;
 
-    public CommentsConverter(Gson gson, GsonConverter gsonConverter, Resources resources, UserStorage userStorage) {
+    public CommentsConverter(Gson gson, GsonConverter gsonConverter, Resources resources,
+                             UserStorage userStorage) {
         mGson = gson;
         mOriginalConverter = gsonConverter;
         mResources = resources;
         mUserStorage = userStorage;
     }
 
-    @Override
-    public Object fromBody(TypedInput body, Type type) throws ConversionException {
-        List<ListingResponse> responses = (List<ListingResponse>) mOriginalConverter.fromBody(body, new TypeToken<List<ListingResponse>>() {
-        }.getType());
+    @Override public Object fromBody(TypedInput body, Type type) throws ConversionException {
+        List<ListingResponse> responses = (List<ListingResponse>) mOriginalConverter.fromBody(body,
+                new TypeToken<List<ListingResponse>>() {
+                }.getType());
 
         // First child is always the post itself, second is all the comments
         final ListingResponse listingResponse = responses.get(1);
@@ -47,7 +48,9 @@ public class CommentsConverter implements Converter {
 
         final List<Comment> comments = new ArrayList<>();
         if (listingResponse == null || listingResponse.getData() == null ||
-                listingResponse.getData().getChildren() == null || listingResponse.getData().getChildren().isEmpty()) {
+                listingResponse.getData().getChildren() == null || listingResponse.getData()
+                .getChildren()
+                .isEmpty()) {
             return comments;
         }
 
@@ -57,18 +60,20 @@ public class CommentsConverter implements Converter {
                 continue;
             }
 
-            final boolean hasReplies = data.getReplies() != null && data.getReplies().isJsonObject();
-            final List<Comment> childComments = hasReplies ? convert(mGson.fromJson(data.getReplies(), ListingResponse.class), level) : null;
+            final boolean hasReplies = data.getReplies() != null && data.getReplies()
+                    .isJsonObject();
+            final List<Comment> childComments = hasReplies ? convert(mGson.fromJson(data.getReplies(),
+                    ListingResponse.class), level) : null;
 
             final String title = StringUtils.isEmpty(data.getTitle()) ? "" : data.getTitle().trim();
-            final String description = StringUtils.isEmpty(data.getBody()) ? "" : data.getBody().trim();
+            final String description = StringUtils.isEmpty(data.getBody()) ? "" : data.getBody()
+                    .trim();
 
             if (StringUtils.isEmpty(title) && StringUtils.isEmpty(description)) {
                 continue;
             }
 
-            comments.add(new Comment.Builder()
-                    .setComments(childComments)
+            comments.add(new Comment.Builder().setComments(childComments)
                     .setAuthor(data.getAuthor())
                     .setPostContents(getPostContents(title, description))
                     .setIsScoreHidden(data.isScoreHidden())
@@ -93,8 +98,7 @@ public class CommentsConverter implements Converter {
         return title + "\n\n" + description;
     }
 
-    @Override
-    public TypedOutput toBody(Object object) {
+    @Override public TypedOutput toBody(Object object) {
         return mOriginalConverter.toBody(object);
     }
 }

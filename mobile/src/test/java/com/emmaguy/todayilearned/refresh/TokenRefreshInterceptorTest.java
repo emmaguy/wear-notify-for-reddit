@@ -23,7 +23,6 @@ import retrofit.converter.Converter;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -47,17 +46,14 @@ public class TokenRefreshInterceptorTest {
     @Mock private Converter mMockConverter;
     @Mock private Token mToken;
 
-    private Request mOriginalRequest = new Request.Builder()
-            .url(DEFAULT_URL)
+    private Request mOriginalRequest = new Request.Builder().url(DEFAULT_URL)
             .header(AUTHORIZATION, "Bearer")
             .build();
-    private Response mSuccessfulResponse = new Response.Builder()
-            .request(mOriginalRequest)
+    private Response mSuccessfulResponse = new Response.Builder().request(mOriginalRequest)
             .protocol(Protocol.HTTP_1_1)
             .code(HttpURLConnection.HTTP_OK)
             .build();
-    private Response mUnauthorizedResponse = new Response.Builder()
-            .request(mOriginalRequest)
+    private Response mUnauthorizedResponse = new Response.Builder().request(mOriginalRequest)
             .protocol(Protocol.HTTP_1_1)
             .code(HttpURLConnection.HTTP_UNAUTHORIZED)
             .build();
@@ -76,7 +72,9 @@ public class TokenRefreshInterceptorTest {
     @Test public void tokenIsEmpty_requestsAppOnlyAuth() throws Exception {
         when(mTokenStorage.hasNoToken()).thenReturn(true);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(mSuccessfulResponse);
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL),
+                hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(
+                mSuccessfulResponse);
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
@@ -85,23 +83,29 @@ public class TokenRefreshInterceptorTest {
         verify(mTokenStorage).updateToken(mToken);
     }
 
-    @Test public void tokenNotExpiredAndNotEmpty_addAuthorisationHeaderAndDoRequest() throws Exception {
+    @Test public void tokenNotExpiredAndNotEmpty_addAuthorisationHeaderAndDoRequest() throws
+            Exception {
         when(mTokenStorage.hasNoToken()).thenReturn(false);
         when(mTokenStorage.hasTokenExpired()).thenReturn(false);
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(mSuccessfulResponse);
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL),
+                hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(
+                mSuccessfulResponse);
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
     }
 
-    @Test public void tokenNotEmptyButHasExpired_renewsTokenAndUpdatesTokenStorage() throws Exception {
+    @Test public void tokenNotEmptyButHasExpired_renewsTokenAndUpdatesTokenStorage() throws
+            Exception {
         when(mTokenStorage.hasNoToken()).thenReturn(false);
         when(mTokenStorage.hasTokenExpired()).thenReturn(true);
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
         when(mTokenStorage.getRefreshToken()).thenReturn(DEFAULT_REFRESH_TOKEN);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(mSuccessfulResponse);
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL),
+                hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(
+                mSuccessfulResponse);
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
         verify(mTokenStorage).updateToken(mToken);
@@ -114,9 +118,11 @@ public class TokenRefreshInterceptorTest {
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
         when(mTokenStorage.getRefreshToken()).thenReturn(DEFAULT_REFRESH_TOKEN);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN)))))
-                .thenReturn(mSuccessfulResponse);
-        when(mRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, DEFAULT_REFRESH_TOKEN)).thenThrow(RetrofitError.networkError(DEFAULT_URL, new IOException()));
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL),
+                hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(
+                mSuccessfulResponse);
+        when(mRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, DEFAULT_REFRESH_TOKEN))
+                .thenThrow(RetrofitError.networkError(DEFAULT_URL, new IOException()));
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
         verify(mTokenStorage, times(0)).clearToken();
@@ -129,22 +135,26 @@ public class TokenRefreshInterceptorTest {
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
         when(mTokenStorage.getRefreshToken()).thenReturn(DEFAULT_REFRESH_TOKEN);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN)))))
-                .thenReturn(mSuccessfulResponse);
-        when(mRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, DEFAULT_REFRESH_TOKEN)).thenThrow(RetrofitError.unexpectedError(DEFAULT_URL, new Throwable()));
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL),
+                hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(
+                mSuccessfulResponse);
+        when(mRedditService.refreshToken(Constants.GRANT_TYPE_REFRESH_TOKEN, DEFAULT_REFRESH_TOKEN))
+                .thenThrow(RetrofitError.unexpectedError(DEFAULT_URL, new Throwable()));
 
         assertThat(mRefreshTokenInterceptor.intercept(mChain), sameInstance(mSuccessfulResponse));
         verify(mTokenStorage).clearToken();
     }
 
     @Test(expected = IOException.class)
-    public void tokenNotExpiredNotEmptyAndRequestFails_forceExpireTokenAndThrowIOException() throws Exception {
+    public void tokenNotExpiredNotEmptyAndRequestFails_forceExpireTokenAndThrowIOException() throws
+            Exception {
         when(mTokenStorage.hasNoToken()).thenReturn(false);
         when(mTokenStorage.hasTokenExpired()).thenReturn(false);
         when(mTokenStorage.getAccessToken()).thenReturn(DEFAULT_ACCESS_TOKEN);
         when(mChain.request()).thenReturn(mOriginalRequest);
-        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL), hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN)))))
-                .thenReturn(mUnauthorizedResponse);
+        when(mChain.proceed(argThat(allOf(hasUrl(DEFAULT_URL),
+                hasAuthorisationHeader(BEARER_ + DEFAULT_ACCESS_TOKEN))))).thenReturn(
+                mUnauthorizedResponse);
 
         mRefreshTokenInterceptor.intercept(mChain);
 
@@ -152,9 +162,10 @@ public class TokenRefreshInterceptorTest {
     }
 
     private Matcher<Request> hasAuthorisationHeader(String authHeader) {
-        return new FeatureMatcher<Request, String>(equalTo(authHeader), "Authorisation header", "Unexpected auth header") {
-            @Override
-            protected String featureValueOf(Request actual) {
+        return new FeatureMatcher<Request, String>(equalTo(authHeader),
+                "Authorisation header",
+                "Unexpected auth header") {
+            @Override protected String featureValueOf(Request actual) {
                 return actual.header(AUTHORIZATION);
             }
         };
@@ -162,8 +173,7 @@ public class TokenRefreshInterceptorTest {
 
     private Matcher<Request> hasUrl(String url) {
         return new FeatureMatcher<Request, String>(equalTo(url), "Url", "Unexpected url") {
-            @Override
-            protected String featureValueOf(Request actual) {
+            @Override protected String featureValueOf(Request actual) {
                 return actual.urlString();
             }
         };
