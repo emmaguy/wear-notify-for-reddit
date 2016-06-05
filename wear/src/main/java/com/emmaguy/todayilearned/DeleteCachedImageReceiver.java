@@ -12,8 +12,7 @@ public class DeleteCachedImageReceiver extends BroadcastReceiver {
     public DeleteCachedImageReceiver() {
     }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
+    @Override public void onReceive(Context context, Intent intent) {
         String cachedImageName = intent.getExtras().getString(Constants.KEY_HIGHRES_IMAGE_NAME);
 
         File localCache = new File(context.getCacheDir(), cachedImageName);

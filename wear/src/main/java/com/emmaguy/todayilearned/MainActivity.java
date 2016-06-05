@@ -23,14 +23,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private GoogleApiClient mGoogleApiClient;
 
     private final BroadcastReceiver mForceFinishMainActivity = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
+        @Override public void onReceive(Context context, Intent intent) {
             finish();
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -38,45 +36,41 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         ViewFlipper flipper = (ViewFlipper) findViewById(R.id.main_flipper_benefits);
         flipper.startFlipping();
 
-        registerReceiver(mForceFinishMainActivity, new IntentFilter(getString(R.string.force_finish_main_activity)));
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
+        registerReceiver(mForceFinishMainActivity,
+                new IntentFilter(getString(R.string.force_finish_main_activity)));
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this)
                 .addApi(Wearable.API)
                 .build();
 
         mGoogleApiClient.connect();
     }
 
-    @Override
-    protected void onDestroy() {
+    @Override protected void onDestroy() {
         unregisterReceiver(mForceFinishMainActivity);
 
         super.onDestroy();
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
-        Wearable.MessageApi.sendMessage(mGoogleApiClient, "", Constants.PATH_REFRESH, null).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
-            @Override
-            public void onResult(MessageApi.SendMessageResult result) {
-                Logger.log("Requested a refresh, result: " + result.getStatus());
-                finishActivity();
-            }
-        });
+    @Override public void onConnected(Bundle bundle) {
+        Wearable.MessageApi.sendMessage(mGoogleApiClient, "", Constants.PATH_REFRESH, null)
+                .setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
+                    @Override public void onResult(MessageApi.SendMessageResult result) {
+                        Logger.log("Requested a refresh, result: " + result.getStatus());
+                        finishActivity();
+                    }
+                });
     }
 
     private void finishActivity() {
         // the activity will be finished by the broadcast receiver in most cases, but as a backup, end it after 30 secs
         new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 finish();
             }
         }, TimeUnit.SECONDS.toMillis(REQUEST_NEW_POSTS_TIMEOUT));
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
+    @Override public void onConnectionSuspended(int i) {
 
     }
 }

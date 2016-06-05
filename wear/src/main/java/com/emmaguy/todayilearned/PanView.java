@@ -90,25 +90,22 @@ public class PanView extends View {
     private boolean mEdgeEffectLeftActive;
     private boolean mEdgeEffectRightActive;
     private Runnable mAnimateTickRunnable = new Runnable() {
-        @Override
-        public void run() {
+        @Override public void run() {
             boolean needsInvalidate = false;
 
             if (mScroller.computeScrollOffset()) {
                 // The scroller isn't finished, meaning a fling is currently active.
                 setOffset(mScroller.getCurrX(), mScroller.getCurrY());
 
-                if (mWidth != mScaledImage.getWidth() && mOffsetX < mScroller.getCurrX()
-                        && mEdgeEffectLeft.isFinished()
-                        && !mEdgeEffectLeftActive) {
+                if (mWidth != mScaledImage.getWidth() && mOffsetX < mScroller.getCurrX() && mEdgeEffectLeft
+                        .isFinished() && !mEdgeEffectLeftActive) {
                     if (Log.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "Left edge absorbing " + mScroller.getCurrVelocity());
                     }
                     mEdgeEffectLeft.onAbsorb((int) mScroller.getCurrVelocity());
                     mEdgeEffectLeftActive = true;
-                } else if (mWidth != mScaledImage.getWidth() && mOffsetX > mScroller.getCurrX()
-                        && mEdgeEffectRight.isFinished()
-                        && !mEdgeEffectRightActive) {
+                } else if (mWidth != mScaledImage.getWidth() && mOffsetX > mScroller.getCurrX() && mEdgeEffectRight
+                        .isFinished() && !mEdgeEffectRightActive) {
                     if (Log.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "Right edge absorbing " + mScroller.getCurrVelocity());
                     }
@@ -116,17 +113,15 @@ public class PanView extends View {
                     mEdgeEffectRightActive = true;
                 }
 
-                if (mHeight != mScaledImage.getHeight() && mOffsetY < mScroller.getCurrY()
-                        && mEdgeEffectTop.isFinished()
-                        && !mEdgeEffectTopActive) {
+                if (mHeight != mScaledImage.getHeight() && mOffsetY < mScroller.getCurrY() && mEdgeEffectTop
+                        .isFinished() && !mEdgeEffectTopActive) {
                     if (Log.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "Top edge absorbing " + mScroller.getCurrVelocity());
                     }
                     mEdgeEffectTop.onAbsorb((int) mScroller.getCurrVelocity());
                     mEdgeEffectTopActive = true;
-                } else if (mHeight != mScaledImage.getHeight() && mOffsetY > mScroller.getCurrY()
-                        && mEdgeEffectBottom.isFinished()
-                        && !mEdgeEffectBottomActive) {
+                } else if (mHeight != mScaledImage.getHeight() && mOffsetY > mScroller.getCurrY() && mEdgeEffectBottom
+                        .isFinished() && !mEdgeEffectBottomActive) {
                     if (Log.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "Bottom edge absorbing " + mScroller.getCurrVelocity());
                     }
@@ -181,8 +176,7 @@ public class PanView extends View {
         updateScaledImage();
     }
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    @Override protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mWidth = Math.max(1, w);
         mHeight = Math.max(1, h);
@@ -197,10 +191,16 @@ public class PanView extends View {
         int height = mImage.getHeight();
         if (width > height) {
             float scalingFactor = mHeight * 1f / height;
-            mScaledImage = Bitmap.createScaledBitmap(mImage, (int) (scalingFactor * width), mHeight, true);
+            mScaledImage = Bitmap.createScaledBitmap(mImage,
+                    (int) (scalingFactor * width),
+                    mHeight,
+                    true);
         } else {
             float scalingFactor = mWidth * 1f / width;
-            mScaledImage = Bitmap.createScaledBitmap(mImage, mWidth, (int) (scalingFactor * height), true);
+            mScaledImage = Bitmap.createScaledBitmap(mImage,
+                    mWidth,
+                    (int) (scalingFactor * height),
+                    true);
         }
 
         // Center the image
@@ -209,8 +209,7 @@ public class PanView extends View {
         invalidate();
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
+    @Override protected void onDraw(Canvas canvas) {
         if (mBlurAmount < 1f) {
             if (mScaledImage != null) {
                 canvas.drawBitmap(mScaledImage, mOffsetX, mOffsetY, null);
@@ -291,8 +290,7 @@ public class PanView extends View {
         }
     }
 
-    @Override
-    public boolean onTouchEvent(@NonNull MotionEvent event) {
+    @Override public boolean onTouchEvent(@NonNull MotionEvent event) {
         return mGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
     }
 
@@ -316,8 +314,7 @@ public class PanView extends View {
         mHandler.post(mAnimateTickRunnable);
     }
 
-    @Override
-    public Parcelable onSaveInstanceState() {
+    @Override public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
         ss.offsetX = mOffsetX;
@@ -331,8 +328,7 @@ public class PanView extends View {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public void onRestoreInstanceState(Parcelable state) {
+    @Override public void onRestoreInstanceState(Parcelable state) {
         if (!(state instanceof SavedState)) {
             super.onRestoreInstanceState(state);
             return;
@@ -349,15 +345,12 @@ public class PanView extends View {
      * Persistent state that is saved by PanView.
      */
     public static class SavedState extends BaseSavedState {
-        public static final Creator<SavedState> CREATOR
-                = ParcelableCompat.newCreator(new ParcelableCompatCreatorCallbacks<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel in, ClassLoader loader) {
+        public static final Creator<SavedState> CREATOR = ParcelableCompat.newCreator(new ParcelableCompatCreatorCallbacks<SavedState>() {
+            @Override public SavedState createFromParcel(Parcel in, ClassLoader loader) {
                 return new SavedState(in);
             }
 
-            @Override
-            public SavedState[] newArray(int size) {
+            @Override public SavedState[] newArray(int size) {
                 return new SavedState[size];
             }
         });
@@ -374,18 +367,14 @@ public class PanView extends View {
             offsetY = in.readFloat();
         }
 
-        @Override
-        public void writeToParcel(@NonNull Parcel out, int flags) {
+        @Override public void writeToParcel(@NonNull Parcel out, int flags) {
             super.writeToParcel(out, flags);
             out.writeFloat(offsetX);
             out.writeFloat(offsetY);
         }
 
-        @Override
-        public String toString() {
-            return "PanView.SavedState{"
-                    + Integer.toHexString(System.identityHashCode(this))
-                    + " offset=" + offsetX + ", " + offsetY + "}";
+        @Override public String toString() {
+            return "PanView.SavedState{" + Integer.toHexString(System.identityHashCode(this)) + " offset=" + offsetX + ", " + offsetY + "}";
         }
     }
 
@@ -393,8 +382,7 @@ public class PanView extends View {
      * The gesture listener, used for handling simple gestures such as scrolls and flings.
      */
     private class ScrollFlingGestureListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onDown(MotionEvent e) {
+        @Override public boolean onDown(MotionEvent e) {
             releaseEdgeEffects();
             mScroller.forceFinished(true);
             invalidate();
@@ -453,13 +441,16 @@ public class PanView extends View {
 
             releaseEdgeEffects();
             mScroller.forceFinished(true);
-            mScroller.fling(
-                    (int) mOffsetX,
+            mScroller.fling((int) mOffsetX,
                     (int) mOffsetY,
                     (int) velocityX,
                     (int) velocityY,
-                    mWidth - mScaledImage.getWidth(), 0, // mWidth - mScaledImage.getWidth() is negative
-                    mHeight - mScaledImage.getHeight(), 0, // mHeight - mScaledImage.getHeight() is negative
+                    mWidth - mScaledImage.getWidth(),
+                    0,
+                    // mWidth - mScaledImage.getWidth() is negative
+                    mHeight - mScaledImage.getHeight(),
+                    0,
+                    // mHeight - mScaledImage.getHeight() is negative
                     mScaledImage.getWidth() / 2,
                     mScaledImage.getHeight() / 2);
             postAnimateTick();
@@ -468,11 +459,7 @@ public class PanView extends View {
         }
 
         private void releaseEdgeEffects() {
-            mEdgeEffectLeftActive
-                    = mEdgeEffectTopActive
-                    = mEdgeEffectRightActive
-                    = mEdgeEffectBottomActive
-                    = false;
+            mEdgeEffectLeftActive = mEdgeEffectTopActive = mEdgeEffectRightActive = mEdgeEffectBottomActive = false;
             mEdgeEffectLeft.onRelease();
             mEdgeEffectTop.onRelease();
             mEdgeEffectRight.onRelease();
