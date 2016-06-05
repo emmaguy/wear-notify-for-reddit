@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,7 +35,10 @@ public class RedditAccessTokenRequesterTest {
         when(mResources.getString(R.string.chooser_title)).thenReturn("title");
         when(mBrowserIntentBuilder.build(eq("title"), any(Intent.class))).thenReturn(mIntent);
 
-        mTokenRequester = new RedditAccessTokenRequester(mContext, mResources, mUniqueIdentifierStorage, mBrowserIntentBuilder);
+        mTokenRequester = new RedditAccessTokenRequester(mContext,
+                mResources,
+                mUniqueIdentifierStorage,
+                mBrowserIntentBuilder);
     }
 
     @Test public void request_generatesNewUniqueIdentifierAndStartsActivity() {

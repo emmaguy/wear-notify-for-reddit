@@ -19,7 +19,8 @@ class ListingResponseConverter {
     private final HtmlDecoder mHtmlDecoder;
     private final Resources mResources;
 
-    ListingResponseConverter(UserStorage userStorage, Resources resources, HtmlDecoder htmlDecoder) {
+    ListingResponseConverter(UserStorage userStorage, Resources resources,
+                             HtmlDecoder htmlDecoder) {
         mUserStorage = userStorage;
         mResources = resources;
         mHtmlDecoder = htmlDecoder;
@@ -28,7 +29,9 @@ class ListingResponseConverter {
     @NonNull public List<Post> convert(ListingResponse listingResponse) {
         final List<Post> result = new ArrayList<>();
         if (listingResponse == null || listingResponse.getData() == null ||
-                listingResponse.getData().getChildren() == null || listingResponse.getData().getChildren().isEmpty()) {
+                listingResponse.getData().getChildren() == null || listingResponse.getData()
+                .getChildren()
+                .isEmpty()) {
             return result;
         }
 
@@ -45,9 +48,10 @@ class ListingResponseConverter {
             final String imageUrl = getImageUrl(data);
             final String author = data.getAuthor();
 
-            result.add(new Post.Builder()
-                    .setTitle(isDirectMessage ? mResources.getString(R.string.message_from_x, author) : subreddit)
-                    .setShortTitle(isDirectMessage ? getShortDescription(description) : getShortString(title))
+            result.add(new Post.Builder().setTitle(isDirectMessage ? mResources.getString(R.string.message_from_x,
+                    author) : subreddit)
+                    .setShortTitle(isDirectMessage ? getShortDescription(description) : getShortString(
+                            title))
                     .setSubreddit(subreddit)
                     .setPermalink(isDirectMessage ? "/message/messages/" + data.getId() : data.getPermalink())
                     .setPostContents(getPostContents(isDirectMessage, title, description))
@@ -87,7 +91,8 @@ class ListingResponseConverter {
     }
 
     private String getImageUrl(PostResponse.Data data) {
-        String imageUrl = StringUtils.isEmpty(data.getThumbnail()) ? "" : data.getThumbnail().trim();
+        String imageUrl = StringUtils.isEmpty(data.getThumbnail()) ? "" : data.getThumbnail()
+                .trim();
         if (imageUrl.equals("default") || imageUrl.equals("nsfw") || imageUrl.equals("self")) {
             return "";
         }
@@ -102,8 +107,11 @@ class ListingResponseConverter {
                 if (image.getResolutions() != null && !image.getResolutions().isEmpty()) {
                     imageUrl = mHtmlDecoder.decode(image.getResolutions().get(0).getUrl());
 
-                    if (mUserStorage.downloadFullSizedImages() && image.getResolutions().size() >= 2) {
-                        imageUrl = mHtmlDecoder.decode(image.getResolutions().get(image.getResolutions().size() - 1).getUrl());
+                    if (mUserStorage.downloadFullSizedImages() && image.getResolutions()
+                            .size() >= 2) {
+                        imageUrl = mHtmlDecoder.decode(image.getResolutions()
+                                .get(image.getResolutions().size() - 1)
+                                .getUrl());
                     }
                 }
             }

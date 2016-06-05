@@ -1,74 +1,70 @@
 {
-  "kind":"Listing",
-  "data":{
-    "modhash":"v5kodivk2970261270c31541caafcf127a1692ccab1d294396",
-    "children":[
+  "kind": "Listing",
+  "data": {
+    "modhash": "v5kodivk2970261270c31541caafcf127a1692ccab1d294396",
+    "children": [
       {
-        "kind":"t3",
-        "data":{
-          "domain":"self.Jokes",
-          "banned_by":null,
-          "media_embed":{
-
+        "kind": "t3",
+        "data": {
+          "domain": "self.Jokes",
+          "banned_by": null,
+          "media_embed": {
           },
-          "subreddit":"Jokes",
-          "selftext_html":"&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;IT&amp;#39;S FUCKING FROZEN&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
-          "selftext":"IT'S FUCKING FROZEN",
-          "likes":null,
-          "suggested_sort":null,
-          "user_reports":[
-
+          "subreddit": "Jokes",
+          "selftext_html": "&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;IT&amp;#39;S FUCKING FROZEN&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
+          "selftext": "IT'S FUCKING FROZEN",
+          "likes": null,
+          "suggested_sort": null,
+          "user_reports": [
           ],
-          "secure_media":null,
-          "link_flair_text":null,
-          "id":"3nz3te",
-          "from_kind":null,
-          "gilded":1,
-          "archived":false,
-          "clicked":false,
-          "report_reasons":null,
-          "author":"zwart27",
-          "media":null,
-          "score":4330,
-          "approved_by":null,
-          "over_18":false,
-          "hidden":false,
-          "num_comments":265,
-          "thumbnail":"",
-          "subreddit_id":"t5_2qh72",
-          "hide_score":false,
-          "edited":false,
-          "link_flair_css_class":null,
-          "author_flair_css_class":null,
-          "downs":0,
-          "secure_media_embed":{
-
+          "secure_media": null,
+          "link_flair_text": null,
+          "id": "3nz3te",
+          "from_kind": null,
+          "gilded": 1,
+          "archived": false,
+          "clicked": false,
+          "report_reasons": null,
+          "author": "zwart27",
+          "media": null,
+          "score": 4330,
+          "approved_by": null,
+          "over_18": false,
+          "hidden": false,
+          "num_comments": 265,
+          "thumbnail": "",
+          "subreddit_id": "t5_2qh72",
+          "hide_score": false,
+          "edited": false,
+          "link_flair_css_class": null,
+          "author_flair_css_class": null,
+          "downs": 0,
+          "secure_media_embed": {
           },
-          "saved":false,
-          "removal_reason":null,
-          "stickied":false,
-          "from":null,
-          "is_self":true,
-          "from_id":null,
-          "permalink":"/r/Jokes/comments/3nz3te/whats_gordon_ramsays_favorite_movie/",
-          "name":"t3_3nz3te",
-          "created":1444342710.0,
-          "url":"https://www.reddit.com/r/Jokes/comments/3nz3te/whats_gordon_ramsays_favorite_movie/",
-          "author_flair_text":null,
-          "quarantine":false,
-          "title":"What's Gordon Ramsay's favorite movie?",
-          "created_utc":1444313910.0,
-          "distinguished":null,
-          "mod_reports":[
-
+          "saved": false,
+          "removal_reason": null,
+          "stickied": false,
+          "from": null,
+          "is_self": true,
+          "from_id": null,
+          "permalink": "/r/Jokes/comments/3nz3te/whats_gordon_ramsays_favorite_movie/",
+          "name": "t3_3nz3te",
+          "created": 1444342710.0,
+          "url": "https://www.reddit.com/r/Jokes/comments/3nz3te/whats_gordon_ramsays_favorite_movie/",
+          "author_flair_text": null,
+          "quarantine": false,
+          "title": "What's Gordon Ramsay's favorite movie?",
+          "created_utc": 1444313910.0,
+          "distinguished": null,
+          "mod_reports": [
           ],
-          "visited":false,
-          "num_reports":null,
-          "ups":4330
+          "visited": false,
+          "num_reports": null,
+          "ups": 4330
         }
       }
     ],
-    "after":"t3_3nz3te",
-    "before":null
+    "after": "t3_3nz3te",
+    "before": null
   }
 }

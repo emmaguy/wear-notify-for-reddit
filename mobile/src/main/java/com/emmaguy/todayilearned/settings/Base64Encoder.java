@@ -12,8 +12,7 @@ public class Base64Encoder implements Encoder {
         return Base64.encodeToString(bytes, ENCODING_FLAGS);
     }
 
-    @Override
-    public byte[] decode(String string) {
+    @Override public byte[] decode(String string) {
         return Base64.decode(string, ENCODING_FLAGS);
     }
 }

@@ -25,8 +25,9 @@ public class WearableActionStorage implements ActionStorage {
     private final Resources mResources;
     private final Context mContext;
 
-    @Inject
-    public WearableActionStorage(WearableActions wearableActions, SharedPreferences sharedPreferences, Resources resources, Context context) {
+    @Inject public WearableActionStorage(WearableActions wearableActions,
+                                         SharedPreferences sharedPreferences, Resources resources,
+                                         Context context) {
         mWearableActions = wearableActions;
         mSharedPreferences = sharedPreferences;
         mResources = resources;
@@ -34,7 +35,8 @@ public class WearableActionStorage implements ActionStorage {
     }
 
     @Override public ArrayList<Integer> getSelectedActionIds() {
-        String commaSeparatedActions = mSharedPreferences.getString(mContext.getString(R.string.prefs_key_actions_order), "");
+        String commaSeparatedActions = mSharedPreferences.getString(mContext.getString(R.string.prefs_key_actions_order),
+                "");
         ArrayList<Integer> selectedActions = parseActionsFromString(commaSeparatedActions);
 
         if (selectedActions == null) {
@@ -45,7 +47,8 @@ public class WearableActionStorage implements ActionStorage {
     }
 
     @Override public List<Integer> getActionIds() {
-        String commaSeparatedOrderedActions = mSharedPreferences.getString(mResources.getString(R.string.prefs_key_actions_order_ordered), "");
+        String commaSeparatedOrderedActions = mSharedPreferences.getString(mResources.getString(R.string.prefs_key_actions_order_ordered),
+                "");
         List<Integer> actions = parseActionsFromString(commaSeparatedOrderedActions);
 
         final LinkedHashMap<Integer, Action> allActions = mWearableActions.getAllActions();
@@ -64,11 +67,13 @@ public class WearableActionStorage implements ActionStorage {
         return actions;
     }
 
-    @Override public void save(ArrayList<Action> actions, HashMap<Integer, Action> selectedActions) {
-        mSharedPreferences
-                .edit()
-                .putString(mContext.getString(R.string.prefs_key_actions_order_ordered), TextUtils.join(",", getOrderedActionIds(actions)))
-                .putString(mContext.getString(R.string.prefs_key_actions_order), getSelectedOrderedActions(actions, selectedActions))
+    @Override
+    public void save(ArrayList<Action> actions, HashMap<Integer, Action> selectedActions) {
+        mSharedPreferences.edit()
+                .putString(mContext.getString(R.string.prefs_key_actions_order_ordered),
+                        TextUtils.join(",", getOrderedActionIds(actions)))
+                .putString(mContext.getString(R.string.prefs_key_actions_order),
+                        getSelectedOrderedActions(actions, selectedActions))
                 .apply();
     }
 
@@ -90,7 +95,8 @@ public class WearableActionStorage implements ActionStorage {
         return actions;
     }
 
-    private ArrayList<Integer> toActionIdsList(LinkedHashMap<Integer, Action> actions, boolean excludeDisabled) {
+    private ArrayList<Integer> toActionIdsList(LinkedHashMap<Integer, Action> actions,
+                                               boolean excludeDisabled) {
         ArrayList<Integer> arrayList = new ArrayList<>();
 
         for (Action action : actions.values()) {
@@ -104,7 +110,8 @@ public class WearableActionStorage implements ActionStorage {
         return arrayList;
     }
 
-    private String getSelectedOrderedActions(ArrayList<Action> actions, HashMap<Integer, Action> selectedActions) {
+    private String getSelectedOrderedActions(ArrayList<Action> actions,
+                                             HashMap<Integer, Action> selectedActions) {
         ArrayList<Integer> list = new ArrayList<>();
 
         for (Action a : actions) {

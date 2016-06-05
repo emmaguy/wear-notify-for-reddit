@@ -16,7 +16,10 @@ import retrofit.mime.TypedOutput;
  */
 public class SubscriptionConverter implements Converter {
     @Override public Object fromBody(TypedInput body, Type type) throws ConversionException {
-        return new GsonConverter(new GsonBuilder().registerTypeAdapter(SubscriptionResponse.class, new SubscriptionResponse.SubscriptionResponseJsonDeserializer()).create()).fromBody(body, type);
+        return new GsonConverter(new GsonBuilder().registerTypeAdapter(SubscriptionResponse.class,
+                new SubscriptionResponse.SubscriptionResponseJsonDeserializer()).create()).fromBody(
+                body,
+                type);
     }
 
     @Override public TypedOutput toBody(Object object) {

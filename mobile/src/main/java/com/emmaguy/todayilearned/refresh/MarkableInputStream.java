@@ -49,8 +49,7 @@ final class MarkableInputStream extends InputStream {
     /**
      * Marks this place in the stream so we can reset back to it later.
      */
-    @Override
-    public void mark(int readLimit) {
+    @Override public void mark(int readLimit) {
         defaultMark = savePosition(readLimit);
     }
 
@@ -95,8 +94,7 @@ final class MarkableInputStream extends InputStream {
     /**
      * Resets the stream to the most recent {@link #mark mark}.
      */
-    @Override
-    public void reset() throws IOException {
+    @Override public void reset() throws IOException {
         reset(defaultMark);
     }
 
@@ -129,8 +127,7 @@ final class MarkableInputStream extends InputStream {
         }
     }
 
-    @Override
-    public int read() throws IOException {
+    @Override public int read() throws IOException {
         int result = in.read();
         if (result != -1) {
             offset++;
@@ -138,8 +135,7 @@ final class MarkableInputStream extends InputStream {
         return result;
     }
 
-    @Override
-    public int read(byte[] buffer) throws IOException {
+    @Override public int read(byte[] buffer) throws IOException {
         int count = in.read(buffer);
         if (count != -1) {
             offset += count;
@@ -147,8 +143,7 @@ final class MarkableInputStream extends InputStream {
         return count;
     }
 
-    @Override
-    public int read(byte[] buffer, int offset, int length) throws IOException {
+    @Override public int read(byte[] buffer, int offset, int length) throws IOException {
         int count = in.read(buffer, offset, length);
         if (count != -1) {
             this.offset += count;
@@ -156,25 +151,21 @@ final class MarkableInputStream extends InputStream {
         return count;
     }
 
-    @Override
-    public long skip(long byteCount) throws IOException {
+    @Override public long skip(long byteCount) throws IOException {
         long skipped = in.skip(byteCount);
         offset += skipped;
         return skipped;
     }
 
-    @Override
-    public int available() throws IOException {
+    @Override public int available() throws IOException {
         return in.available();
     }
 
-    @Override
-    public void close() throws IOException {
+    @Override public void close() throws IOException {
         in.close();
     }
 
-    @Override
-    public boolean markSupported() {
+    @Override public boolean markSupported() {
         return in.markSupported();
     }
 }

@@ -24,10 +24,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -47,7 +45,9 @@ public class UnreadDirectMessageRetrieverTest {
         when(mUserStorage.messagesEnabled()).thenReturn(false);
         when(mTokenStorage.isLoggedIn()).thenReturn(false);
 
-        mRetriever = new UnreadDirectMessageRetriever(mTokenStorage, mUserStorage, mAuthenticatedRedditService);
+        mRetriever = new UnreadDirectMessageRetriever(mTokenStorage,
+                mUserStorage,
+                mAuthenticatedRedditService);
     }
 
     @NonNull private Post mockDirectMessage() {
@@ -60,11 +60,14 @@ public class UnreadDirectMessageRetrieverTest {
         when(mUserStorage.messagesEnabled()).thenReturn(true);
 
         final List<Post> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<Post>>() {
-            @Override public void call(List<Post> posts) {
-                emittedElements.addAll(posts);
-            }
-        });
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(new Action1<List<Post>>() {
+                    @Override public void call(List<Post> posts) {
+                        emittedElements.addAll(posts);
+                    }
+                });
 
         verify(mAuthenticatedRedditService, never()).unreadMessages();
         assertThat(emittedElements.size(), equalTo(0));
@@ -74,11 +77,14 @@ public class UnreadDirectMessageRetrieverTest {
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
 
         final List<Post> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<Post>>() {
-            @Override public void call(List<Post> posts) {
-                emittedElements.addAll(posts);
-            }
-        });
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(new Action1<List<Post>>() {
+                    @Override public void call(List<Post> posts) {
+                        emittedElements.addAll(posts);
+                    }
+                });
 
         verify(mAuthenticatedRedditService, never()).unreadMessages();
         assertThat(emittedElements.size(), equalTo(0));
@@ -97,11 +103,14 @@ public class UnreadDirectMessageRetrieverTest {
         when(mAuthenticatedRedditService.markAllMessagesRead()).thenReturn(markAllRead);
 
         final List<Post> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<Post>>() {
-            @Override public void call(List<Post> posts) {
-                emittedElements.addAll(posts);
-            }
-        });
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(new Action1<List<Post>>() {
+                    @Override public void call(List<Post> posts) {
+                        emittedElements.addAll(posts);
+                    }
+                });
 
         assertThat(emittedElements.size(), equalTo(1));
         assertThat(emittedElements.get(0), equalTo(directMessage));
@@ -117,15 +126,19 @@ public class UnreadDirectMessageRetrieverTest {
         final Observable<List<Post>> observable = Observable.just(Arrays.asList(mockDirectMessage()));
         when(mAuthenticatedRedditService.unreadMessages()).thenReturn(observable);
 
-        final RetrofitError networkError = RetrofitError.networkError("Network error", mock(IOException.class));
+        final RetrofitError networkError = RetrofitError.networkError("Network error",
+                mock(IOException.class));
         when(mAuthenticatedRedditService.markAllMessagesRead()).thenThrow(networkError);
 
         final List<Post> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<Post>>() {
-            @Override public void call(List<Post> posts) {
-                emittedElements.addAll(posts);
-            }
-        });
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(new Action1<List<Post>>() {
+                    @Override public void call(List<Post> posts) {
+                        emittedElements.addAll(posts);
+                    }
+                });
 
         verify(mAuthenticatedRedditService).unreadMessages();
 
@@ -136,15 +149,19 @@ public class UnreadDirectMessageRetrieverTest {
         when(mTokenStorage.isLoggedIn()).thenReturn(true);
         when(mUserStorage.messagesEnabled()).thenReturn(true);
 
-        final RetrofitError networkError = RetrofitError.networkError("Network error", mock(IOException.class));
+        final RetrofitError networkError = RetrofitError.networkError("Network error",
+                mock(IOException.class));
         when(mAuthenticatedRedditService.unreadMessages()).thenThrow(networkError);
 
         final List<Post> emittedElements = new ArrayList<>();
-        mRetriever.retrieve().observeOn(Schedulers.immediate()).subscribeOn(Schedulers.immediate()).subscribe(new Action1<List<Post>>() {
-            @Override public void call(List<Post> posts) {
-                emittedElements.addAll(posts);
-            }
-        });
+        mRetriever.retrieve()
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(new Action1<List<Post>>() {
+                    @Override public void call(List<Post> posts) {
+                        emittedElements.addAll(posts);
+                    }
+                });
 
         verify(mAuthenticatedRedditService).unreadMessages();
         verifyNoMoreInteractions(mAuthenticatedRedditService);

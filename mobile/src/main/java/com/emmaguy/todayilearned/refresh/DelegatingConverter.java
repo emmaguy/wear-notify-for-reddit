@@ -23,7 +23,10 @@ public class DelegatingConverter implements Converter {
     private final PostConverter mPostConverter;
     private final Converter mOriginalConverter;
 
-    public DelegatingConverter(Converter originalConverter, TokenConverter tokenConverter, PostConverter postConverter, MarkAsReadConverter markAsReadConverter, SubscriptionConverter subscriptionConverter, CommentsConverter commentsConverter) {
+    public DelegatingConverter(Converter originalConverter, TokenConverter tokenConverter,
+                               PostConverter postConverter, MarkAsReadConverter markAsReadConverter,
+                               SubscriptionConverter subscriptionConverter,
+                               CommentsConverter commentsConverter) {
         mSubscriptionConverter = subscriptionConverter;
         mMarkAsReadConverter = markAsReadConverter;
         mOriginalConverter = originalConverter;
@@ -32,8 +35,7 @@ public class DelegatingConverter implements Converter {
         mPostConverter = postConverter;
     }
 
-    @Override
-    public Object fromBody(TypedInput body, Type type) throws ConversionException {
+    @Override public Object fromBody(TypedInput body, Type type) throws ConversionException {
         if (type == Token.class) {
             return mTokenConverter.fromBody(body, type);
         } else if (type == MarkAllRead.class) {
@@ -57,8 +59,7 @@ public class DelegatingConverter implements Converter {
         return false;
     }
 
-    @Override
-    public TypedOutput toBody(Object object) {
+    @Override public TypedOutput toBody(Object object) {
         return mOriginalConverter.toBody(object);
     }
 }

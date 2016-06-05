@@ -144,10 +144,15 @@ public class DelegatingConverterTest {
         verify(mSubscriptionConverter).fromBody(mTypedInput, type);
     }
 
-    private void convertResponse(String filename, Type type) throws IOException, ConversionException {
+    private void convertResponse(String filename, Type type) throws IOException,
+            ConversionException {
         when(mTypedInput.in()).thenReturn(TestUtils.loadFileFromStream(filename));
 
-        new DelegatingConverter(mConverter, mTokenConverter, mPostConverter,
-                mMarkAsReadConverter, mSubscriptionConverter, mCommentsConverter).fromBody(mTypedInput, type);
+        new DelegatingConverter(mConverter,
+                mTokenConverter,
+                mPostConverter,
+                mMarkAsReadConverter,
+                mSubscriptionConverter,
+                mCommentsConverter).fromBody(mTypedInput, type);
     }
 }

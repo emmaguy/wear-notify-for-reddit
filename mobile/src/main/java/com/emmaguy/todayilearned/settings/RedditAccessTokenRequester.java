@@ -23,7 +23,8 @@ class RedditAccessTokenRequester {
     private final BrowserIntentBuilder mBrowserIntentBuilder;
 
     @Inject RedditAccessTokenRequester(Context context, Resources resources,
-            @Named("state") UniqueIdentifierStorage stateStorage, BrowserIntentBuilder browserIntentBuilder) {
+                                       @Named("state") UniqueIdentifierStorage stateStorage,
+                                       BrowserIntentBuilder browserIntentBuilder) {
         mContext = context;
         mResources = resources;
         mStateStorage = stateStorage;
@@ -31,7 +32,8 @@ class RedditAccessTokenRequester {
     }
 
     public void request() {
-        final String redirectUrl = mResources.getString(R.string.redirect_url_scheme) + mResources.getString(R.string.redirect_url_callback);
+        final String redirectUrl = mResources.getString(R.string.redirect_url_scheme) + mResources.getString(
+                R.string.redirect_url_callback);
 
         final String url = Constants.WEB_URL_REDDIT + "/api/v1/authorize.compact?" +
                 "client_id=" + mResources.getString(R.string.client_id) +
@@ -44,7 +46,8 @@ class RedditAccessTokenRequester {
         final Intent browserIntent = new Intent(Intent.ACTION_VIEW);
         browserIntent.setData(Uri.parse(url));
 
-        final Intent i = mBrowserIntentBuilder.build(mResources.getString(R.string.chooser_title), browserIntent);
+        final Intent i = mBrowserIntentBuilder.build(mResources.getString(R.string.chooser_title),
+                browserIntent);
         if (i == null) {
             Toast.makeText(mContext, R.string.no_browsers_installed, Toast.LENGTH_LONG).show();
         } else {

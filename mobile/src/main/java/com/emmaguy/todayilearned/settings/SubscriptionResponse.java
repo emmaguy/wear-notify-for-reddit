@@ -24,8 +24,7 @@ public class SubscriptionResponse {
         mSubreddits.add(subreddit);
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "SubscriptionResponse has errors: " + mHasErrors + " " + mErrors;
     }
 
@@ -38,9 +37,11 @@ public class SubscriptionResponse {
         mErrors = errors;
     }
 
-    public static class SubscriptionResponseJsonDeserializer implements JsonDeserializer<SubscriptionResponse> {
-        @Override
-        public SubscriptionResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public static class SubscriptionResponseJsonDeserializer
+            implements JsonDeserializer<SubscriptionResponse> {
+        @Override public SubscriptionResponse deserialize(JsonElement json, Type typeOfT,
+                                                          JsonDeserializationContext context) throws
+                JsonParseException {
             SubscriptionResponse l = new SubscriptionResponse();
 
             JsonObject jsonContents = json.getAsJsonObject();

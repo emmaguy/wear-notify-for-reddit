@@ -31,7 +31,9 @@ public class ImageDownloader {
             options.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(markStream, null, options);
 
-            options.inSampleSize = calculateInSampleSize(options, WATCH_SCREEN_SIZE, WATCH_SCREEN_SIZE);
+            options.inSampleSize = calculateInSampleSize(options,
+                    WATCH_SCREEN_SIZE,
+                    WATCH_SCREEN_SIZE);
             options.inJustDecodeBounds = false;
 
             markStream.reset(mark);
@@ -49,7 +51,8 @@ public class ImageDownloader {
         return bytes;
     }
 
-    private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth,
+                                             int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;

@@ -3,7 +3,6 @@ package com.emmaguy.todayilearned.settings;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -21,7 +20,15 @@ import java.util.List;
 import java.util.Set;
 
 public class SubredditPreference extends Preference {
-    private static Set<String> DefaultSubreddits = new HashSet<String>(Arrays.asList("todayilearned", "Android", "AndroidWear", "crazyideas", "worldnews", "britishproblems", "showerthoughts", "pics", "AskReddit"));
+    private static Set<String> DefaultSubreddits = new HashSet<String>(Arrays.asList("todayilearned",
+            "Android",
+            "AndroidWear",
+            "crazyideas",
+            "worldnews",
+            "britishproblems",
+            "showerthoughts",
+            "pics",
+            "AskReddit"));
 
     public SubredditPreference(Context context) {
         super(context, null);
@@ -31,8 +38,7 @@ public class SubredditPreference extends Preference {
         super(context, attrs);
     }
 
-    @Override
-    protected void onClick() {
+    @Override protected void onClick() {
         super.onClick();
 
         showSelectSubredditsDialog();
@@ -53,7 +59,8 @@ public class SubredditPreference extends Preference {
 
     public List<String> getAllSelectedSubreddits() {
         final String key = getSelectedSubredditsKey();
-        Set<String> subreddits = getSharedPreferences().getStringSet(key, Constants.sDefaultSelectedSubreddits);
+        Set<String> subreddits = getSharedPreferences().getStringSet(key,
+                Constants.sDefaultSelectedSubreddits);
         return new ArrayList(subreddits);
     }
 
@@ -84,7 +91,9 @@ public class SubredditPreference extends Preference {
     }
 
     public void saveSelectedSubreddits(List<String> selectedSubreddits) {
-        getSharedPreferences().edit().putStringSet(getSelectedSubredditsKey(), new HashSet<>(selectedSubreddits)).apply();
+        getSharedPreferences().edit()
+                .putStringSet(getSelectedSubredditsKey(), new HashSet<>(selectedSubreddits))
+                .apply();
     }
 
     private void showSelectSubredditsDialog() {
@@ -99,9 +108,11 @@ public class SubredditPreference extends Preference {
             i++;
         }
 
-        new AlertDialog.Builder(getContext(), R.style.AppCompatAlertDialogStyle)
-                .setTitle(getContext().getResources().getString(R.string.select_subreddits))
-                .setMultiChoiceItems(savedSubreddits.toArray(new String[savedSubreddits.size()]), selected,
+        new AlertDialog.Builder(getContext(),
+                R.style.AppCompatAlertDialogStyle).setTitle(getContext().getResources()
+                .getString(R.string.select_subreddits))
+                .setMultiChoiceItems(savedSubreddits.toArray(new String[savedSubreddits.size()]),
+                        selected,
                         (dialogInterface, i1, b) -> {
                             selected[i1] = b;
                             ((AlertDialog) dialogInterface).getListView().setItemChecked(i1, b);
@@ -128,11 +139,10 @@ public class SubredditPreference extends Preference {
     }
 
     private void showAddSubredditDialog() {
-        @SuppressLint("InflateParams")
-        final View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_subreddit, null, false);
+        @SuppressLint("InflateParams") final View view = LayoutInflater.from(getContext())
+                .inflate(R.layout.dialog_subreddit, null, false);
 
-        new AlertDialog.Builder(getContext())
-                .setNegativeButton(R.string.cancel, null)
+        new AlertDialog.Builder(getContext()).setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.save, (dialogInterface, i) -> {
                     final EditText input = (EditText) view.findViewById(R.id.subreddit_edittext);
 

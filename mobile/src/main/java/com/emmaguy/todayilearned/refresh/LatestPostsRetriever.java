@@ -23,7 +23,9 @@ public class LatestPostsRetriever {
     private final ImageDownloader mImageDownloader;
     private final UserStorage mUserStorage;
 
-    public LatestPostsRetriever(@NonNull final ImageDownloader imageDownloader, @NonNull final UserStorage userStorage, @NonNull final RedditService redditService) {
+    public LatestPostsRetriever(@NonNull final ImageDownloader imageDownloader,
+                                @NonNull final UserStorage userStorage,
+                                @NonNull final RedditService redditService) {
         mImageDownloader = imageDownloader;
         mUserStorage = userStorage;
         mRedditService = redditService;
@@ -36,8 +38,9 @@ public class LatestPostsRetriever {
             if (StringUtils.isEmpty(subreddits)) {
                 subreddits = StringUtils.join("+", Constants.sDefaultSelectedSubreddits);
             }
-            return mRedditService
-                    .latestPosts(subreddits, mUserStorage.getSortType(), mUserStorage.getNumberToRequest())
+            return mRedditService.latestPosts(subreddits,
+                    mUserStorage.getSortType(),
+                    mUserStorage.getNumberToRequest())
                     .doOnNext(posts -> {
                         long maxTimestamp = 0;
                         for (final Post p : posts) {

@@ -75,7 +75,8 @@ public class BrowserIntentBuilder {
         final Intent chooserIntent = Intent.createChooser(targetedIntents.get(0), title);
         targetedIntents.remove(0);
 
-        final Parcelable[] targetedIntentsParcelable = targetedIntents.toArray(new Parcelable[targetedIntents.size()]);
+        final Parcelable[] targetedIntentsParcelable = targetedIntents.toArray(new Parcelable[targetedIntents
+                .size()]);
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, targetedIntentsParcelable);
 
         return chooserIntent;

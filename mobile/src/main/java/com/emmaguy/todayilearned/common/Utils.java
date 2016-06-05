@@ -13,7 +13,8 @@ public class Utils {
     public static Intent getFeedbackEmailIntent(Context c, String extraInformation) {
         final String title = c.getString(R.string.app_name) + " " + c.getString(R.string.feedback_android_version);
 
-        Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", FEEDBACK_EMAIL_ADDRESS, null));
+        Intent intent = new Intent(Intent.ACTION_SENDTO,
+                Uri.fromParts("mailto", FEEDBACK_EMAIL_ADDRESS, null));
         intent.putExtra(Intent.EXTRA_EMAIL, FEEDBACK_EMAIL_ADDRESS);
         intent.putExtra(Intent.EXTRA_SUBJECT, title + BuildConfig.VERSION_NAME);
         intent.putExtra(Intent.EXTRA_TEXT, extraInformation);

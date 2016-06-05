@@ -33,7 +33,8 @@ import javax.inject.Named;
 import rx.Scheduler;
 import timber.log.Timber;
 
-public class RetrieveService extends WakefulIntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class RetrieveService extends WakefulIntentService
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String INTENT_KEY_INFORM_WATCH_NO_POSTS = "inform_no_posts";
 
     @Inject UnreadDirectMessageRetriever mUnreadDirectMessageRetriever;
@@ -64,16 +65,14 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         return new Intent(context, RetrieveService.class);
     }
 
-    @Override
-    public void onCreate() {
+    @Override public void onCreate() {
         super.onCreate();
 
         App.with(this).getAppComponent().inject(this);
     }
 
     private void connectToWearable() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -83,8 +82,7 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
         }
     }
 
-    @Override
-    protected void doWakefulWork(Intent intent) {
+    @Override protected void doWakefulWork(Intent intent) {
         Timber.d("doWakefulWork");
         connectToWearable();
 
@@ -92,7 +90,9 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
         mSendInformationToWearableIfNoPosts = false;
         if (intent.hasExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS)) {
-            mSendInformationToWearableIfNoPosts = intent.getBooleanExtra(INTENT_KEY_INFORM_WATCH_NO_POSTS, false);
+            mSendInformationToWearableIfNoPosts = intent.getBooleanExtra(
+                    INTENT_KEY_INFORM_WATCH_NO_POSTS,
+                    false);
         }
 
         final String message = "refresh: " + mUserStorage.getRefreshInterval() + ", subreddits: " +
@@ -117,7 +117,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
                         sendPostsToWearable(posts, msg, assets);
                     } else if (mSendInformationToWearableIfNoPosts) {
-                        WearListenerService.sendToPath(mGoogleApiClient, Constants.PATH_NO_NEW_POSTS);
+                        WearListenerService.sendToPath(mGoogleApiClient,
+                                Constants.PATH_NO_NEW_POSTS);
                     }
                 }, throwable -> {
                     Timber.e(throwable, "RetrieveService: Failed to get latest posts");
@@ -136,7 +137,8 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
                 });
     }
 
-    private void sendPostsToWearable(@NonNull List<Post> posts, @NonNull final String msg, @Nullable SimpleArrayMap<String, Asset> assets) {
+    private void sendPostsToWearable(@NonNull List<Post> posts, @NonNull final String msg,
+                                     @Nullable SimpleArrayMap<String, Asset> assets) {
         if (mGoogleApiClient.isConnected()) {
             // convert to json for sending to watch and to save to shared prefs
             // don't need to preserve the order like having separate String lists, can more easily add/remove fields
@@ -151,37 +153,38 @@ public class RetrieveService extends WakefulIntentService implements GoogleApiCl
 
             dataMap.putLong("timestamp", System.currentTimeMillis());
             dataMap.putString(Constants.KEY_REDDIT_POSTS, mGson.toJson(posts));
-            dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION, mUserStorage.openOnPhoneDismissesAfterAction());
-            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER, mWearableActionStorage.getSelectedActionIds());
+            dataMap.putBoolean(Constants.KEY_DISMISS_AFTER_ACTION,
+                    mUserStorage.openOnPhoneDismissesAfterAction());
+            dataMap.putIntegerArrayList(Constants.KEY_ACTION_ORDER,
+                    mWearableActionStorage.getSelectedActionIds());
 
             PutDataRequest request = mapRequest.asPutDataRequest();
             Wearable.DataApi.putDataItem(mGoogleApiClient, request)
                     .setResultCallback(dataItemResult -> {
-                        Timber.d(msg + ", final timestamp: " + mUserStorage.getTimestamp() + " result: " + dataItemResult.getStatus());
+                        Timber.d(msg + ", final timestamp: " + mUserStorage.getTimestamp() + " result: " + dataItemResult
+                                .getStatus());
 
                         if (dataItemResult.getStatus().isSuccess()) {
                             if (mGoogleApiClient.isConnected()) {
                                 mGoogleApiClient.disconnect();
                             }
                         } else {
-                            Timber.d("Failed to send posts to wearable " + dataItemResult.getStatus().getStatusMessage());
+                            Timber.d("Failed to send posts to wearable " + dataItemResult.getStatus()
+                                    .getStatusMessage());
                         }
                     });
         }
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
+    @Override public void onConnected(Bundle bundle) {
 
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
+    @Override public void onConnectionSuspended(int i) {
 
     }
 
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    @Override public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
 }

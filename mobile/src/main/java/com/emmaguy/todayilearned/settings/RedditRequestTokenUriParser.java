@@ -23,7 +23,8 @@ class RedditRequestTokenUriParser {
     private boolean mShowError;
     private String mCode;
 
-    @Inject RedditRequestTokenUriParser(Resources resources, TokenStorage tokenStorage, @Named("state") UniqueIdentifierStorage stateStorage) {
+    @Inject RedditRequestTokenUriParser(Resources resources, TokenStorage tokenStorage,
+                                        @Named("state") UniqueIdentifierStorage stateStorage) {
         mResources = resources;
         mTokenStorage = tokenStorage;
         mStateStorage = stateStorage;
@@ -34,7 +35,8 @@ class RedditRequestTokenUriParser {
         mShowError = false;
         mCode = "";
 
-        if (uri != null && uri.toString().startsWith(mResources.getString(R.string.redirect_url_scheme)) && mTokenStorage.hasNoToken()) {
+        if (uri != null && uri.toString()
+                .startsWith(mResources.getString(R.string.redirect_url_scheme)) && mTokenStorage.hasNoToken()) {
             String error = uri.getQueryParameter("error");
             if (!TextUtils.isEmpty(error)) {
                 mShowError = true;
