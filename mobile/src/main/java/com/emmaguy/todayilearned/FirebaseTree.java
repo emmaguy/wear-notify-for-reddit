@@ -9,7 +9,7 @@ import timber.log.Timber;
  */
 public class FirebaseTree extends Timber.DebugTree {
     @Override public void i(String message, Object... args) {
-
+        FirebaseCrash.log(String.format(message, args));
     }
 
     @Override public void i(Throwable t, String message, Object... args) {
@@ -17,6 +17,7 @@ public class FirebaseTree extends Timber.DebugTree {
     }
 
     @Override public void w(String message, Object... args) {
+        FirebaseCrash.log(String.format(message, args));
     }
 
     @Override public void w(Throwable t, String message, Object... args) {
@@ -24,7 +25,7 @@ public class FirebaseTree extends Timber.DebugTree {
     }
 
     @Override public void e(String message, Object... args) {
-        FirebaseCrash.report(new RuntimeException(String.format(message, args)));
+        FirebaseCrash.log(String.format(message, args));
     }
 
     @Override public void e(Throwable t, String message, Object... args) {
