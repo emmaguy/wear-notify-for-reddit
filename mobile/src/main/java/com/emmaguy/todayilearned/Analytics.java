@@ -19,7 +19,7 @@ public class Analytics {
     }
 
     public void sendLogin(boolean loginSuccessful) {
-        Timber.d("Sending event login successful: " + loginSuccessful);
+        Timber.d("Sending event login successful: %s", loginSuccessful);
 
         Bundle bundle = new Bundle();
         bundle.putBoolean("login_success", loginSuccessful);
@@ -28,7 +28,7 @@ public class Analytics {
     }
 
     public void sendEvent(String category, String result) {
-        Timber.d("Sending event: " + category + " , " + result);
+        Timber.d("Sending event: %s , %s", category, result);
 
         Bundle bundle = new Bundle();
         bundle.putString("name", result);
