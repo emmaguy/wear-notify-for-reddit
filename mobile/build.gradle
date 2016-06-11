@@ -40,7 +40,7 @@ android {
         }
     }
     lintOptions {
-        disable 'Overdraw', 'InvalidPackage', 'UnusedResources'
+        disable 'Overdraw', 'InvalidPackage'
     }
     testOptions {
         unitTests.returnDefaultValues = true

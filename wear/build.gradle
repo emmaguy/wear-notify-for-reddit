@@ -22,7 +22,7 @@ android {
         }
     }
     lintOptions {
-        disable 'UnusedAttribute', 'Overdraw', 'UnusedResources', 'IconColors', 'IconDensities', 'IconMissingDensityFolder', 'ClickableViewAccessibility'
+        disable 'UnusedAttribute', 'Overdraw', 'UnusedResources', 'ClickableViewAccessibility'
     }
 }
 

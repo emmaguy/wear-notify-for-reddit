@@ -16,7 +16,7 @@ android {
         }
     }
     lintOptions {
-        disable 'UnusedResources', 'IconDensities', 'IconMissingDensityFolder'
+        disable 'UnusedResources'
     }
 }
 
