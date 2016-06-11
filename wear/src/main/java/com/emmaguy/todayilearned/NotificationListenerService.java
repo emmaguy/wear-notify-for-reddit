@@ -1,9 +1,7 @@
 package com.emmaguy.todayilearned;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.RemoteInput;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,6 +10,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.RemoteInput;
 import android.support.wearable.activity.ConfirmationActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -255,7 +255,8 @@ public class NotificationListenerService extends WearableListenerService {
                 backgroundBitmap = loadBitmapFromAsset(dataMap.getAsset(post.getId()));
             }
 
-            Notification.Builder builder = new Notification.Builder(this).setContentTitle(post.getTitle())
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setContentTitle(
+                    post.getTitle())
                     .setContentText(post.getPostContents())
                     .setSmallIcon(R.drawable.ic_launcher);
 
@@ -296,13 +297,13 @@ public class NotificationListenerService extends WearableListenerService {
         }
     }
 
-    private void enableNotificationGrouping(Notification.Builder builder) {
+    private void enableNotificationGrouping(NotificationCompat.Builder builder) {
         // if it's not got an image we can group it with the other text based ones
         builder.setGroup(GROUP_KEY_SUBREDDIT_POSTS);
     }
 
-    private void setBlueBackground(Bitmap themeBlueBitmap, Notification.Builder builder) {
-        Notification.WearableExtender extender = new Notification.WearableExtender();
+    private void setBlueBackground(Bitmap themeBlueBitmap, NotificationCompat.Builder builder) {
+        NotificationCompat.WearableExtender extender = new NotificationCompat.WearableExtender();
         extender.setBackground(themeBlueBitmap);
         builder.extend(extender);
     }
@@ -334,7 +335,7 @@ public class NotificationListenerService extends WearableListenerService {
     // Add the actions to the builder, based on the given actionOrder list
     private void addActions(ArrayList<Integer> actionOrder, boolean openOnPhoneDismisses,
                             boolean hasCachedImage, Post post, int notificationId,
-                            Notification.Builder builder) {
+                            NotificationCompat.Builder builder) {
         for (int i = 0; i < actionOrder.size(); i++) {
             int order = actionOrder.get(i);
 
@@ -344,38 +345,38 @@ public class NotificationListenerService extends WearableListenerService {
 
             switch (order) {
                 case Constants.ACTION_ORDER_VIEW_COMMENTS:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.view_comments,
+                    builder.addAction(new NotificationCompat.Action.Builder(R.drawable.view_comments,
                             getString(R.string.view_comments),
                             getViewCommentsPendingIntent(post, notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_REPLY:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.reply,
+                    builder.addAction(new NotificationCompat.Action.Builder(R.drawable.reply,
                             getString(R.string.reply_to_x, post.getShortTitle()),
                             getReplyPendingIntent(post,
                                     notificationId)).addRemoteInput(new RemoteInput.Builder(
                             EXTRA_VOICE_REPLY).build()).build());
                     break;
                 case Constants.ACTION_ORDER_UPVOTE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.upvote,
+                    builder.addAction(new NotificationCompat.Action.Builder(R.drawable.upvote,
                             getString(R.string.upvote_x, post.getShortTitle()),
                             getVotePendingIntent(post,
                                     1,
                                     REQUEST_CODE_VOTE_UP + notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_DOWNVOTE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.downvote,
+                    builder.addAction(new NotificationCompat.Action.Builder(R.drawable.downvote,
                             getString(R.string.downvote_x, post.getShortTitle()),
                             getVotePendingIntent(post, -1, REQUEST_CODE_VOTE_DOWN + notificationId))
                             .build());
                     break;
                 case Constants.ACTION_ORDER_SAVE_TO_POCKET:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.pocket,
+                    builder.addAction(new NotificationCompat.Action.Builder(R.drawable.pocket,
                             getString(R.string.save_to_pocket),
                             getSaveToPocketPendingIntent(post.getPermalink(),
                                     notificationId)).build());
                     break;
                 case Constants.ACTION_ORDER_OPEN_ON_PHONE:
-                    builder.addAction(new Notification.Action.Builder(R.drawable.open_on_phone,
+                    builder.addAction(new NotificationCompat.Action.Builder(R.drawable.open_on_phone,
                             getString(R.string.open_on_phone),
                             getOpenOnPhonePendingIntent(post.getPermalink(),
                                     openOnPhoneDismisses,
@@ -383,7 +384,7 @@ public class NotificationListenerService extends WearableListenerService {
                     break;
                 case Constants.ACTION_ORDER_VIEW_IMAGE:
                     if (hasCachedImage) {
-                        builder.addAction(new Notification.Action.Builder(R.drawable.view_image,
+                        builder.addAction(new NotificationCompat.Action.Builder(R.drawable.view_image,
                                 getString(R.string.view_image),
                                 getViewImagePendingIntent(notificationId)).build());
                     }

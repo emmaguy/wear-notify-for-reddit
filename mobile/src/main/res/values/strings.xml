@@ -22,16 +22,11 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="select_subreddits">Select Subreddits</string>
-    <string name="no_subreddits">No Subreddits selected!</string>
     <string name="enter_subreddit_name">Enter subreddit of your choice</string>
-    <string name="title_activity_latest_posts">Latest Posts</string>
     <string name="tap_to_sign_in">Tap to sign in</string>
     <string name="reddit_account">Reddit account</string>
     <string name="sync_subreddits">Sync subreddits</string>
     <string name="you_need_to_sign_in_to_sync_subreddits">You need to sign in to sync subreddits</string>
-    <string name="password">Password</string>
-    <string name="username">Username</string>
-    <string name="login">Login</string>
     <string name="login_to_reddit">Login to reddit</string>
     <string name="failed_to_login">Failed to login</string>
     <string name="logging_in">Logging in…</string>
@@ -42,10 +37,6 @@
     <string name="successfully_logged_in">Successfully logged in</string>
     <string name="successfully_synced_subreddits">Successfully synced subreddits</string>
     <string name="retrieve_messages">Retrieve messages</string>
-    <string name="subject">Subject</string>
-    <string name="message">Message</string>
-    <string name="feedback_info">Having an issue? Got an idea for an awesome new feature? Send us some feedback!</string>
-    <string name="submit">Submit</string>
     <string name="feedback_android_version">Feedback v</string>
     <string name="open_on_phone_also_dismisses">\'Open on phone\' also dismisses</string>
     <string name="open_on_phone_summary">Dismiss the notification when \'Open on phone\' action is performed</string>
@@ -56,7 +47,6 @@
     <string name="requires_login">(requires login)</string>
     <string name="requires_pocket_app_installed">(requires Pocket app to be installed)</string>
     <string name="hint_dialog_subreddit">subreddit name, e.g. showerthoughts</string>
-    <string name="requesting_token">Requesting token</string>
     <string name="message_from_x">Message from %1$s</string>
 
     <string name="error_whilst_trying_to_login">An error occurred whilst trying to log in. Please check your Internet connection and try again later</string>
