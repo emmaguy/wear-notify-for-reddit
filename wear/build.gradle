@@ -2,16 +2,16 @@ apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 'android-N'
-    buildToolsVersion "24.0.0 rc4"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
 
     signingConfigs {
         release
     }
     defaultConfig {
         applicationId "com.emmaguy.todayilearned"
-        minSdkVersion 'N'
-        targetSdkVersion 'N'
+        minSdkVersion 23
+        targetSdkVersion 23
         versionCode 51
         versionName '3.1.0'
     }
@@ -33,7 +33,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-wearable:8.4.0'
 
     // Ui
-    compile 'com.google.android.support:wearable:2.0.0-alpha1'
+    compile 'com.google.android.support:wearable:1.4.0'
 }
 
 def Properties props = new Properties()
